@@ -79,6 +79,76 @@ function generateId() {
   return "rfp_" + crypto.randomUUID().split("-")[0];
 }
 
+// ---------------- Public slugs ----------------
+// Human-readable URL for a public RFP page, e.g. "nasasps-2027-annual-conference".
+// Generated once, the first time a record is set to "open", and kept
+// stable after that even if the event name is edited later.
+function slugify(str) {
+  return (str || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
+async function generateUniqueSlug(env, acronym, eventName) {
+  const base = slugify(`${acronym || ""}-${eventName || ""}`) || "rfp";
+  let slug = base;
+  let counter = 2;
+  while (await env.RFP_DATA.get(`slug:${slug}`)) {
+    slug = `${base}-${counter}`;
+    counter++;
+  }
+  return slug;
+}
+
+// Explicit allow-list of fields shown on public pages. New internal-only
+// fields (like the budget numbers) are private by default unless added
+// here on purpose.
+function publicRfpDetail(record) {
+  const d = record.data || {};
+  return {
+    groupName: d.groupName || "",
+    eventName: d.eventName || "",
+    acronym: d.acronym || "",
+    websiteLink: d.websiteLink || "",
+    logoUrl: d.logoDataUrl || d.logoUrl || "",
+    eventLogoUrl: d.eventLogoDataUrl || "",
+    rfpDueDate: d.rfpDueDate || "",
+    sectionPriorities: d.sectionPriorities || [],
+    cities: d.cities || [],
+    dates: d.dates || [],
+    patternFlexible: !!d.patternFlexible,
+    noFriday: !!d.noFriday,
+    patternNotes: d.patternNotes || "",
+    attendanceType: d.attendanceType || "",
+    attendanceMin: d.attendanceMin || "",
+    attendanceMax: d.attendanceMax || "",
+    attendanceScope: d.attendanceScope || "",
+    guestRooms: d.guestRooms || [],
+    colocation: d.colocation || "",
+    meetingSpace: d.meetingSpace || [],
+    concessions: d.concessions || [],
+    fnb: d.fnb || [],
+    siteInspection: d.siteInspection || "",
+    exhibits: d.exhibits || {}
+  };
+}
+
+function publicRfpSummary(record) {
+  const d = record.data || {};
+  return {
+    slug: record.publicSlug,
+    groupName: d.groupName || "",
+    eventName: d.eventName || "",
+    acronym: d.acronym || "",
+    logoUrl: d.logoDataUrl || d.logoUrl || "",
+    eventLogoUrl: d.eventLogoDataUrl || "",
+    rfpDueDate: d.rfpDueDate || "",
+    dates: d.dates || []
+  };
+}
+
 // ---------------- Main handler ----------------
 
 export async function onRequest(context) {
@@ -88,6 +158,36 @@ export async function onRequest(context) {
     const path = url.pathname;
     const method = request.method;
 
+    // ---- Public routes (no Access identity required) ----
+    // These only ever return records with status "open", and only the
+    // fields in publicRfpDetail/publicRfpSummary above.
+    if (path === "/api/public/rfps" && method === "GET") {
+      const list = await env.RFP_DATA.list({ prefix: "rfp:" });
+      const records = await Promise.all(
+        list.keys.map(async (k) => {
+          const raw = await env.RFP_DATA.get(k.name);
+          if (!raw) return null;
+          const record = JSON.parse(raw);
+          if (record.status !== "open" || !record.publicSlug) return null;
+          return publicRfpSummary(record);
+        })
+      );
+      return jsonResponse(records.filter(Boolean));
+    }
+
+    const publicSingleMatch = path.match(/^\/api\/public\/rfps\/([^/]+)$/);
+    if (publicSingleMatch && method === "GET") {
+      const slug = publicSingleMatch[1];
+      const id = await env.RFP_DATA.get(`slug:${slug}`);
+      if (!id) return errorResponse("Not found", 404);
+      const raw = await env.RFP_DATA.get(`rfp:${id}`);
+      if (!raw) return errorResponse("Not found", 404);
+      const record = JSON.parse(raw);
+      if (record.status !== "open") return errorResponse("Not found", 404);
+      return jsonResponse(publicRfpDetail(record));
+    }
+
+    // ---- Everything below this line requires staff login ----
     const identity = getIdentity(request);
     if (!identity) {
       return errorResponse("Not authenticated. Access identity header missing.", 401);
@@ -251,6 +351,14 @@ export async function onRequest(context) {
 
       record.status = body.status;
       record.updatedAt = new Date().toISOString();
+
+      // First time this record goes "open", mint a permanent human-readable
+      // slug and index it so the public page can be found by that slug.
+      // Closing/reopening later reuses the same slug and link.
+      if (body.status === "open" && !record.publicSlug) {
+        record.publicSlug = await generateUniqueSlug(env, record.data?.acronym, record.data?.eventName);
+        await env.RFP_DATA.put(`slug:${record.publicSlug}`, id);
+      }
 
       await env.RFP_DATA.put(`rfp:${id}`, JSON.stringify(record));
       return jsonResponse(record);
