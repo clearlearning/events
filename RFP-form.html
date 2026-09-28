@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events RFP — Staff Intake (Preview)</title>
+<style>
+  :root {
+    --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
+    --charcoal: #2B2B2B; --charcoal-soft: #6B6660; --blue: #084D78;
+    --bg: #F7F6F3; --card: #ffffff; --border: #E3DFD8; --border-soft: #EEEBE5;
+    --radius: 10px; --shadow: 0 1px 2px rgba(30,20,10,0.04), 0 4px 14px rgba(30,20,10,0.05);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Open Sans', 'Trebuchet MS', sans-serif; background: var(--bg); color: var(--charcoal); margin: 0; -webkit-font-smoothing: antialiased; }
+
+  header { background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%); color: #fff; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .header-title { display: flex; flex-direction: column; gap: 2px; }
+  .header-title .eyebrow { font-size: 0.72rem; color: rgba(255,255,255,0.62); font-weight: 600; }
+  .header-title h1 { font-size: 1.3rem; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  .identity { display: flex; align-items: center; gap: 10px; }
+  .identity-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--gold); color: var(--burgundy-dark); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+  .identity-text { font-size: 0.86rem; line-height: 1.25; }
+  .identity-text .name { font-weight: 600; }
+  .identity-text .admin-badge { font-size: 0.68rem; background: rgba(255,255,255,0.18); padding: 1px 7px; border-radius: 20px; margin-left: 6px; font-weight: 600; }
+
+  .layout { display: flex; max-width: 1360px; margin: 0 auto; gap: 22px; padding: 24px; align-items: flex-start; }
+  aside { width: 280px; flex-shrink: 0; position: sticky; top: 24px; transition: width .15s ease, opacity .1s ease; }
+  aside.collapsed { width: 0; overflow: hidden; opacity: 0; pointer-events: none; margin-right: -22px; }
+  aside h2 { font-size: 0.78rem; color: var(--charcoal-soft); font-weight: 700; margin: 0 0 10px 2px; }
+  #rfpList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  #rfpList li { background: var(--card); border: 1px solid var(--border-soft); border-left: 3px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: border-color .12s ease, box-shadow .12s ease; }
+  #rfpList li:hover { box-shadow: var(--shadow); }
+  #rfpList li.active { border-left-color: var(--burgundy); background: #FCF8F6; }
+  #rfpList li .rfp-name { font-weight: 600; font-size: 0.92rem; }
+  #rfpList li .rfp-event { font-size: 0.8rem; color: var(--charcoal-soft); margin-top: 1px; }
+  #rfpList li .status-row { margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .status-draft .status-dot { background: #B9B2A6; } .status-open .status-dot { background: var(--blue); }
+  .status-closed .status-dot { background: var(--gold); } .status-awarded .status-dot { background: #2E7D4F; }
+  .status-label { font-size: 0.72rem; color: var(--charcoal-soft); text-transform: capitalize; }
+
+  main { flex: 1; min-width: 0; }
+  .main-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  #emptyState { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--charcoal-soft); font-size: 0.95rem; }
+
+  button { font-family: inherit; cursor: pointer; border: none; border-radius: 7px; font-size: 0.88rem; font-weight: 600; transition: filter .12s ease, background .12s ease; }
+  .btn-primary { background: var(--burgundy); color: #fff; padding: 10px 18px; }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn-primary:disabled { background: #C9BFC2; cursor: not-allowed; }
+  .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--charcoal); padding: 8px 14px; }
+  .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .btn-ghost { background: transparent; color: var(--blue); padding: 6px 4px; font-size: 0.82rem; }
+  .btn-ghost:hover { text-decoration: underline; }
+  .btn-ghost:disabled { color: var(--charcoal-soft); cursor: not-allowed; text-decoration: none; }
+  .btn-danger-ghost { background: transparent; color: #A33; padding: 2px 6px; font-size: 1rem; line-height: 1; }
+  #newRfpBtn { width: 100%; margin-bottom: 14px; padding: 11px; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: #EEEAE3; padding: 4px; border-radius: 9px; width: fit-content; }
+  .tab-btn { background: transparent; color: var(--charcoal-soft); border-radius: 6px; padding: 8px 16px; }
+  .tab-btn.active { background: #fff; color: var(--burgundy); box-shadow: var(--shadow); }
+  .tab-panel { display: none; } .tab-panel.active { display: block; }
+
+  details.section { background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; box-shadow: var(--shadow); }
+  details.section[open] > summary { border-bottom: 1px solid var(--border-soft); }
+  details.section summary { list-style: none; cursor: pointer; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; color: var(--burgundy); font-size: 0.98rem; }
+  details.section summary::-webkit-details-marker { display: none; }
+  details.section summary .chev { color: var(--charcoal-soft); transition: transform .15s ease; font-size: 0.8rem; }
+  details.section[open] summary .chev { transform: rotate(90deg); }
+  .section-body { padding: 18px 20px 22px; }
+  .section-hint { font-size: 0.8rem; color: var(--charcoal-soft); margin: -6px 0 12px; }
+
+  label { display: block; font-weight: 600; font-size: 0.82rem; margin: 12px 0 5px; color: var(--charcoal); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=url], input[type=number], input[type=date], select, textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 7px;
+    font-family: inherit; font-size: 0.88rem; background: #fff; color: var(--charcoal);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(8,77,120,0.1); }
+  textarea { min-height: 60px; resize: vertical; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 170px; }
+
+  .check-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  .check-row label { display: inline; margin: 0; font-weight: normal; font-size: 0.86rem; }
+  .check-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--burgundy); }
+
+  .chip-grid { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin-top: 6px; }
+  .chip { position: relative; display: inline-flex; align-items: center; margin: 0; }
+  .chip input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .chip span { display: inline-flex; align-items: center; padding: 7px 13px; border: 1px solid var(--border); border-radius: 20px; font-size: 0.82rem; color: var(--charcoal); background: #fff; transition: all .12s ease; line-height: 1.1; }
+  .chip input:checked + span { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(8,77,120,0.2); }
+
+  .segmented { display: inline-flex; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 8px; }
+  .segmented label { margin: 0; font-weight: 600; font-size: 0.78rem; padding: 6px 14px; cursor: pointer; color: var(--charcoal-soft); background: #fff; border-right: 1px solid var(--border); }
+  .segmented label:last-child { border-right: none; }
+  .segmented input { display: none; }
+  .segmented input:checked + label { background: var(--gold); color: var(--burgundy-dark); }
+
+  .day-block { border: 1px solid var(--border-soft); border-left: 3px solid var(--blue); border-radius: 8px; padding: 16px; margin-bottom: 14px; background: #FCFCFB; }
+  .day-block-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .day-label-wrap { flex: 1; display: flex; align-items: center; gap: 6px; }
+  .day-label-wrap .pencil { color: var(--charcoal-soft); font-size: 0.8rem; }
+  input.day-label-input { font-weight: 700; border: none; border-bottom: 1px dashed var(--blue); background: transparent; color: var(--blue); font-size: 0.95rem; padding: 3px 2px; flex: 1; border-radius: 0; }
+  input.day-label-input:hover { background: #EFF5F9; }
+  input.day-label-input:focus { outline: none; background: #EFF5F9; border-bottom-style: solid; }
+  .meal-block { border-top: 1px solid var(--border-soft); padding-top: 12px; margin-top: 12px; }
+  .meal-block h5 { margin: 0 0 4px; font-size: 0.85rem; color: var(--charcoal); }
+  .small-note { font-size: 0.76rem; color: var(--charcoal-soft); margin-top: 4px; }
+
+  .room-card { background: #fff; border: 1px solid var(--border-soft); border-radius: 8px; padding: 12px 14px; margin-top: 10px; position: relative; }
+  .room-card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .room-card-header input.room-label-input { font-weight: 600; border: none; border-bottom: 1px dashed var(--border); background: transparent; padding: 2px 2px; font-size: 0.88rem; flex: 1; }
+  .room-card-header input.room-label-input:focus { outline: none; border-bottom-color: var(--blue); }
+
+  .av-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .av-row { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-soft); border-radius: 6px; padding: 6px 10px; background: #FCFCFB; }
+  .av-row .av-name-select { flex: 1.4; }
+  .av-row .av-qty { width: 80px; flex-shrink: 0; padding: 6px 8px; }
+
+  .table-wrap { border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+  table.clean { width: 100%; border-collapse: collapse; }
+  table.clean th { background: #F5F3EF; text-align: left; font-size: 0.76rem; color: var(--charcoal-soft); font-weight: 700; padding: 9px 10px; border-bottom: 1px solid var(--border-soft); }
+  table.clean td { padding: 4px 6px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  table.clean tr:last-child td { border-bottom: none; }
+  table.clean input, table.clean select { border: none; background: transparent; padding: 7px 4px; }
+  table.clean input:focus, table.clean select:focus { outline: none; background: #F5F3EF; border-radius: 4px; box-shadow: none; }
+
+  .priority-table { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .priority-row { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-soft); border-radius: 8px; padding: 8px 12px; background: #FCFCFB; }
+  .priority-row select { flex: 2; }
+  .priority-row input { flex: 0 0 90px; }
+
+  .concession-row { display: flex; gap: 10px; align-items: flex-end; border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: #FCFCFB; flex-wrap: wrap; }
+  .concession-row > div { flex: 1; min-width: 150px; }
+  .concession-row label { font-size: 0.72rem; margin: 0 0 3px; }
+
+  .logo-preview-wrap { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .logo-preview-wrap img { max-height: 56px; border-radius: 4px; border: 1px solid var(--border-soft); background: #fff; padding: 4px; }
+  .logo-preview-wrap .logo-missing { font-size: 0.78rem; color: var(--charcoal-soft); font-style: italic; }
+
+  .actions-bar { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+  #saveStatus { font-size: 0.85rem; } #saveStatus.ok { color: #2E7D4F; } #saveStatus.err { color: #B3261E; }
+
+  .panel-card { background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+  .note-entry { border-left: 3px solid var(--gold); padding: 8px 0 8px 14px; margin-bottom: 10px; }
+  .note-meta { font-size: 0.76rem; color: var(--charcoal-soft); margin-bottom: 2px; }
+  details.version-entry { border: 1px solid var(--border-soft); border-radius: 8px; padding: 4px 14px; margin-bottom: 8px; }
+  details.version-entry summary { cursor: pointer; padding: 10px 0; font-weight: 600; font-size: 0.88rem; list-style: none; }
+  details.version-entry summary::-webkit-details-marker { display: none; }
+  .diff-line { font-size: 0.82rem; padding: 5px 0; border-top: 1px dotted var(--border-soft); }
+  .diff-field { font-weight: 600; color: var(--blue); }
+  .diff-old { color: #B3261E; text-decoration: line-through; opacity: 0.8; }
+  .diff-new { color: #2E7D4F; }
+  h3.panel-title { color: var(--burgundy); margin: 0 0 14px; font-size: 1.02rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <span class="eyebrow">Request for Event Proposal — Preview Mode</span>
+    <h1>Internal Intake Form</h1>
+  </div>
+  <div class="identity" id="identityBlock" style="display:none;">
+    <div class="identity-avatar" id="identityAvatar">--</div>
+    <div class="identity-text"><span class="name" id="identityName"></span><span class="admin-badge" id="identityAdminBadge" style="display:none;">Admin</span></div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside id="sidebarAside">
+    <h2>RFPs</h2>
+    <button id="newRfpBtn" class="btn-primary" disabled>+ New RFP</button>
+    <ul id="rfpList"></ul>
+  </aside>
+
+  <main>
+    <div class="main-toolbar">
+      <button type="button" id="toggleSidebarBtn" class="btn-outline">&#9776; RFP list</button>
+    </div>
+
+    <div id="emptyState">Select an RFP from the list, or click "+ New RFP" to start one.</div>
+
+    <div id="formArea" style="display:none;">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="intake">Intake Form</button>
+        <button class="tab-btn" data-tab="notes">Notes</button>
+        <button class="tab-btn" data-tab="history">Version History</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-intake">
+        <form id="intakeForm">
+
+          <details class="section" open>
+            <summary>Group Info <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Group *</label>
+                  <select id="groupName" required></select>
+                </div>
+                <div><label>Acronym</label><input type="text" id="acronym"></div>
+              </div>
+              <div class="row">
+                <div><label>Official Event Name *</label><input type="text" id="eventName" required></div>
+                <div><label>Current Website</label><input type="url" id="websiteLink" placeholder="https://"></div>
+              </div>
+              <label>Group Logo</label>
+              <div class="logo-preview-wrap">
+                <img id="logoPreview" style="display:none;">
+                <span id="logoMissing" class="logo-missing" style="display:none;">No logo found at the expected address yet.</span>
+              </div>
+              <div class="small-note">Auto-fills from the group's logo file once a group is selected. Upload below only if it needs to be overridden.</div>
+              <input type="file" id="logoUpload" accept="image/*" style="margin-top:8px;">
+              <button type="button" class="btn-ghost" id="resetLogoBtn" style="display:none;">Reset to default logo</button>
+
+              <label>RFP Response Report Due Date *</label>
+              <input type="date" id="rfpDueDate" required>
+
+              <label style="margin-top:18px;">Section Priority</label>
+              <div class="section-hint">Add a row for each section that matters to this group, and rank it — 1 is highest. Sections you don't add here are treated as no priority.</div>
+              <div class="priority-table" id="priorityTable"></div>
+              <button type="button" class="btn-ghost" id="addPriorityRow">+ Add priority</button>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Preferred Cities <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="section-hint">Up to 5 cities. Rank each — equal numbers or no entry = no preference between them.</div>
+              <div id="cityRows"></div>
+              <button type="button" class="btn-ghost" id="addCityRow">+ Add city</button>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Preferred Dates <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="section-hint">Up to 3 date range options, all the same length as Option 1. Entering a start date on Option 2 or 3 auto-fills its end date to match.</div>
+              <div id="dateRows"></div>
+              <button type="button" class="btn-ghost" id="addDateRow">+ Add date option</button>
+              <div class="check-row" style="margin-top:14px;"><input type="checkbox" id="patternFlexible"><label for="patternFlexible">Group is open to a different weekday pattern than requested</label></div>
+              <div class="check-row"><input type="checkbox" id="noFriday"><label for="noFriday">Group will not meet on specific day/s</label></div>
+              <label>Pattern / date notes</label>
+              <textarea id="patternNotes" placeholder="e.g. must be Mon/Tue, or any two consecutive weekdays are fine"></textarea>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Estimated Attendance <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="row">
+                <div><label>Type</label><select id="attendanceType"><option value="range">Range</option><option value="set">Set Count</option></select></div>
+                <div><label>Min (or set count)</label><input type="number" id="attendanceMin"></div>
+                <div><label>Max (blank if set count)</label><input type="number" id="attendanceMax"></div>
+                <div><label>Applies to</label><select id="attendanceScope"><option value="total">Whole event duration</option><option value="per-day">Varies per day</option></select></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Guest Room Needs <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="section-hint">Auto-fill nights from Date Option 1, then adjust as needed.</div>
+              <button type="button" class="btn-outline" id="autoGenRooms">Auto-generate nights from Date Option 1</button>
+              <div class="table-wrap" style="margin-top:12px;">
+                <table class="clean">
+                  <thead><tr><th style="width:36%;">Night</th><th>Timing</th><th>Rooms Needed</th><th>Max Rate (pre-tax)</th><th></th></tr></thead>
+                  <tbody id="roomRows"></tbody>
+                </table>
+              </div>
+              <button type="button" class="btn-ghost" id="addRoomRow" style="margin-top:10px;">+ Add night manually</button>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Meeting Space Needs <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="section-hint">Auto-fill a section per event day from Date Option 1, then add as many rooms per day as needed.</div>
+              <button type="button" class="btn-outline" id="autoGenMeeting">Auto-generate days from Date Option 1</button>
+
+              <label style="margin-top:16px;">Open to colocating meeting space with other organizations?</label>
+              <select id="colocation">
+                <option value="">— Select —</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+
+              <div id="meetingSpaceRows" style="margin-top:14px;"></div>
+              <button type="button" class="btn-ghost" id="addMeetingDay">+ Add day manually</button>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Must-Have Concessions <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div id="concessionRows"></div>
+              <button type="button" class="btn-ghost" id="addConcessionRow">+ Add concession</button>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Food &amp; Beverage <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div id="fnbDays"></div>
+              <button type="button" class="btn-ghost" id="addFnbDay">+ Add day</button>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Site Inspection <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <select id="siteInspection">
+                <option value="before-contract">Required before contract signing</option>
+                <option value="before-event">Desired prior to event, not required before signing</option>
+                <option value="none">No site visit needed</option>
+              </select>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Exhibitor &amp; Sponsor Space <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="check-row"><input type="checkbox" id="exhibitsNeeded"><label for="exhibitsNeeded">Exhibits needed for this event</label></div>
+              <div class="row">
+                <div><label>Standard Booths Budgeted</label><input type="number" min="0" id="exhibitStandardCount"></div>
+                <div><label>Premium / Double Booths Budgeted</label><input type="number" min="0" id="exhibitPremiumCount"></div>
+                <div><label>Desired Placement</label><input type="text" id="exhibitPlacement" placeholder="e.g. registration foyer"></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="section">
+            <summary>Budget <span class="chev">&#9656;</span></summary>
+            <div class="section-body">
+              <div class="row">
+                <div><label>F&amp;B Budget</label><input type="number" id="fnbBudget"></div>
+                <div><label>AV Budget</label><input type="number" id="avBudget"></div>
+              </div>
+            </div>
+          </details>
+
+          <div class="actions-bar">
+            <button type="submit" class="btn-primary" id="saveBtn">Save</button>
+            <span id="saveStatus"></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="tab-panel" id="tab-notes">
+        <div class="panel-card" style="margin-bottom:16px;">
+          <label>Add a note</label>
+          <textarea id="newNoteText" placeholder="Internal note about this RFP..."></textarea>
+          <button type="button" class="btn-outline" id="addNoteBtn" style="margin-top:10px;">Add note</button>
+        </div>
+        <div class="panel-card"><h3 class="panel-title">History</h3><div id="notesList"></div></div>
+      </div>
+
+      <div class="tab-panel" id="tab-history">
+        <div class="panel-card"><h3 class="panel-title">Version History</h3><div id="historyList"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const API_BASE = ""; // same-origin — calls hit events.clear-hq.org/api/... directly
+let currentIdentity = null;
+let currentRecord = null;
+let rfpSummaries = [];
+
+async function checkAuth() {
+  try {
+    const res = await fetch(`${API_BASE}/api/whoami`, { credentials: "include" });
+    if (!res.ok) throw new Error("not authed");
+    currentIdentity = await res.json();
+    document.getElementById("identityBlock").style.display = "flex";
+    document.getElementById("identityName").textContent = currentIdentity.name;
+    document.getElementById("identityAvatar").textContent = initials(currentIdentity.name);
+    document.getElementById("identityAdminBadge").style.display = currentIdentity.isAdmin ? "inline" : "none";
+    document.getElementById("newRfpBtn").disabled = false;
+    return true;
+  } catch (e) {
+    document.getElementById("identityBlock").style.display = "none";
+    document.getElementById("newRfpBtn").disabled = true;
+    return false;
+  }
+}
+function initials(name) { return name.split(" ").map(p => p[0]).join("").slice(0,2).toUpperCase(); }
+
+// ---------- Date helpers ----------
+function addDaysISO(iso, delta) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + delta); return d.toISOString().slice(0,10); }
+function daysDiff(a, b) { return Math.round((new Date(b+"T00:00:00") - new Date(a+"T00:00:00")) / 86400000); }
+function fmtDate(iso) { if (!iso) return ""; return new Date(iso+"T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+
+document.getElementById("toggleSidebarBtn").onclick = () => { document.getElementById("sidebarAside").classList.toggle("collapsed"); };
+
+// ---------- Group presets ----------
+const GROUP_PRESETS = [
+  { name: "CPE — Coalition for Physician Enhancement", acronym: "CPE", website: "https://www.cpehq.org" },
+  { name: "NASASPS — National Association of State Administrators and Supervisors of Private Schools", acronym: "NASASPS", website: "https://nasasps.org" },
+  { name: "NRWC — National Reentry Workforce Coalition", acronym: "NRWC", website: "https://thenrwc.org" },
+  { name: "AASCB — American Association of State Counseling Boards", acronym: "AASCB", website: "https://aascb.org" },
+  { name: "CCC — Counseling Compact Commission", acronym: "CCC", website: "https://counselingcompact.gov" }
+];
+function populateGroupSelect() {
+  const sel = document.getElementById("groupName");
+  sel.innerHTML = `<option value="">— Select a group —</option>` + GROUP_PRESETS.map(g => `<option value="${g.name}">${g.name}</option>`).join("");
+}
+function logoUrlForAcronym(acronym) {
+  return acronym ? `https://events.clear-hq.org/${acronym.toUpperCase()}-logo.png` : "";
+}
+function renderLogoPreview() {
+  const img = document.getElementById("logoPreview");
+  const missing = document.getElementById("logoMissing");
+  const resetBtn = document.getElementById("resetLogoBtn");
+  const src = window._logoDataUrl || window._logoAutoUrl || "";
+  resetBtn.style.display = window._logoDataUrl ? "inline-block" : "none";
+  if (!src) { img.style.display = "none"; missing.style.display = "none"; return; }
+  img.onerror = () => { img.style.display = "none"; missing.style.display = "inline"; };
+  img.onload = () => { img.style.display = "inline-block"; missing.style.display = "none"; };
+  img.src = src;
+}
+document.getElementById("groupName").addEventListener("change", (e) => {
+  const preset = GROUP_PRESETS.find(g => g.name === e.target.value);
+  if (preset) {
+    document.getElementById("acronym").value = preset.acronym;
+    document.getElementById("websiteLink").value = preset.website;
+    window._logoAutoUrl = logoUrlForAcronym(preset.acronym);
+    window._logoDataUrl = null;
+    renderLogoPreview();
+  }
+});
+document.getElementById("resetLogoBtn").onclick = () => { window._logoDataUrl = null; renderLogoPreview(); };
+document.getElementById("logoUpload").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { window._logoDataUrl = reader.result; renderLogoPreview(); };
+  reader.readAsDataURL(file);
+});
+
+// ---------- Section priorities ----------
+const PRIORITY_SECTIONS = [
+  { key: "cities", label: "Preferred Cities" },
+  { key: "dates", label: "Preferred Dates" },
+  { key: "attendance", label: "Estimated Attendance" },
+  { key: "guestRooms", label: "Guest Room Needs" },
+  { key: "meetingSpace", label: "Meeting Space Needs" },
+  { key: "concessions", label: "Must-Have Concessions" },
+  { key: "fnb", label: "Food & Beverage" },
+  { key: "siteInspection", label: "Site Inspection" },
+  { key: "exhibits", label: "Exhibitor & Sponsor Space" },
+  { key: "budget", label: "Budget" }
+];
+function renderPriorityTable(rows) {
+  const wrap = document.getElementById("priorityTable");
+  wrap.innerHTML = "";
+  (rows && rows.length ? rows : []).forEach(r => addPriorityRow(r));
+}
+function addPriorityRow(r) {
+  r = r || { section: PRIORITY_SECTIONS[0].key, rank: "" };
+  const wrap = document.getElementById("priorityTable");
+  const row = document.createElement("div");
+  row.className = "priority-row";
+  row.innerHTML = `
+    <select class="priority-section-select">${PRIORITY_SECTIONS.map(s=>`<option value="${s.key}" ${s.key===r.section?"selected":""}>${s.label}</option>`).join("")}</select>
+    <input type="number" min="0" class="priority-rank-input" placeholder="Rank" value="${r.rank||''}">
+    <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
+  `;
+  row.querySelector(".remove-row").onclick = () => row.remove();
+  wrap.appendChild(row);
+}
+function getPriorityValues() {
+  return [...document.querySelectorAll("#priorityTable .priority-row")].map(row => ({
+    section: row.querySelector(".priority-section-select").value,
+    rank: row.querySelector(".priority-rank-input").value
+  }));
+}
+document.getElementById("addPriorityRow").onclick = () => addPriorityRow();
+
+// ---------- Cities (capped at 5) ----------
+const CITY_CAP = 5;
+function makeCityRows(cities) {
+  const wrap = document.getElementById("cityRows");
+  wrap.innerHTML = "";
+  const vals = cities && cities.length ? cities : [{ name: "", rank: 1 }];
+  vals.forEach(c => addCityRow(c));
+}
+function addCityRow(c) {
+  if (document.querySelectorAll("#cityRows .city-row").length >= CITY_CAP) return;
+  c = c || { name: "", rank: 1 };
+  const wrap = document.getElementById("cityRows");
+  const row = document.createElement("div");
+  row.className = "city-row";
+  row.style.cssText = "display:flex;gap:12px;align-items:flex-end;border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#FCFCFB;";
+  row.innerHTML = `
+    <div style="flex:2;"><label style="font-size:0.72rem;margin:0 0 3px;">City</label><input type="text" class="city-name-input" value="${c.name||''}" placeholder="e.g. Denver, CO"></div>
+    <div style="flex:1;max-width:120px;"><label style="font-size:0.72rem;margin:0 0 3px;">Preference Rank</label><input type="number" class="city-rank-input" min="1" value="${c.rank||1}"></div>
+    <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
+  `;
+  row.querySelector(".remove-row").onclick = () => { row.remove(); updateCityAddBtn(); };
+  wrap.appendChild(row);
+  updateCityAddBtn();
+}
+function updateCityAddBtn() {
+  const count = document.querySelectorAll("#cityRows .city-row").length;
+  const btn = document.getElementById("addCityRow");
+  btn.disabled = count >= CITY_CAP;
+  btn.textContent = count >= CITY_CAP ? `Maximum ${CITY_CAP} cities reached` : "+ Add city";
+}
+function getCityRows() {
+  return [...document.querySelectorAll("#cityRows .city-row")]
+    .map(r => ({ name: r.querySelector(".city-name-input").value, rank: Number(r.querySelector(".city-rank-input").value) || 1 }))
+    .filter(c => c.name.trim());
+}
+document.getElementById("addCityRow").onclick = () => addCityRow();
+
+// ---------- Dates (ranges, capped at 3, linked duration) ----------
+const DATE_CAP = 3;
+function makeDateRows(dates) {
+  const wrap = document.getElementById("dateRows");
+  wrap.innerHTML = "";
+  const vals = dates && dates.length ? dates : [{ start: "", end: "", rank: 1 }];
+  vals.forEach(d => addDateRow(d));
+}
+function firstOptionDuration() {
+  const rows = [...document.querySelectorAll("#dateRows .date-range-row")];
+  if (!rows.length) return null;
+  const start = rows[0].querySelector(".date-start-input").value;
+  const end = rows[0].querySelector(".date-end-input").value;
+  if (!start || !end) return null;
+  return daysDiff(start, end);
+}
+function addDateRow(d) {
+  if (document.querySelectorAll("#dateRows .date-range-row").length >= DATE_CAP) return;
+  d = d || { start: "", end: "", rank: 1 };
+  const wrap = document.getElementById("dateRows");
+  const row = document.createElement("div");
+  row.className = "date-range-row";
+  const isFirst = wrap.children.length === 0;
+  row.style.cssText = "display:flex;gap:12px;align-items:flex-end;border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#FCFCFB;flex-wrap:wrap;";
+  row.innerHTML = `
+    <div style="flex:1;min-width:130px;"><label style="font-size:0.72rem;margin:0 0 3px;">Start Date</label><input type="date" class="date-start-input" value="${d.start||''}"></div>
+    <div style="flex:1;min-width:130px;"><label style="font-size:0.72rem;margin:0 0 3px;">End Date</label><input type="date" class="date-end-input" value="${d.end||''}"></div>
+    <div style="flex:0 0 110px;"><label style="font-size:0.72rem;margin:0 0 3px;">Preference Rank</label><input type="number" class="date-rank-input" min="1" value="${d.rank||1}"></div>
+    <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
+  `;
+  row.querySelector(".remove-row").onclick = () => { row.remove(); updateDateAddBtn(); };
+  if (!isFirst) {
+    row.querySelector(".date-start-input").addEventListener("change", (e) => {
+      const dur = firstOptionDuration();
+      if (dur !== null && e.target.value) row.querySelector(".date-end-input").value = addDaysISO(e.target.value, dur);
+    });
+  }
+  wrap.appendChild(row);
+  updateDateAddBtn();
+}
+function updateDateAddBtn() {
+  const count = document.querySelectorAll("#dateRows .date-range-row").length;
+  const btn = document.getElementById("addDateRow");
+  btn.disabled = count >= DATE_CAP;
+  btn.textContent = count >= DATE_CAP ? `Maximum ${DATE_CAP} date options reached` : "+ Add date option";
+}
+function getDateRows() {
+  return [...document.querySelectorAll("#dateRows .date-range-row")].map(r => ({
+    start: r.querySelector(".date-start-input").value,
+    end: r.querySelector(".date-end-input").value,
+    rank: Number(r.querySelector(".date-rank-input").value) || 1
+  }));
+}
+document.getElementById("addDateRow").onclick = () => addDateRow();
+function firstDateOption() { const rows = getDateRows(); return rows.length ? rows[0] : null; }
+
+// ---------- Guest rooms ----------
+function makeRoomRows(rooms) { const tbody = document.getElementById("roomRows"); tbody.innerHTML = ""; (rooms || []).forEach(r => addRoomRow(r)); }
+function addRoomRow(r) {
+  r = r || { label: "", timing: "during", rooms: "", rate: "" };
+  const tbody = document.getElementById("roomRows");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input type="text" class="room-label" value="${r.label||''}" placeholder="e.g. Event Night 1"></td>
+    <td><select class="room-timing">
+      <option value="before" ${r.timing==='before'?'selected':''}>Before event</option>
+      <option value="during" ${r.timing==='during'||!r.timing?'selected':''}>During event</option>
+      <option value="after" ${r.timing==='after'?'selected':''}>After event</option>
+    </select></td>
+    <td><input type="number" class="room-count" value="${r.rooms||''}"></td>
+    <td><input type="number" class="room-rate" value="${r.rate||''}"></td>
+    <td><button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button></td>
+  `;
+  tr.querySelector(".remove-row").onclick = () => tr.remove();
+  tbody.appendChild(tr);
+  attachRoomAutoLabel(tr);
+}
+function attachRoomAutoLabel(tr) {
+  const select = tr.querySelector(".room-timing");
+  const label = tr.querySelector(".room-label");
+  if (label.dataset.autoFilled === undefined) label.dataset.autoFilled = label.value ? "false" : "true";
+  function regen() {
+    const count = [...document.querySelectorAll("#roomRows tr")].filter(o => o !== tr && o.querySelector(".room-timing").value === select.value).length;
+    const prefix = select.value === "before" ? "Night Before Event" : select.value === "after" ? "Night After Event" : "Event Night";
+    label.value = `${prefix} ${count + 1}`;
+  }
+  select.addEventListener("change", () => { if (label.dataset.autoFilled === "true") regen(); });
+  label.addEventListener("input", () => { label.dataset.autoFilled = "false"; });
+  if (label.dataset.autoFilled === "true" && !label.value) regen();
+}
+function getRoomRows() {
+  return [...document.querySelectorAll("#roomRows tr")].map(tr => ({
+    label: tr.querySelector(".room-label").value, timing: tr.querySelector(".room-timing").value,
+    rooms: tr.querySelector(".room-count").value, rate: tr.querySelector(".room-rate").value
+  }));
+}
+document.getElementById("addRoomRow").onclick = () => addRoomRow();
+document.getElementById("autoGenRooms").onclick = () => {
+  const d = firstDateOption();
+  if (!d || !d.start || !d.end) { alert("Fill in Date Option 1's start and end date first."); return; }
+  const nights = daysDiff(d.start, d.end);
+  if (nights < 1) { alert("End date must be after start date."); return; }
+  const tbody = document.getElementById("roomRows");
+  tbody.innerHTML = "";
+  addRoomRow({ label: "Night Before Event 1", timing: "before", rooms: "", rate: "" });
+  for (let i = 0; i < nights; i++) addRoomRow({ label: `Event Night ${i + 1}`, timing: "during", rooms: "", rate: "" });
+  addRoomRow({ label: "Night After Event 1", timing: "after", rooms: "", rate: "" });
+};
+
+// ---------- Meeting space ----------
+const FLOOR_SETS = ["Classroom","Theater","Banquet Rounds","Crescent Rounds","U-Shape","Reception","Conference / Boardroom","Other"];
+const AV_OPTIONS = ["Projector","Screen","Podium Mic(s)","Table Mic(s)","Floor Mic(s) (Q&A)","Lav Mic(s)","Speakers","Virtual Meeting Accommodations","Other"];
+
+function makeMeetingSpaceRows(days) { const wrap = document.getElementById("meetingSpaceRows"); wrap.innerHTML = ""; (days && days.length ? days : []).forEach(d => addMeetingDay(d)); }
+function addMeetingDay(d) {
+  d = d || { label: "New Day", rooms: [] };
+  const wrap = document.getElementById("meetingSpaceRows");
+  const block = document.createElement("div");
+  block.className = "day-block";
+  block.innerHTML = `
+    <div class="day-block-header">
+      <div class="day-label-wrap"><span class="pencil">&#9998;</span><input type="text" class="day-label-input ms-label" value="${d.label}" placeholder="Click to rename day"></div>
+      <button type="button" class="btn-danger-ghost remove-row" title="Remove day">&times;</button>
+    </div>
+    <div class="ms-rooms"></div>
+    <button type="button" class="btn-ghost add-room-btn" style="margin-top:8px;">+ Add room</button>
+  `;
+  block.querySelector(".remove-row").onclick = () => block.remove();
+  block.querySelector(".add-room-btn").onclick = () => addMeetingRoom(block, null);
+  wrap.appendChild(block);
+  (d.rooms && d.rooms.length ? d.rooms : [null]).forEach(r => addMeetingRoom(block, r));
+}
+function addMeetingRoom(dayBlock, r) {
+  r = r || { roomLabel: "", floorSet: FLOOR_SETS[0], maxSeats: "", avNeeds: [], notes: "" };
+  const roomsWrap = dayBlock.querySelector(".ms-rooms");
+  const card = document.createElement("div");
+  card.className = "room-card";
+  card.innerHTML = `
+    <div class="room-card-header">
+      <input type="text" class="room-label-input" value="${r.roomLabel||''}" placeholder="Room label (e.g. General Session)">
+      <button type="button" class="btn-danger-ghost remove-room" title="Remove room">&times;</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <div><label>Floor Set</label><select class="ms-floorset">${FLOOR_SETS.map(f=>`<option ${f===r.floorSet?"selected":""}>${f}</option>`).join("")}</select></div>
+      <div><label>Est. Max Seats</label><input type="number" class="ms-seats" value="${r.maxSeats||''}"></div>
+    </div>
+    <label>AV Needs</label>
+    <div class="av-list"></div>
+    <button type="button" class="btn-ghost add-av-btn" style="margin-top:4px;">+ Add AV need</button>
+    <label>Notes</label>
+    <textarea class="ms-room-notes" placeholder="Anything specific to this room...">${r.notes||''}</textarea>
+  `;
+  card.querySelector(".remove-room").onclick = () => card.remove();
+  const avListEl = card.querySelector(".av-list");
+  card.querySelector(".add-av-btn").onclick = () => addAvRow(avListEl, null);
+  (r.avNeeds && r.avNeeds.length ? r.avNeeds : []).forEach(a => addAvRow(avListEl, a));
+  roomsWrap.appendChild(card);
+}
+function addAvRow(avListEl, a) {
+  a = a || { name: AV_OPTIONS[0], qty: "", otherText: "" };
+  const row = document.createElement("div");
+  row.className = "av-row";
+  row.innerHTML = `
+    <select class="av-name-select">${AV_OPTIONS.map(o=>`<option ${o===a.name?"selected":""}>${o}</option>`).join("")}</select>
+    <input type="number" min="0" class="av-qty" placeholder="Qty" value="${a.qty||''}">
+    <input type="text" class="av-other-text" placeholder="Specify..." value="${a.otherText||''}" style="${a.name==='Other'?'':'display:none;'} flex:1;">
+    <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
+  `;
+  const select = row.querySelector(".av-name-select");
+  const otherText = row.querySelector(".av-other-text");
+  select.addEventListener("change", () => { otherText.style.display = select.value === "Other" ? "block" : "none"; });
+  row.querySelector(".remove-row").onclick = () => row.remove();
+  avListEl.appendChild(row);
+}
+function getMeetingSpaceRows() {
+  return [...document.querySelectorAll("#meetingSpaceRows .day-block")].map(block => ({
+    label: block.querySelector(".ms-label").value,
+    rooms: [...block.querySelectorAll(".room-card")].map(card => ({
+      roomLabel: card.querySelector(".room-label-input").value,
+      floorSet: card.querySelector(".ms-floorset").value,
+      maxSeats: card.querySelector(".ms-seats").value,
+      avNeeds: [...card.querySelectorAll(".av-row")].map(row => ({
+        name: row.querySelector(".av-name-select").value,
+        qty: row.querySelector(".av-qty").value,
+        otherText: row.querySelector(".av-other-text").value
+      })),
+      notes: card.querySelector(".ms-room-notes").value
+    }))
+  }));
+}
+document.getElementById("addMeetingDay").onclick = () => addMeetingDay();
+document.getElementById("autoGenMeeting").onclick = () => {
+  const d = firstDateOption();
+  if (!d || !d.start || !d.end) { alert("Fill in Date Option 1's start and end date first."); return; }
+  const spanDays = daysDiff(d.start, d.end) + 1;
+  if (spanDays < 1) { alert("End date must be on or after start date."); return; }
+  const wrap = document.getElementById("meetingSpaceRows");
+  wrap.innerHTML = "";
+  for (let i = 0; i < spanDays; i++) addMeetingDay({ label: `Day ${i+1} — ${fmtDate(addDaysISO(d.start,i))}`, rooms: [] });
+};
+
+// ---------- Concessions ----------
+// NOTE: placeholder list — update once the event planner provides the actual concession list.
+const CONCESSION_OPTIONS = [
+  "Comp Room Ratio","Staff Room Rate","Comp Suites","Room Upgrades at Group Rate",
+  "Airport Transfers","Welcome Amenity","Room Rebate","Comp Staff/Office F&B","Comp Meeting WiFi","Other"
+];
+function makeConcessionRows(rows) {
+  const wrap = document.getElementById("concessionRows");
+  wrap.innerHTML = "";
+  const vals = rows && rows.length ? rows : [{ concession: "", otherText: "", details: "" }];
+  vals.forEach(r => addConcessionRow(r));
+}
+function addConcessionRow(r) {
+  r = r || { concession: "", otherText: "", details: "" };
+  const wrap = document.getElementById("concessionRows");
+  const row = document.createElement("div");
+  row.className = "concession-row";
+  row.innerHTML = `
+    <div><label>Concession</label>
+      <select class="concession-select">${CONCESSION_OPTIONS.map(c=>`<option ${c===r.concession?"selected":""}>${c}</option>`).join("")}</select>
+    </div>
+    <div class="concession-other" style="${r.concession==='Other'?'':'display:none;'}"><label>Other — specify</label><input type="text" class="concession-other-input" value="${r.otherText||''}"></div>
+    <div><label>Details</label><input type="text" class="concession-details-input" value="${r.details||''}" placeholder="e.g. 1:40 ratio, specific terms..."></div>
+    <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
+  `;
+  const select = row.querySelector(".concession-select");
+  const otherWrap = row.querySelector(".concession-other");
+  select.addEventListener("change", () => { otherWrap.style.display = select.value === "Other" ? "block" : "none"; });
+  row.querySelector(".remove-row").onclick = () => row.remove();
+  wrap.appendChild(row);
+}
+function getConcessionRows() {
+  return [...document.querySelectorAll("#concessionRows .concession-row")].map(row => ({
+    concession: row.querySelector(".concession-select").value,
+    otherText: row.querySelector(".concession-other-input").value,
+    details: row.querySelector(".concession-details-input").value
+  }));
+}
+document.getElementById("addConcessionRow").onclick = () => addConcessionRow();
+
+// ---------- F&B ----------
+const MEAL_OPTIONS = {
+  breakfast: ["Hot Buffet","Continental","Plated","Boxed","Cold Buffet"],
+  lunch: ["Hot Buffet","Cold Buffet","Plated","Boxed"],
+  dinner: ["Hot Buffet","Cold Buffet","Plated","Boxed","Reception"]
+};
+const BEVERAGE_OPTIONS = ["Coffee","Decaf","Tea","Lemonade","Iced Tea","Soda","Water"];
+
+function makeFnbDays(days) {
+  const wrap = document.getElementById("fnbDays");
+  wrap.innerHTML = "";
+  (days && days.length ? days : []).forEach(d => addFnbDay(d));
+  if (!days || !days.length) addFnbDay();
+}
+function chipHtml(value, checked, groupClass) {
+  const id = "chip-" + Math.random().toString(36).slice(2);
+  return `<label class="chip" for="${id}"><input type="checkbox" id="${id}" class="${groupClass}" value="${value}" ${checked?"checked":""}><span>${value}</span></label>`;
+}
+function addFnbDay(d) {
+  d = d || { label: "", meals: {}, beverages: { options: [], timing: "all-day", mustHave: "nice" }, dietaryNotes: "" };
+  const wrap = document.getElementById("fnbDays");
+  const block = document.createElement("div");
+  block.className = "day-block";
+  const mealBlocks = ["breakfast","lunch","dinner"].map(meal => {
+    const mealData = d.meals && d.meals[meal] ? d.meals[meal] : { options: [], mustHave: "nice" };
+    const opts = MEAL_OPTIONS[meal].map(o => chipHtml(o, mealData.options.includes(o), "fnb-opt").replace('class="fnb-opt"', `class="fnb-opt" data-meal="${meal}"`)).join("");
+    const segId = "seg-" + Math.random().toString(36).slice(2);
+    return `
+      <div class="meal-block" data-meal="${meal}">
+        <h5>${meal.charAt(0).toUpperCase()+meal.slice(1)}</h5>
+        <div class="chip-grid">${opts}</div>
+        <div class="segmented">
+          <input type="radio" name="${segId}" id="${segId}-must" class="fnb-musthave" data-meal="${meal}" value="must" ${mealData.mustHave==="must"?"checked":""}><label for="${segId}-must">Must-have</label>
+          <input type="radio" name="${segId}" id="${segId}-nice" class="fnb-musthave" data-meal="${meal}" value="nice" ${mealData.mustHave!=="must"?"checked":""}><label for="${segId}-nice">Nice-to-have</label>
+        </div>
+      </div>`;
+  }).join("");
+  const bev = d.beverages || { options: [], timing: "all-day", mustHave: "nice" };
+  const bevOpts = BEVERAGE_OPTIONS.map(b => chipHtml(b, (bev.options||[]).includes(b), "fnb-bev")).join("");
+  const bevSegId = "bevseg-" + Math.random().toString(36).slice(2);
+  block.innerHTML = `
+    <div class="day-block-header">
+      <div class="day-label-wrap"><span class="pencil">&#9998;</span><input type="text" class="day-label-input fnb-label" value="${d.label}" placeholder="Click to rename day"></div>
+      <button type="button" class="btn-danger-ghost remove-row" title="Remove day">&times;</button>
+    </div>
+    ${mealBlocks}
+    <div class="meal-block">
+      <h5>Beverages</h5>
+      <div class="chip-grid">${bevOpts}</div>
+      <label style="margin-top:10px;">Timing</label>
+      <select class="fnb-bev-timing">
+        <option value="all-day" ${bev.timing==='all-day'?'selected':''}>All day</option>
+        <option value="am-only" ${bev.timing==='am-only'?'selected':''}>AM only</option>
+        <option value="pm-only" ${bev.timing==='pm-only'?'selected':''}>PM only</option>
+      </select>
+      <div class="segmented">
+        <input type="radio" name="${bevSegId}" id="${bevSegId}-must" class="fnb-bev-musthave" value="must" ${bev.mustHave==="must"?"checked":""}><label for="${bevSegId}-must">Must-have</label>
+        <input type="radio" name="${bevSegId}" id="${bevSegId}-nice" class="fnb-bev-musthave" value="nice" ${bev.mustHave!=="must"?"checked":""}><label for="${bevSegId}-nice">Nice-to-have</label>
+      </div>
+    </div>
+    <label>Known Dietary Notes</label>
+    <textarea class="fnb-dietary" placeholder="e.g. large percentage no pork/red meat">${d.dietaryNotes||""}</textarea>
+  `;
+  block.querySelector(".remove-row").onclick = () => block.remove();
+  wrap.appendChild(block);
+}
+function getFnbDays() {
+  return [...document.querySelectorAll("#fnbDays .day-block")].map(block => {
+    const label = block.querySelector(".fnb-label").value;
+    const meals = {};
+    ["breakfast","lunch","dinner"].forEach(meal => {
+      const mb = block.querySelector(`.meal-block[data-meal="${meal}"]`);
+      const options = [...mb.querySelectorAll(".fnb-opt:checked")].map(c => c.value);
+      const mustHave = mb.querySelector(".fnb-musthave:checked")?.value || "nice";
+      meals[meal] = { options, mustHave };
+    });
+    const beverages = {
+      options: [...block.querySelectorAll(".fnb-bev:checked")].map(c => c.value),
+      timing: block.querySelector(".fnb-bev-timing").value,
+      mustHave: block.querySelector(".fnb-bev-musthave:checked")?.value || "nice"
+    };
+    const dietaryNotes = block.querySelector(".fnb-dietary").value;
+    return { label, meals, beverages, dietaryNotes };
+  });
+}
+document.getElementById("addFnbDay").onclick = () => addFnbDay();
+
+// ---------- Form <-> data ----------
+function loadFormFromData(data) {
+  data = data || {};
+  document.getElementById("groupName").value = data.groupName || "";
+  document.getElementById("acronym").value = data.acronym || "";
+  document.getElementById("eventName").value = data.eventName || "";
+  document.getElementById("websiteLink").value = data.websiteLink || "";
+  document.getElementById("rfpDueDate").value = data.rfpDueDate || "";
+  window._logoAutoUrl = data.logoUrl || logoUrlForAcronym(data.acronym || "");
+  window._logoDataUrl = data.logoDataUrl || null;
+  renderLogoPreview();
+
+  renderPriorityTable(data.sectionPriorities);
+
+  makeCityRows(data.cities);
+  makeDateRows(data.dates);
+  document.getElementById("patternFlexible").checked = !!data.patternFlexible;
+  document.getElementById("noFriday").checked = !!data.noFriday;
+  document.getElementById("patternNotes").value = data.patternNotes || "";
+
+  document.getElementById("attendanceType").value = data.attendanceType || "range";
+  document.getElementById("attendanceMin").value = data.attendanceMin ?? "";
+  document.getElementById("attendanceMax").value = data.attendanceMax ?? "";
+  document.getElementById("attendanceScope").value = data.attendanceScope || "total";
+
+  makeRoomRows(data.guestRooms);
+  document.getElementById("colocation").value = data.colocation || "";
+  makeMeetingSpaceRows(data.meetingSpace);
+  makeConcessionRows(data.concessions);
+  makeFnbDays(data.fnb);
+
+  document.getElementById("siteInspection").value = data.siteInspection || "before-contract";
+  document.getElementById("exhibitsNeeded").checked = !!(data.exhibits && data.exhibits.needed);
+  document.getElementById("exhibitStandardCount").value = (data.exhibits && data.exhibits.standardCount) ?? "";
+  document.getElementById("exhibitPremiumCount").value = (data.exhibits && data.exhibits.premiumCount) ?? "";
+  document.getElementById("exhibitPlacement").value = (data.exhibits && data.exhibits.placement) || "";
+
+  document.getElementById("fnbBudget").value = data.fnbBudget ?? "";
+  document.getElementById("avBudget").value = data.avBudget ?? "";
+}
+function collectFormData() {
+  return {
+    groupName: document.getElementById("groupName").value,
+    acronym: document.getElementById("acronym").value,
+    eventName: document.getElementById("eventName").value,
+    websiteLink: document.getElementById("websiteLink").value,
+    rfpDueDate: document.getElementById("rfpDueDate").value,
+    logoUrl: window._logoAutoUrl || null,
+    logoDataUrl: window._logoDataUrl || null,
+    sectionPriorities: getPriorityValues(),
+    cities: getCityRows(),
+    dates: getDateRows(),
+    patternFlexible: document.getElementById("patternFlexible").checked,
+    noFriday: document.getElementById("noFriday").checked,
+    patternNotes: document.getElementById("patternNotes").value,
+    attendanceType: document.getElementById("attendanceType").value,
+    attendanceMin: document.getElementById("attendanceMin").value,
+    attendanceMax: document.getElementById("attendanceMax").value,
+    attendanceScope: document.getElementById("attendanceScope").value,
+    guestRooms: getRoomRows(),
+    colocation: document.getElementById("colocation").value,
+    meetingSpace: getMeetingSpaceRows(),
+    concessions: getConcessionRows(),
+    fnb: getFnbDays(),
+    siteInspection: document.getElementById("siteInspection").value,
+    exhibits: {
+      needed: document.getElementById("exhibitsNeeded").checked,
+      standardCount: document.getElementById("exhibitStandardCount").value,
+      premiumCount: document.getElementById("exhibitPremiumCount").value,
+      placement: document.getElementById("exhibitPlacement").value
+    },
+    fnbBudget: document.getElementById("fnbBudget").value,
+    avBudget: document.getElementById("avBudget").value
+  };
+}
+
+// ---------- API calls ----------
+async function loadRfpList() {
+  const res = await fetch(`${API_BASE}/api/rfps`, { credentials: "include" });
+  if (!res.ok) return;
+  rfpSummaries = await res.json();
+  renderRfpList();
+}
+function renderRfpList() {
+  const ul = document.getElementById("rfpList");
+  ul.innerHTML = "";
+  rfpSummaries.forEach(r => {
+    const li = document.createElement("li");
+    li.className = currentRecord && currentRecord.id === r.id ? "active" : "";
+    li.innerHTML = `<div class="rfp-name">${r.groupName || "(untitled)"}</div><div class="rfp-event">${r.eventName || ""}</div><div class="status-row status-${r.status}"><span class="status-dot"></span><span class="status-label">${r.status}</span></div>`;
+    li.onclick = () => openRfp(r.id);
+    ul.appendChild(li);
+  });
+}
+async function openRfp(id) {
+  const res = await fetch(`${API_BASE}/api/rfps/${id}`, { credentials: "include" });
+  if (!res.ok) { alert("Could not load that RFP."); return; }
+  currentRecord = await res.json();
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("formArea").style.display = "block";
+  loadFormFromData(currentRecord.data);
+  renderNotes(); renderHistory(); renderRfpList();
+}
+function startNewRfp() {
+  currentRecord = null;
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("formArea").style.display = "block";
+  loadFormFromData({});
+  document.getElementById("notesList").innerHTML = "<p class='small-note'>Save the RFP first to start adding notes.</p>";
+  document.getElementById("historyList").innerHTML = "<p class='small-note'>Save the RFP first to see version history.</p>";
+  switchTab("intake");
+  renderRfpList();
+  document.getElementById("sidebarAside").classList.add("collapsed");
+}
+document.getElementById("newRfpBtn").onclick = startNewRfp;
+
+document.getElementById("intakeForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const status = document.getElementById("saveStatus");
+  status.textContent = "Saving…"; status.className = "";
+  const payload = collectFormData();
+  try {
+    let res;
+    if (currentRecord) {
+      res = await fetch(`${API_BASE}/api/rfps/${currentRecord.id}`, {
+        method: "PUT", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(`${API_BASE}/api/rfps`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    }
+    if (!res.ok) throw new Error(await res.text());
+    currentRecord = await res.json();
+    status.textContent = `Saved — version ${currentRecord.currentVersion}`; status.className = "ok";
+    await loadRfpList(); renderHistory(); renderNotes();
+  } catch (err) { status.textContent = "Save failed — check console / login status."; status.className = "err"; console.error(err); }
+});
+
+// ---------- Notes ----------
+function renderNotes() {
+  const list = document.getElementById("notesList");
+  if (!currentRecord) { list.innerHTML = ""; return; }
+  const notes = currentRecord.notes || [];
+  if (!notes.length) { list.innerHTML = "<p class='small-note'>No notes yet.</p>"; return; }
+  list.innerHTML = notes.slice().reverse().map(n => `<div class="note-entry"><div class="note-meta">${n.user} &middot; ${new Date(n.timestamp).toLocaleString()}</div><div>${escapeHtml(n.comment)}</div></div>`).join("");
+}
+document.getElementById("addNoteBtn").onclick = async () => {
+  if (!currentRecord) { alert("Save the RFP first before adding notes."); return; }
+  const text = document.getElementById("newNoteText").value.trim();
+  if (!text) return;
+  const res = await fetch(`${API_BASE}/api/rfps/${currentRecord.id}/notes`, {
+    method: "POST", credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ comment: text })
+  });
+  if (!res.ok) return;
+  currentRecord = await res.json();
+  document.getElementById("newNoteText").value = "";
+  renderNotes();
+};
+
+// ---------- Version history ----------
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  if (!currentRecord) { list.innerHTML = ""; return; }
+  const versions = currentRecord.versions || [];
+  list.innerHTML = versions.slice().reverse().map((v, idx) => {
+    const prev = versions[versions.length - 2 - idx];
+    const diffHtml = prev ? diffVersions(prev.data, v.data) : "<div class='small-note'>Initial version.</div>";
+    return `<details class="version-entry"><summary>Version ${v.version} — ${v.savedBy} · ${new Date(v.savedAt).toLocaleString()}</summary><div>${diffHtml}</div></details>`;
+  }).join("");
+}
+function diffVersions(oldData, newData) {
+  const keys = new Set([...Object.keys(oldData||{}), ...Object.keys(newData||{})]);
+  let out = "";
+  keys.forEach(k => {
+    const a = JSON.stringify(oldData ? oldData[k] : undefined);
+    const b = JSON.stringify(newData ? newData[k] : undefined);
+    if (a !== b) out += `<div class="diff-line"><span class="diff-field">${k}:</span> <span class="diff-old">${escapeHtml(a||"—")}</span> &rarr; <span class="diff-new">${escapeHtml(b||"—")}</span></div>`;
+  });
+  return out || "<div class='small-note'>No field changes detected.</div>";
+}
+function escapeHtml(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// ---------- Tabs ----------
+document.querySelectorAll(".tab-btn").forEach(btn => { btn.onclick = () => switchTab(btn.dataset.tab); });
+function switchTab(tab) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.id === "tab-"+tab));
+}
+
+(async function init() {
+  populateGroupSelect();
+  renderPriorityTable();
+  const ok = await checkAuth();
+  if (ok) await loadRfpList();
+})();
+</script>
+</body>
+</html>
