@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Events RFP — Staff Intake</title>
-<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
 <style>
   :root {
     --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
@@ -465,6 +464,25 @@ document.getElementById("logoUpload").addEventListener("change", (e) => {
   reader.onload = () => { window._logoDataUrl = reader.result; renderLogoPreview(); };
   reader.readAsDataURL(file);
 });
+// ---------- Event Logo (separate from Group Logo, upload-only) ----------
+function renderEventLogoPreview() {
+  const img = document.getElementById("eventLogoPreview");
+  const missing = document.getElementById("eventLogoMissing");
+  const resetBtn = document.getElementById("resetEventLogoBtn");
+  const src = window._eventLogoDataUrl || "";
+  resetBtn.style.display = src ? "inline-block" : "none";
+  if (!src) { img.style.display = "none"; missing.style.display = "inline"; return; }
+  img.style.display = "inline-block"; missing.style.display = "none";
+  img.src = src;
+}
+document.getElementById("resetEventLogoBtn").onclick = () => { window._eventLogoDataUrl = null; renderEventLogoPreview(); };
+document.getElementById("eventLogoUpload").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { window._eventLogoDataUrl = reader.result; renderEventLogoPreview(); };
+  reader.readAsDataURL(file);
+});
 
 // ---------- Section priorities ----------
 const PRIORITY_SECTIONS = [
@@ -881,6 +899,8 @@ function loadFormFromData(data) {
   window._logoAutoUrl = data.logoUrl || logoUrlForAcronym(data.acronym || "");
   window._logoDataUrl = data.logoDataUrl || null;
   renderLogoPreview();
+  window._eventLogoDataUrl = data.eventLogoDataUrl || null;
+  renderEventLogoPreview();
 
   renderPriorityTable(data.sectionPriorities);
 
@@ -919,6 +939,7 @@ function collectFormData() {
     rfpDueDate: document.getElementById("rfpDueDate").value,
     logoUrl: window._logoAutoUrl || null,
     logoDataUrl: window._logoDataUrl || null,
+    eventLogoDataUrl: window._eventLogoDataUrl || null,
     sectionPriorities: getPriorityValues(),
     cities: getCityRows(),
     dates: getDateRows(),
