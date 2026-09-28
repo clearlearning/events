@@ -228,6 +228,14 @@
               <div class="small-note">Auto-fills from the group's logo file once a group is selected. Upload below only if it needs to be overridden.</div>
               <input type="file" id="logoUpload" accept="image/*" style="margin-top:8px;">
               <button type="button" class="btn-ghost" id="resetLogoBtn" style="display:none;">Reset to default logo</button>
+              <label style="margin-top:14px; display:block;">Event Logo</label>
+              <div class="logo-preview-wrap">
+                <img id="eventLogoPreview" style="display:none;">
+                <span id="eventLogoMissing" class="logo-missing">No event logo uploaded yet — the public page will use the group logo until one is added.</span>
+              </div>
+              <div class="small-note">This is the specific event's own logo (e.g. this year's conference branding), not the group logo above. Used as the main image on the public RFP page and its card. Falls back to the group logo if not uploaded.</div>
+              <input type="file" id="eventLogoUpload" accept="image/*" style="margin-top:8px;">
+              <button type="button" class="btn-ghost" id="resetEventLogoBtn" style="display:none;">Remove event logo</button>
 
               <label>RFP Response Report Due Date *</label>
               <input type="date" id="rfpDueDate" required>
