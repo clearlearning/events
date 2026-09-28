@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Events RFP — Staff Intake (Preview)</title>
+<title>Events RFP — Staff Intake</title>
 <style>
   :root {
     --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
@@ -143,6 +143,7 @@
 
   .actions-bar { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
   #saveStatus { font-size: 0.85rem; } #saveStatus.ok { color: #2E7D4F; } #saveStatus.err { color: #B3261E; }
+  .small-note.ok { color: #2E7D4F; } .small-note.err { color: #B3261E; }
 
   .panel-card { background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
   .note-entry { border-left: 3px solid var(--gold); padding: 8px 0 8px 14px; margin-bottom: 10px; }
@@ -161,7 +162,7 @@
 
 <header>
   <div class="header-title">
-    <span class="eyebrow">Request for Event Proposal — Preview Mode</span>
+    <span class="eyebrow">Request for Event Proposal</span>
     <h1>Internal Intake Form</h1>
   </div>
   <div class="identity" id="identityBlock" style="display:none;">
@@ -185,6 +186,17 @@
     <div id="emptyState">Select an RFP from the list, or click "+ New RFP" to start one.</div>
 
     <div id="formArea" style="display:none;">
+      <div class="status-bar" id="statusBar" style="display:none; align-items:center; gap:10px; margin-bottom:14px;">
+        <span style="font-size:0.85rem; color: var(--charcoal-soft);">Status:</span>
+        <span id="statusBadge" style="display:none; align-items:center; gap:6px;"><span class="status-dot"></span><span class="status-label"></span></span>
+        <select id="statusSelect" style="display:none; width:auto;">
+          <option value="draft">Draft</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+          <option value="awarded">Awarded</option>
+        </select>
+        <span id="statusSaveMsg" class="small-note"></span>
+      </div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="intake">Intake Form</button>
         <button class="tab-btn" data-tab="notes">Notes</button>
@@ -948,7 +960,7 @@ async function openRfp(id) {
   document.getElementById("emptyState").style.display = "none";
   document.getElementById("formArea").style.display = "block";
   loadFormFromData(currentRecord.data);
-  renderNotes(); renderHistory(); renderRfpList();
+  renderNotes(); renderHistory(); renderRfpList(); renderStatusControl();
 }
 function startNewRfp() {
   currentRecord = null;
@@ -959,8 +971,57 @@ function startNewRfp() {
   document.getElementById("historyList").innerHTML = "<p class='small-note'>Save the RFP first to see version history.</p>";
   switchTab("intake");
   renderRfpList();
+  renderStatusControl();
   document.getElementById("sidebarAside").classList.add("collapsed");
 }
+
+// ---------- Status control ----------
+// Everyone sees status as a read-only badge. Only admins and planners
+// (Candela) get an actual dropdown that can change it — enforced again
+// server-side, this is just so people aren't tempted to click something
+// that's going to get rejected anyway.
+function renderStatusControl() {
+  const bar = document.getElementById("statusBar");
+  const badge = document.getElementById("statusBadge");
+  const select = document.getElementById("statusSelect");
+  const msg = document.getElementById("statusSaveMsg");
+  msg.textContent = ""; msg.className = "small-note";
+
+  if (!currentRecord) { bar.style.display = "none"; return; }
+  bar.style.display = "flex";
+
+  const canEdit = currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner);
+  if (canEdit) {
+    badge.style.display = "none";
+    select.style.display = "inline-block";
+    select.value = currentRecord.status;
+  } else {
+    select.style.display = "none";
+    badge.style.display = "inline-flex";
+    badge.className = "status-" + currentRecord.status;
+    badge.querySelector(".status-label").textContent = currentRecord.status;
+  }
+}
+document.getElementById("statusSelect").addEventListener("change", async (e) => {
+  const newStatus = e.target.value;
+  const msg = document.getElementById("statusSaveMsg");
+  msg.textContent = "Saving…"; msg.className = "small-note";
+  try {
+    const res = await fetch(`${API_BASE}/api/rfps/${currentRecord.id}/status`, {
+      method: "PUT", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    currentRecord = await res.json();
+    msg.textContent = "Saved"; msg.className = "small-note ok";
+    await loadRfpList();
+  } catch (err) {
+    e.target.value = currentRecord.status;
+    msg.textContent = "Couldn't update status."; msg.className = "small-note err";
+    console.error(err);
+  }
+});
 document.getElementById("newRfpBtn").onclick = startNewRfp;
 
 document.getElementById("intakeForm").addEventListener("submit", async (e) => {
