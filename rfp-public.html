@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RFP — CLEAR Events</title>
-<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
+  <link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
 <style>
   :root {
     --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
@@ -95,14 +95,19 @@ async function loadRfp() {
   const slug = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop());
   try {
     const res = await fetch(`/api/public/rfps/${encodeURIComponent(slug)}`);
-    if (!res.ok) throw new Error("not found");
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "");
+      throw new Error(`Server responded ${res.status} for slug "${slug}". ${bodyText}`);
+    }
     const r = await res.json();
     render(r);
     document.getElementById("loadingState").style.display = "none";
     document.getElementById("content").style.display = "block";
   } catch (e) {
     document.getElementById("loadingState").style.display = "none";
-    document.getElementById("errorState").style.display = "block";
+    const errEl = document.getElementById("errorState");
+    errEl.style.display = "block";
+    errEl.innerHTML = `This RFP isn't currently open, or the link is incorrect.<br><span style="font-size:0.75rem; opacity:0.8;">${esc(e.message)}</span>`;
   }
 }
 
