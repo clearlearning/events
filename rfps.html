@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
 <style>
   :root {
-    --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838; 
+    --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
     --charcoal: #2B2B2B; --charcoal-soft: #6B6660; --blue: #084D78;
     --bg: #F7F6F3; --card: #ffffff; --border: #E3DFD8; --border-soft: #EEEBE5;
     --radius: 10px; --shadow: 0 1px 2px rgba(30,20,10,0.04), 0 4px 14px rgba(30,20,10,0.05);
@@ -20,10 +20,11 @@
   main { max-width: 1120px; margin: 0 auto; padding: 28px; }
   #emptyState { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--charcoal-soft); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
-  .rfp-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; transition: transform .1s ease, box-shadow .1s ease; }
+  .rfp-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 0 0 16px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; transition: transform .1s ease, box-shadow .1s ease; overflow: hidden; }
   .rfp-card:hover { transform: translateY(-2px); box-shadow: 0 4px 18px rgba(30,20,10,0.1); }
-  .rfp-logo-wrap { height: 56px; display: flex; align-items: center; }
-  .rfp-logo-wrap img { max-height: 56px; max-width: 160px; object-fit: contain; }
+  .rfp-logo-wrap { width: 100%; height: 130px; background: var(--border-soft); display: flex; align-items: center; justify-content: center; }
+  .rfp-logo-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+  .rfp-card-body { padding: 0 18px; display: flex; flex-direction: column; gap: 10px; }
   .rfp-group { font-size: 0.75rem; color: var(--charcoal-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
   .rfp-event { font-size: 1.05rem; font-weight: 700; color: var(--charcoal); line-height: 1.3; }
   .rfp-due { font-size: 0.82rem; color: var(--blue); font-weight: 600; }
@@ -54,10 +55,12 @@ async function loadOpenRfps() {
       return `
       <a class="rfp-card" href="/rfps/${encodeURIComponent(r.slug)}">
         <div class="rfp-logo-wrap">${cardImg ? `<img src="${cardImg}" alt="${r.eventName || r.groupName} logo">` : ""}</div>
-        <div class="rfp-group">${r.groupName || ""}</div>
-        <div class="rfp-event">${r.eventName || "(untitled event)"}</div>
-        ${r.dates && r.dates[0] ? `<div class="rfp-dates">${fmtDateRange(r.dates[0])}</div>` : ""}
-        ${r.rfpDueDate ? `<div class="rfp-due">Proposals due ${fmtDate(r.rfpDueDate)}</div>` : ""}
+        <div class="rfp-card-body">
+          <div class="rfp-group">${r.groupName || ""}</div>
+          <div class="rfp-event">${r.eventName || "(untitled event)"}</div>
+          ${r.dates && r.dates[0] ? `<div class="rfp-dates">${fmtDateRange(r.dates[0])}</div>` : ""}
+          ${r.rfpDueDate ? `<div class="rfp-due">Proposals due ${fmtDate(r.rfpDueDate)}</div>` : ""}
+        </div>
       </a>
     `;
     }).join("");
