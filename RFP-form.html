@@ -423,7 +423,7 @@ function populateGroupSelect() {
   sel.innerHTML = `<option value="">— Select a group —</option>` + GROUP_PRESETS.map(g => `<option value="${g.name}">${g.name}</option>`).join("");
 }
 function logoUrlForAcronym(acronym) {
-  return acronym ? `https://events.clear-hq.org/${acronym.toUpperCase()}-logo.png` : "";
+  return acronym ? `window.location.origin/${acronym.toUpperCase()}-logo.png` : "";
 }
 function renderLogoPreview() {
   const img = document.getElementById("logoPreview");
