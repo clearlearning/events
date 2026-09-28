@@ -9,6 +9,9 @@
  */
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  url.pathname = "/rfp-public.html";
+  // Request the clean path (no .html) — Pages' own clean-URL handling
+  // redirects internal .html requests, and that redirect was leaking
+  // through to the browser, stripping the slug off the address bar.
+  url.pathname = "/rfp-public";
   return context.env.ASSETS.fetch(new Request(url, context.request));
 }
