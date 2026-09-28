@@ -9,9 +9,21 @@
  */
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  // Request the clean path (no .html) — Pages' own clean-URL handling
-  // redirects internal .html requests, and that redirect was leaking
-  // through to the browser, stripping the slug off the address bar.
-  url.pathname = "/rfp-public";
-  return context.env.ASSETS.fetch(new Request(url, context.request));
+  url.pathname = "/rfp-public.html";
+
+  // Cloudflare Pages canonicalizes .html <-> clean-URL internally, and
+  // which direction it redirects can vary. Rather than guess, follow
+  // whatever redirect it hands back ourselves (up to a few hops) so the
+  // final HTML is what we return — the browser never sees the redirect,
+  // so the slug in the address bar (/rfps/{slug}) is never disturbed.
+  let res = await context.env.ASSETS.fetch(new Request(url.toString()));
+  let hops = 0;
+  while (res.status >= 300 && res.status < 400 && hops < 3) {
+    const location = res.headers.get("Location");
+    if (!location) break;
+    const nextUrl = new URL(location, url);
+    res = await context.env.ASSETS.fetch(new Request(nextUrl.toString()));
+    hops++;
+  }
+  return res;
 }
