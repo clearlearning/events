@@ -31,6 +31,14 @@ const ADMIN_EMAILS = [
   "avance@clearhq.org"
 ];
 
+// Planner-level access (currently just Candela) — allowed to change an
+// RFP's status (draft/open/closed/awarded) in addition to admins.
+const PLANNER_EMAILS = [
+  "cgomez@clearhq.org",
+  "candela@thenrwc.org",
+  "candela.gomez@nasasps.org"
+];
+
 // This Worker is bound as a ROUTE on portal.clear-hq.org/api/* (same
 // domain as the form itself), not a separate custom domain. That means
 // every request here is same-origin from the form's point of view —
@@ -60,8 +68,9 @@ function getIdentity(request) {
   const normalizedEmail = email.trim().toLowerCase();
   const name = STAFF_DIRECTORY[normalizedEmail] || normalizedEmail;
   const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
+  const isPlanner = PLANNER_EMAILS.includes(normalizedEmail);
 
-  return { email: normalizedEmail, name, isAdmin };
+  return { email: normalizedEmail, name, isAdmin, isPlanner };
 }
 
 // ---------------- ID generator ----------------
@@ -221,8 +230,13 @@ export async function onRequest(context) {
 
     // ---- PUT /api/rfps/:id/status ----
     // Moves a record through draft -> open -> closed -> awarded.
+    // Restricted to admins and planners (Candela) — everyone else can
+    // see status but not change it.
     const statusMatch = path.match(/^\/api\/rfps\/([^/]+)\/status$/);
     if (statusMatch && method === "PUT") {
+      if (!identity.isAdmin && !identity.isPlanner) {
+        return errorResponse("Only admins or the event planner can change status", 403);
+      }
       const id = statusMatch[1];
       const raw = await env.RFP_DATA.get(`rfp:${id}`);
       if (!raw) return errorResponse("Not found", 404);
