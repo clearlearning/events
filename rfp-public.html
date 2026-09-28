@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RFP — CLEAR Events</title>
+<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
+<style>
+  :root {
+    --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
+    --charcoal: #2B2B2B; --charcoal-soft: #6B6660; --blue: #084D78;
+    --bg: #F7F6F3; --card: #ffffff; --border: #E3DFD8; --border-soft: #EEEBE5;
+    --radius: 10px; --shadow: 0 1px 2px rgba(30,20,10,0.04), 0 4px 14px rgba(30,20,10,0.05);
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Open Sans', 'Trebuchet MS', sans-serif; background: var(--bg); color: var(--charcoal); margin: 0; -webkit-font-smoothing: antialiased; }
+  header { background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%); color: #fff; padding: 22px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  header .back-link { color: rgba(255,255,255,0.75); font-size: 0.82rem; text-decoration: none; }
+  .btn-download { background: var(--gold); color: var(--burgundy-dark); border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+  main { max-width: 860px; margin: 0 auto; padding: 28px; }
+  #loadingState, #errorState { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--charcoal-soft); }
+  #errorState { display: none; }
+  #content { display: none; }
+  .title-block { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+  .title-block img { max-height: 64px; max-width: 180px; object-fit: contain; }
+  .title-block .group { font-size: 0.8rem; color: var(--charcoal-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+  .title-block h1 { margin: 2px 0 0; font-size: 1.5rem; }
+  .org-badge { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .org-badge img { max-height: 22px; max-width: 90px; object-fit: contain; }
+  .org-badge span { font-size: 0.72rem; color: var(--charcoal-soft); }
+  .due-banner { background: #fff; border-left: 4px solid var(--blue); border-radius: 6px; padding: 12px 16px; margin-bottom: 22px; font-size: 0.9rem; }
+  .due-banner strong { color: var(--blue); }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
+  .section h2 { font-size: 1rem; margin: 0 0 12px; color: var(--burgundy); }
+  .kv-row { display: flex; gap: 10px; font-size: 0.9rem; padding: 4px 0; }
+  .kv-row .k { color: var(--charcoal-soft); min-width: 160px; flex-shrink: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border-soft); }
+  th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+  .chip { display: inline-block; background: var(--border-soft); border-radius: 20px; padding: 2px 10px; font-size: 0.78rem; margin: 2px 4px 2px 0; }
+  .must-tag { font-size: 0.72rem; font-weight: 700; padding: 1px 8px; border-radius: 20px; margin-left: 6px; }
+  .must-tag.must { background: rgba(100,9,44,0.1); color: var(--burgundy); }
+  .must-tag.nice { background: rgba(8,77,120,0.08); color: var(--blue); }
+  .day-block { margin-bottom: 14px; }
+  .day-block:last-child { margin-bottom: 0; }
+  .day-block h3 { font-size: 0.88rem; margin: 0 0 6px; }
+  .small-note { font-size: 0.8rem; color: var(--charcoal-soft); }
+  @media print {
+    header .back-link, .btn-download { display: none; }
+    body { background: #fff; }
+    .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="back-link" href="/rfps">&larr; All open RFPs</a>
+  <button class="btn-download" onclick="window.print()">Download PDF</button>
+</header>
+<main>
+  <div id="loadingState">Loading…</div>
+  <div id="errorState">This RFP isn't currently open, or the link is incorrect.</div>
+  <div id="content">
+    <div class="title-block">
+      <img id="logoImg" style="display:none;">
+      <div>
+        <div class="group" id="fGroup"></div>
+        <h1 id="fEventName"></h1>
+        <div class="org-badge" id="orgBadge" style="display:none;">
+          <img id="orgBadgeImg">
+          <span id="orgBadgeText"></span>
+        </div>
+      </div>
+    </div>
+    <div class="due-banner" id="dueBanner" style="display:none;"></div>
+
+    <div class="section" id="secCities"><h2>Preferred Cities</h2><div id="citiesBody"></div></div>
+    <div class="section" id="secDates"><h2>Preferred Dates</h2><div id="datesBody"></div></div>
+    <div class="section" id="secAttendance"><h2>Attendance</h2><div id="attendanceBody"></div></div>
+    <div class="section" id="secRooms"><h2>Guest Room Needs</h2><div id="roomsBody"></div></div>
+    <div class="section" id="secMeeting"><h2>Meeting Space Needs</h2><div id="meetingBody"></div></div>
+    <div class="section" id="secConcessions"><h2>Must-Have Concessions</h2><div id="concessionsBody"></div></div>
+    <div class="section" id="secFnb"><h2>Food &amp; Beverage</h2><div id="fnbBody"></div></div>
+    <div class="section" id="secSite"><h2>Site Inspection</h2><div id="siteBody"></div></div>
+    <div class="section" id="secExhibits"><h2>Exhibitor &amp; Sponsor Space</h2><div id="exhibitsBody"></div></div>
+  </div>
+</main>
+
+<script>
+function fmtDate(iso) { if (!iso) return ""; return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+function hide(id) { document.getElementById(id).style.display = "none"; }
+
+async function loadRfp() {
+  const slug = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop());
+  try {
+    const res = await fetch(`/api/public/rfps/${encodeURIComponent(slug)}`);
+    if (!res.ok) throw new Error("not found");
+    const r = await res.json();
+    render(r);
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("content").style.display = "block";
+  } catch (e) {
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("errorState").style.display = "block";
+  }
+}
+
+function render(r) {
+  document.title = `${r.eventName || "RFP"} — CLEAR Events`;
+  document.getElementById("fGroup").textContent = r.groupName || "";
+  document.getElementById("fEventName").textContent = r.eventName || "(untitled event)";
+  const heroLogo = r.eventLogoUrl || r.logoUrl;
+  if (heroLogo) {
+    const img = document.getElementById("logoImg");
+    img.src = heroLogo; img.style.display = "block";
+  }
+  // If we're leading with the event logo and there's also a group logo,
+  // show it as a small secondary badge so the org still gets credit.
+  if (r.eventLogoUrl && r.logoUrl) {
+    document.getElementById("orgBadge").style.display = "flex";
+    document.getElementById("orgBadgeImg").src = r.logoUrl;
+    document.getElementById("orgBadgeText").textContent = `Presented by ${r.groupName || "the group"}`;
+  }
+  if (r.rfpDueDate) {
+    const banner = document.getElementById("dueBanner");
+    banner.style.display = "block";
+    banner.innerHTML = `Proposals are due by <strong>${fmtDate(r.rfpDueDate)}</strong>`;
+  }
+
+  // Cities
+  if (r.cities && r.cities.length) {
+    document.getElementById("citiesBody").innerHTML = r.cities
+      .sort((a,b) => a.rank - b.rank)
+      .map(c => `<span class="chip">#${c.rank} ${esc(c.name)}</span>`).join("");
+  } else hide("secCities");
+
+  // Dates
+  if (r.dates && r.dates.length) {
+    document.getElementById("datesBody").innerHTML = r.dates
+      .sort((a,b) => a.rank - b.rank)
+      .map(d => `<div class="kv-row"><span class="k">Option ${d.rank}</span><span>${fmtDate(d.start)} – ${fmtDate(d.end)}</span></div>`).join("")
+      + (r.patternNotes ? `<div class="small-note" style="margin-top:8px;">${esc(r.patternNotes)}</div>` : "")
+      + `<div class="small-note" style="margin-top:4px;">${r.patternFlexible ? "Dates are flexible. " : ""}${r.noFriday ? "No Friday start preferred." : ""}</div>`;
+  } else hide("secDates");
+
+  // Attendance
+  if (r.attendanceType) {
+    const rangeText = r.attendanceType === "range"
+      ? `${r.attendanceMin || "?"}–${r.attendanceMax || "?"}`
+      : (r.attendanceMin || r.attendanceMax || "?");
+    document.getElementById("attendanceBody").innerHTML =
+      `<div class="kv-row"><span class="k">Expected attendance</span><span>${esc(rangeText)} (${esc(r.attendanceScope || "")})</span></div>`;
+  } else hide("secAttendance");
+
+  // Guest rooms
+  if (r.guestRooms && r.guestRooms.length) {
+    document.getElementById("roomsBody").innerHTML = `<table><tr><th>Night</th><th>Rooms</th><th>Rate</th></tr>` +
+      r.guestRooms.map(g => `<tr><td>${esc(g.label)}</td><td>${esc(g.rooms)}</td><td>${g.rate ? "$" + esc(g.rate) : ""}</td></tr>`).join("") +
+      `</table>`;
+  } else hide("secRooms");
+
+  // Meeting space
+  if (r.meetingSpace && r.meetingSpace.length) {
+    document.getElementById("meetingBody").innerHTML =
+      (r.colocation ? `<div class="kv-row"><span class="k">Colocation</span><span>${esc(r.colocation)}</span></div>` : "") +
+      r.meetingSpace.map(day => `
+        <div class="day-block">
+          <h3>${esc(day.label)}</h3>
+          ${(day.rooms || []).map(room => `
+            <div class="kv-row"><span class="k">${esc(room.roomLabel || "Room")}</span>
+              <span>${esc(room.floorSet || "")}${room.maxSeats ? " · up to " + esc(room.maxSeats) + " seats" : ""}</span></div>
+            ${(room.avNeeds || []).filter(a => a.name).map(a => `<span class="chip">${esc(a.name)}${a.qty ? " × " + esc(a.qty) : ""}${a.name === "Other" && a.otherText ? ": " + esc(a.otherText) : ""}</span>`).join("")}
+            ${room.notes ? `<div class="small-note">${esc(room.notes)}</div>` : ""}
+          `).join("")}
+        </div>
+      `).join("");
+  } else hide("secMeeting");
+
+  // Concessions
+  if (r.concessions && r.concessions.length && r.concessions.some(c => c.concession)) {
+    document.getElementById("concessionsBody").innerHTML = r.concessions
+      .filter(c => c.concession)
+      .map(c => `<div class="kv-row"><span class="k">${esc(c.concession)}${c.concession === "Other" && c.otherText ? ": " + esc(c.otherText) : ""}</span><span>${esc(c.details || "")}</span></div>`).join("");
+  } else hide("secConcessions");
+
+  // F&B
+  if (r.fnb && r.fnb.length) {
+    document.getElementById("fnbBody").innerHTML = r.fnb.map(day => `
+      <div class="day-block">
+        <h3>${esc(day.label)}</h3>
+        ${["breakfast","lunch","dinner"].map(meal => {
+          const m = day.meals && day.meals[meal];
+          if (!m || !m.options || !m.options.length) return "";
+          return `<div class="kv-row"><span class="k" style="text-transform:capitalize;">${meal}</span><span>${m.options.map(o => `<span class="chip">${esc(o)}</span>`).join("")}<span class="must-tag ${m.mustHave}">${m.mustHave === "must" ? "Must-have" : "Nice-to-have"}</span></span></div>`;
+        }).join("")}
+        ${day.beverages && day.beverages.options && day.beverages.options.length ? `<div class="kv-row"><span class="k">Beverages</span><span>${day.beverages.options.map(o => `<span class="chip">${esc(o)}</span>`).join("")}<span class="must-tag ${day.beverages.mustHave}">${day.beverages.mustHave === "must" ? "Must-have" : "Nice-to-have"}</span></span></div>` : ""}
+        ${day.dietaryNotes ? `<div class="small-note">${esc(day.dietaryNotes)}</div>` : ""}
+      </div>
+    `).join("");
+  } else hide("secFnb");
+
+  // Site inspection
+  if (r.siteInspection) {
+    document.getElementById("siteBody").innerHTML = `<div class="kv-row"><span>${esc(r.siteInspection)}</span></div>`;
+  } else hide("secSite");
+
+  // Exhibits
+  if (r.exhibits && r.exhibits.needed) {
+    document.getElementById("exhibitsBody").innerHTML =
+      `<div class="kv-row"><span class="k">Standard booths</span><span>${esc(r.exhibits.standardCount || "—")}</span></div>` +
+      `<div class="kv-row"><span class="k">Premium / double booths</span><span>${esc(r.exhibits.premiumCount || "—")}</span></div>` +
+      (r.exhibits.placement ? `<div class="kv-row"><span class="k">Desired placement</span><span>${esc(r.exhibits.placement)}</span></div>` : "");
+  } else hide("secExhibits");
+}
+
+loadRfp();
+</script>
+</body>
+</html>
