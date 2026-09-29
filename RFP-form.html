@@ -224,7 +224,7 @@
         <span id="statusSaveMsg" class="small-note"></span>
       </div>
       <div id="lockedBanner" style="display:none; background:#FFF4E0; border:1px solid var(--gold); border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:0.85rem; color:var(--charcoal);">
-        This RFP is locked for editing because its status isn't Draft. Only an admin or the event planner can make changes now.
+        This RFP is locked for editing because its status isn't Draft. Set the status back to Draft to make changes.
       </div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="intake">Intake Form</button>
@@ -1111,13 +1111,13 @@ function startNewRfp() {
 }
 
 // ---------- Draft-only edit lock ----------
-// Once an RFP leaves Draft, only admins and the planner can still edit
-// its intake fields — everyone else can view it and still add notes,
-// but the form itself and Save button lock up. Enforced again
-// server-side on the PUT endpoint, so this is just keeping the UI
-// honest rather than the actual security boundary.
+// Once an RFP leaves Draft, its intake fields are locked for everyone —
+// no exception for admins or the planner. They can still view it, add
+// notes, and change its status back to Draft if it needs edits again.
+// Enforced again server-side on the PUT endpoint, so this is just
+// keeping the UI honest rather than the actual security boundary.
 function applyEditLock() {
-  const locked = !!(currentRecord && currentRecord.status !== "draft" && !(currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner)));
+  const locked = !!(currentRecord && currentRecord.status !== "draft");
   document.getElementById("lockedBanner").style.display = locked ? "block" : "none";
   document.getElementById("saveBtn").style.display = locked ? "none" : "inline-block";
   document.querySelectorAll("#intakeForm input, #intakeForm select, #intakeForm textarea, #intakeForm button").forEach(el => {
