@@ -153,7 +153,6 @@ function publicRfpDetail(record) {
     attendanceMax: d.attendanceMax || "",
     attendanceScope: d.attendanceScope || "",
     guestRooms: d.guestRooms || [],
-    colocation: d.colocation || "",
     meetingSpace: d.meetingSpace || [],
     concessions: d.concessions || [],
     fnb: d.fnb || [],
