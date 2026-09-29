@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venue Proposals — CLEAR Events</title>
+<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
+<style>
+  :root {
+    --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
+    --charcoal: #2B2B2B; --charcoal-soft: #6B6660; --blue: #084D78;
+    --bg: #F7F6F3; --card: #ffffff; --border: #E3DFD8; --border-soft: #EEEBE5;
+    --radius: 10px; --shadow: 0 1px 2px rgba(30,20,10,0.04), 0 4px 14px rgba(30,20,10,0.05);
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Open Sans', 'Trebuchet MS', sans-serif; background: var(--bg); color: var(--charcoal); margin: 0; -webkit-font-smoothing: antialiased; }
+  header { background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%); color: #fff; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  header h1 { margin: 0; font-size: 1.3rem; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  #deniedState, #loadingState, #emptyState { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--charcoal-soft); }
+  #deniedState, #emptyState { display: none; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .toolbar input, .toolbar select { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.88rem; }
+  .toolbar input[type=search] { flex: 1; min-width: 200px; }
+  .btn-outline { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; color: var(--charcoal); }
+  .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  #resultsWrap { display: none; }
+  table.proposals-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  table.proposals-table th, table.proposals-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  table.proposals-table th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; cursor: pointer; user-select: none; }
+  table.proposals-table th:hover { color: var(--burgundy); }
+  .prop-row { cursor: pointer; }
+  .prop-row:hover { background: var(--border-soft); }
+  .detail-row td { background: var(--bg); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 0.85rem; }
+  .detail-grid .k { color: var(--charcoal-soft); }
+  .count-line { font-size: 0.82rem; color: var(--charcoal-soft); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Venue Proposals — All Events</h1>
+</header>
+<main>
+  <div id="loadingState">Loading…</div>
+  <div id="deniedState">You don't have access to view proposals. This page is limited to admins and the event planner.</div>
+  <div id="emptyState">No proposals have been submitted yet.</div>
+
+  <div id="resultsWrap">
+    <div class="toolbar">
+      <input type="search" id="searchBox" placeholder="Search by property name, city, or event...">
+      <select id="eventFilter"><option value="">All events</option></select>
+      <button type="button" class="btn-outline" id="exportBtn">Export CSV</button>
+    </div>
+    <div class="count-line" id="countLine"></div>
+    <table class="proposals-table">
+      <thead>
+        <tr>
+          <th data-sort="propertyName">Property</th>
+          <th data-sort="city">City/State</th>
+          <th data-sort="eventName">Event</th>
+          <th data-sort="guestRoomRate">Room Rate</th>
+          <th data-sort="submittedAt">Submitted</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+function escapeHtml(str) { return String(str == null ? "" : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function fmtDate(iso) { if (!iso) return ""; return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+
+let allProposals = [];
+let sortKey = "submittedAt";
+let sortDir = -1;
+
+async function init() {
+  try {
+    const res = await fetch("/api/proposals", { credentials: "include" });
+    if (res.status === 403 || res.status === 401) {
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("deniedState").style.display = "block";
+      return;
+    }
+    if (!res.ok) throw new Error("failed");
+    allProposals = await res.json();
+    document.getElementById("loadingState").style.display = "none";
+    if (!allProposals.length) { document.getElementById("emptyState").style.display = "block"; return; }
+    populateEventFilter();
+    document.getElementById("resultsWrap").style.display = "block";
+    render();
+  } catch (e) {
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("emptyState").style.display = "block";
+    document.getElementById("emptyState").textContent = "Couldn't load proposals right now.";
+  }
+}
+
+function populateEventFilter() {
+  const events = [...new Set(allProposals.map(p => p.eventName).filter(Boolean))].sort();
+  const sel = document.getElementById("eventFilter");
+  events.forEach(ev => {
+    const opt = document.createElement("option");
+    opt.value = ev; opt.textContent = ev;
+    sel.appendChild(opt);
+  });
+}
+
+function filteredSorted() {
+  const q = document.getElementById("searchBox").value.trim().toLowerCase();
+  const eventFilter = document.getElementById("eventFilter").value;
+  let rows = allProposals.filter(p => {
+    if (eventFilter && p.eventName !== eventFilter) return false;
+    if (!q) return true;
+    const haystack = [p.propertyName, p.city, p.stateProvince, p.eventName, p.groupName].join(" ").toLowerCase();
+    return haystack.includes(q);
+  });
+  rows.sort((a, b) => {
+    let av = a[sortKey] || "", bv = b[sortKey] || "";
+    if (sortKey === "submittedAt") { av = new Date(av).getTime(); bv = new Date(bv).getTime(); }
+    if (av < bv) return -1 * sortDir;
+    if (av > bv) return 1 * sortDir;
+    return 0;
+  });
+  return rows;
+}
+
+function render() {
+  const rows = filteredSorted();
+  document.getElementById("countLine").textContent = `${rows.length} proposal${rows.length === 1 ? "" : "s"}`;
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = rows.map((p, i) => `
+    <tr class="prop-row" onclick="toggleDetail(${i})">
+      <td>${escapeHtml(p.propertyName)}</td>
+      <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", "))}</td>
+      <td>${escapeHtml(p.eventName)}<div style="color:var(--charcoal-soft); font-size:0.75rem;">${escapeHtml(p.groupName)}</div></td>
+      <td>${escapeHtml(p.guestRoomRate)}</td>
+      <td>${fmtDate(p.submittedAt.slice(0,10))}</td>
+    </tr>
+    <tr class="detail-row" id="detail${i}" style="display:none;"><td colspan="5">${detailHtml(p)}</td></tr>
+  `).join("");
+  window._sortedProposals = rows;
+}
+
+function detailHtml(p) {
+  const fees = ["taxes","resortFee","destinationFee"].filter(k => p.rateFees && p.rateFees[k]).map(k => ({taxes:"Taxes",resortFee:"Resort Fee",destinationFee:"Destination Fee"}[k]));
+  if (p.rateFees && p.rateFees.other) fees.push(p.rateFees.otherText || "Other");
+  const dateLabels = (p.proposedDateRanks || []).map(rank => {
+    const d = (p.rfpDatesSnapshot || []).find(x => x.rank === rank);
+    return d ? `Option ${rank} (${fmtDate(d.start)}–${fmtDate(d.end)})` : `Option ${rank}`;
+  }).join(", ") || "—";
+  const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
+  return `<div class="detail-grid">
+    ${row("Address", [p.streetAddress, p.city, p.stateProvince, p.zipCode].filter(Boolean).join(", "))}
+    ${row("Phone", p.phone)}
+    ${row("Website", p.website)}
+    ${row("Contact", [p.contactName, p.contactPhone, p.contactEmail].filter(Boolean).join(" · "))}
+    ${row("Dates proposed", dateLabels)}
+    ${row("Commissionable", p.commissionable === "yes" ? "Yes" + (p.commissionPercent ? ` (${escapeHtml(p.commissionPercent)})` : "") : p.commissionable === "no" ? "No" : "")}
+    ${row("Rate fees included", fees.join(", "))}
+    ${row("F&B Minimum", p.fnbMinimum)}
+    ${row("Meeting Room Rental Fee", p.meetingRoomRentalFee)}
+    ${row("Cumulative Attrition %", p.cumulativeAttritionPercent)}
+    ${row("F&B Guarantee", p.fnbGuarantee)}
+    ${row("Concessions", p.concessions)}
+    ${row("Meeting space one floor", p.meetingSpaceOneFloor)}
+    ${row("Floors explanation", p.meetingSpaceFloorsExplain)}
+    ${row("Exhibits location", [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" — "))}
+    ${row("Area description", p.areaDescription)}
+    ${row("Proposal document", p.proposalDocumentLink)}
+    ${row("Floor plan/F&B/AV links", p.floorPlanFnbAvLinks)}
+    ${row("CVB promotions", p.cvbPromotions)}
+    ${row("Site inspection support", p.siteInspectionSupport)}
+    ${row("Additional notes", p.additionalNotes)}
+  </div>`;
+}
+
+function toggleDetail(i) {
+  const row = document.getElementById("detail" + i);
+  row.style.display = row.style.display === "none" ? "table-row" : "none";
+}
+
+document.getElementById("searchBox").addEventListener("input", render);
+document.getElementById("eventFilter").addEventListener("change", render);
+document.querySelectorAll("th[data-sort]").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+    render();
+  });
+});
+
+function proposalsToCsv(proposals) {
+  const cols = ["propertyName","streetAddress","city","stateProvince","zipCode","phone","website",
+    "contactName","contactPhone","contactEmail","guestRoomRate","commissionable","commissionPercent",
+    "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent","fnbGuarantee","concessions",
+    "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
+    "areaDescription","proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
+    "additionalNotes","submittedAt","eventName","groupName"];
+  const escCsv = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const lines = [cols.join(",")];
+  proposals.forEach(p => lines.push(cols.map(c => escCsv(p[c])).join(",")));
+  return lines.join("\r\n");
+}
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const rows = window._sortedProposals || [];
+  if (!rows.length) { alert("No proposals to export."); return; }
+  const csv = proposalsToCsv(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "venue-proposals.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+init();
+</script>
+</body>
+</html>
