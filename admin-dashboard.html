@@ -63,7 +63,7 @@
           <th data-sort="eventName">Event</th>
           <th data-sort="guestRoomRate">Room Rate</th>
           <th data-sort="fnbMinimum">F&amp;B Minimum</th>
-          <th data-sort="fnbGuarantee">F&amp;B Guarantee</th>
+          <th data-sort="fnbGuaranteeOffered">F&amp;B Guarantee</th>
           <th data-sort="submittedAt">Submitted</th>
         </tr>
       </thead>
@@ -143,7 +143,7 @@ function render() {
       <td>${escapeHtml(p.eventName)}<div style="color:var(--charcoal-soft); font-size:0.75rem;">${escapeHtml(p.groupName)}</div></td>
       <td>${escapeHtml(p.guestRoomRate) || "—"}</td>
       <td>${escapeHtml(p.fnbMinimum) || "—"}</td>
-      <td>${escapeHtml(p.fnbGuarantee) || "—"}</td>
+      <td>${p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "—"}</td>
       <td>${fmtDate(p.submittedAt.slice(0,10))}</td>
     </tr>
     <tr class="detail-row" id="detail${i}" style="display:none;"><td colspan="7">${detailHtml(p)}</td></tr>
@@ -176,6 +176,20 @@ function detailHtml(p) {
   }).join(", ") || "—";
   const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
   const rowLink = (k, v) => v ? `<div><span class="k">${k}:</span> ${linkifyLines(v)}</div>` : "";
+
+  let fnbBlock = row("F&B guarantee offered", p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "");
+  if (p.fnbGuaranteeOffered === "yes") {
+    fnbBlock += row("Attendees / Days", `${p.fnbGuaranteeAttendeeCount || "?"} attendees over ${p.fnbGuaranteeDays || "?"} days`);
+    fnbBlock += row("Total proposed amount", p.fnbGuaranteeAmount ? `$${p.fnbGuaranteeAmount}` : "");
+    fnbBlock += row("Amount is", p.fnbGuaranteeInclusive === "inclusive" ? "Inclusive of taxes and service charges" : p.fnbGuaranteeInclusive === "exclusive" ? "Exclusive of taxes and service charges" : "");
+    if (p.fnbGuaranteeInclusive === "exclusive") {
+      fnbBlock += row("Tax rate(s)", p.fnbGuaranteeTaxRate);
+      fnbBlock += row("Service charge rate(s)", p.fnbGuaranteeServiceChargeRate);
+      fnbBlock += row("Other mandatory F&B fees", p.fnbGuaranteeOtherFees);
+    }
+  }
+  const areaChars = (p.areaCharacteristics || []).map(c => c === "Other" ? (p.areaCharacteristicsOtherText || "Other") : c).join(", ");
+
   return `<div class="detail-grid">
     ${row("Address", [p.streetAddress, p.city, p.stateProvince, p.zipCode].filter(Boolean).join(", "))}
     ${row("Phone", p.phone)}
@@ -186,16 +200,20 @@ function detailHtml(p) {
     ${row("Rate fees included", fees.join(", "))}
     ${row("Meeting Room Rental Fee", p.meetingRoomRentalFee)}
     ${row("Cumulative Attrition %", p.cumulativeAttritionPercent)}
+    ${fnbBlock}
     ${row("Concessions", p.concessions)}
     ${row("Meeting space one floor", p.meetingSpaceOneFloor)}
     ${row("Floors explanation", p.meetingSpaceFloorsExplain)}
     ${row("Exhibits location", [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" — "))}
-    ${row("Area description", p.areaDescription)}
+    ${row("Property type", p.propertyType === "Other" ? p.propertyTypeOtherText : p.propertyType)}
+    ${row("Area characteristics", areaChars)}
+    ${row("Walkability", p.walkabilityDescription)}
     ${rowLink("Proposal document", p.proposalDocumentLink)}
     ${rowLink("Floor plan/F&B/AV links", p.floorPlanFnbAvLinks)}
     ${row("CVB promotions", p.cvbPromotions)}
     ${row("Site inspection support", p.siteInspectionSupport)}
     ${row("Additional notes", p.additionalNotes)}
+    ${row("Terms confirmed (30-day validity)", p.termsConfirmed ? "Yes" : "No")}
   </div>`;
 }
 
@@ -217,11 +235,14 @@ document.querySelectorAll("th[data-sort]").forEach(th => {
 function proposalsToCsv(proposals) {
   const cols = ["propertyName","streetAddress","city","stateProvince","zipCode","phone","website",
     "contactName","contactPhone","contactEmail","guestRoomRate","commissionable","commissionPercent",
-    "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent","fnbGuarantee","concessions",
-    "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
-    "areaDescription","proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
-    "additionalNotes","submittedAt","eventName","groupName"];
-  const escCsv = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+    "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
+    "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
+    "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
+    "concessions","meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
+    "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
+    "proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
+    "additionalNotes","termsConfirmed","submittedAt","eventName","groupName"];
+  const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.join(",")];
   proposals.forEach(p => lines.push(cols.map(c => escCsv(p[c])).join(",")));
   return lines.join("\r\n");
