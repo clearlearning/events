@@ -318,8 +318,10 @@
           <details class="section">
             <summary>Meeting Space Needs <span class="chev">&#9656;</span></summary>
             <div class="section-body">
-              <div class="section-hint">Auto-fill a section per event day from Date Option 1, then add as many rooms per day as needed.</div>
-              <button type="button" class="btn-outline" id="autoGenMeeting">Auto-generate days from Date Option 1</button>
+              <div class="section-hint">Set the total number of event days, then add each room setup you need and pick which days it applies to.</div>
+              <button type="button" class="btn-outline" id="autoGenMeeting">Auto-set day count from Date Option 1</button>
+              <label style="margin-top:14px;">Total number of days</label>
+              <input type="number" id="meetingSpaceDayCount" min="1" max="14" value="1" style="max-width:100px;">
 
               <label style="margin-top:16px;">Open to colocating meeting space with other organizations?</label>
               <select id="colocation">
@@ -329,7 +331,7 @@
               </select>
 
               <div id="meetingSpaceRows" style="margin-top:14px;"></div>
-              <button type="button" class="btn-ghost" id="addMeetingDay">+ Add day manually</button>
+              <button type="button" class="btn-ghost" id="addMeetingRoomBtn">+ Add room setup</button>
             </div>
           </details>
 
@@ -467,9 +469,9 @@ const GROUP_PRESETS = [
   { name: "Council on Licensure, Enforcement and Regulation", acronym: "CLEAR", website: "https://clearhq.org" },
   { name: "American Association of State Counseling Boards", acronym: "AASCB", website: "https://aascb.org" },
   { name: "Counseling Compact Commission", acronym: "CCC", website: "https://counselingcompact.gov" },
-  { name: "Collaborative for Physician Enhancement", acronym: "CPE", website: "https://www.cpehq.org" },
+  { name: "Coalition for Physician Enhancement", acronym: "CPE", website: "https://www.cpehq.org" },
   { name: "National Association of State Administrators and Supervisors of Private Schools", acronym: "NASASPS", website: "https://nasasps.org" },
-  { name: "National Reentry Workforce Collaborative", acronym: "NRWC", website: "https://thenrwc.org" }
+  { name: "National Reentry Workforce Coalition", acronym: "NRWC", website: "https://thenrwc.org" }
 
 ];
 function populateGroupSelect() {
@@ -716,35 +718,58 @@ document.getElementById("autoGenRooms").onclick = () => {
 // ---------- Meeting space ----------
 const FLOOR_SETS = ["Classroom","Theater","Banquet Rounds","Crescent Rounds","U-Shape","Reception","Conference / Boardroom","Other"];
 const AV_OPTIONS = ["Projector","Screen","Podium Mic(s)","Table Mic(s)","Floor Mic(s) (Q&A)","Lav Mic(s)","Speakers","Virtual Meeting Accommodations","Other"];
+const MAX_MEETING_DAYS = 14;
 
-function makeMeetingSpaceRows(days) { const wrap = document.getElementById("meetingSpaceRows"); wrap.innerHTML = ""; (days && days.length ? days : []).forEach(d => addMeetingDay(d)); }
-function addMeetingDay(d) {
-  d = d || { label: "New Day", rooms: [] };
-  const wrap = document.getElementById("meetingSpaceRows");
-  const block = document.createElement("div");
-  block.className = "day-block";
-  block.innerHTML = `
-    <div class="day-block-header">
-      <div class="day-label-wrap"><span class="pencil">&#9998;</span><input type="text" class="day-label-input ms-label" value="${d.label}" placeholder="Click to rename day"></div>
-      <button type="button" class="btn-danger-ghost remove-row" title="Remove day">&times;</button>
-    </div>
-    <div class="ms-rooms"></div>
-    <button type="button" class="btn-ghost add-room-btn" style="margin-top:8px;">+ Add room</button>
-  `;
-  block.querySelector(".remove-row").onclick = () => block.remove();
-  block.querySelector(".add-room-btn").onclick = () => addMeetingRoom(block, null);
-  wrap.appendChild(block);
-  (d.rooms && d.rooms.length ? d.rooms : [null]).forEach(r => addMeetingRoom(block, r));
+function currentMeetingDayCount() {
+  return Math.max(1, Math.min(MAX_MEETING_DAYS, parseInt(document.getElementById("meetingSpaceDayCount").value, 10) || 1));
 }
-function addMeetingRoom(dayBlock, r) {
-  r = r || { roomLabel: "", floorSet: FLOOR_SETS[0], maxSeats: "", avNeeds: [], notes: "" };
-  const roomsWrap = dayBlock.querySelector(".ms-rooms");
+// Day chips are pre-rendered up to MAX_MEETING_DAYS in every room card, and
+// we just show/hide + uncheck the ones beyond the current day count, so
+// growing the count back later doesn't need to regenerate anything.
+function updateAllDayChipVisibility() {
+  const count = currentMeetingDayCount();
+  document.querySelectorAll(".ms-day-chip-label").forEach(label => {
+    const day = Number(label.dataset.day);
+    const show = day <= count;
+    label.style.display = show ? "" : "none";
+    if (!show) label.querySelector("input").checked = false;
+  });
+}
+function dayChipsHtml(selectedDays) {
+  const count = currentMeetingDayCount();
+  let html = "";
+  for (let day = 1; day <= MAX_MEETING_DAYS; day++) {
+    const id = "ms-day-chip-" + Math.random().toString(36).slice(2);
+    const checked = (selectedDays || []).includes(day);
+    html += `<label class="chip ms-day-chip-label" data-day="${day}" for="${id}" style="${day <= count ? "" : "display:none;"}"><input type="checkbox" id="${id}" class="ms-day-chip" value="${day}" ${checked ? "checked" : ""}><span>Day ${day}</span></label>`;
+  }
+  return html;
+}
+document.getElementById("meetingSpaceDayCount").addEventListener("input", updateAllDayChipVisibility);
+document.getElementById("autoGenMeeting").onclick = () => {
+  const d = firstDateOption();
+  if (!d || !d.start || !d.end) { alert("Fill in Date Option 1's start and end date first."); return; }
+  const spanDays = Math.min(MAX_MEETING_DAYS, daysDiff(d.start, d.end) + 1);
+  if (spanDays < 1) { alert("End date must be on or after start date."); return; }
+  document.getElementById("meetingSpaceDayCount").value = spanDays;
+  updateAllDayChipVisibility();
+};
+
+function makeMeetingSpaceRows(rooms) {
+  const wrap = document.getElementById("meetingSpaceRows");
+  wrap.innerHTML = "";
+  (rooms && rooms.length ? rooms : []).forEach(r => addMeetingRoom(r));
+  updateAllDayChipVisibility();
+}
+function addMeetingRoom(r) {
+  r = r || { roomLabel: "", floorSet: FLOOR_SETS[0], maxSeats: "", avNeeds: [], notes: "", days: [] };
+  const wrap = document.getElementById("meetingSpaceRows");
   const card = document.createElement("div");
   card.className = "room-card";
   card.innerHTML = `
     <div class="room-card-header">
       <input type="text" class="room-label-input" value="${r.roomLabel||''}" placeholder="Room label (e.g. General Session)">
-      <button type="button" class="btn-danger-ghost remove-room" title="Remove room">&times;</button>
+      <button type="button" class="btn-danger-ghost remove-room" title="Remove room setup">&times;</button>
     </div>
     <div class="row" style="margin-top:8px;">
       <div><label>Floor Set</label><select class="ms-floorset">${FLOOR_SETS.map(f=>`<option ${f===r.floorSet?"selected":""}>${f}</option>`).join("")}</select></div>
@@ -755,12 +780,14 @@ function addMeetingRoom(dayBlock, r) {
     <button type="button" class="btn-ghost add-av-btn" style="margin-top:4px;">+ Add AV need</button>
     <label>Notes</label>
     <textarea class="ms-room-notes" placeholder="Anything specific to this room...">${r.notes||''}</textarea>
+    <label style="margin-top:10px;">Which days is this room setup needed?</label>
+    <div class="chip-grid">${dayChipsHtml(r.days)}</div>
   `;
   card.querySelector(".remove-room").onclick = () => card.remove();
   const avListEl = card.querySelector(".av-list");
   card.querySelector(".add-av-btn").onclick = () => addAvRow(avListEl, null);
   (r.avNeeds && r.avNeeds.length ? r.avNeeds : []).forEach(a => addAvRow(avListEl, a));
-  roomsWrap.appendChild(card);
+  wrap.appendChild(card);
 }
 function addAvRow(avListEl, a) {
   a = a || { name: AV_OPTIONS[0], qty: "", otherText: "" };
@@ -779,31 +806,20 @@ function addAvRow(avListEl, a) {
   avListEl.appendChild(row);
 }
 function getMeetingSpaceRows() {
-  return [...document.querySelectorAll("#meetingSpaceRows .day-block")].map(block => ({
-    label: block.querySelector(".ms-label").value,
-    rooms: [...block.querySelectorAll(".room-card")].map(card => ({
-      roomLabel: card.querySelector(".room-label-input").value,
-      floorSet: card.querySelector(".ms-floorset").value,
-      maxSeats: card.querySelector(".ms-seats").value,
-      avNeeds: [...card.querySelectorAll(".av-row")].map(row => ({
-        name: row.querySelector(".av-name-select").value,
-        qty: row.querySelector(".av-qty").value,
-        otherText: row.querySelector(".av-other-text").value
-      })),
-      notes: card.querySelector(".ms-room-notes").value
-    }))
+  return [...document.querySelectorAll("#meetingSpaceRows .room-card")].map(card => ({
+    roomLabel: card.querySelector(".room-label-input").value,
+    floorSet: card.querySelector(".ms-floorset").value,
+    maxSeats: card.querySelector(".ms-seats").value,
+    avNeeds: [...card.querySelectorAll(".av-row")].map(row => ({
+      name: row.querySelector(".av-name-select").value,
+      qty: row.querySelector(".av-qty").value,
+      otherText: row.querySelector(".av-other-text").value
+    })),
+    notes: card.querySelector(".ms-room-notes").value,
+    days: [...card.querySelectorAll(".ms-day-chip:checked")].map(el => Number(el.value))
   }));
 }
-document.getElementById("addMeetingDay").onclick = () => addMeetingDay();
-document.getElementById("autoGenMeeting").onclick = () => {
-  const d = firstDateOption();
-  if (!d || !d.start || !d.end) { alert("Fill in Date Option 1's start and end date first."); return; }
-  const spanDays = daysDiff(d.start, d.end) + 1;
-  if (spanDays < 1) { alert("End date must be on or after start date."); return; }
-  const wrap = document.getElementById("meetingSpaceRows");
-  wrap.innerHTML = "";
-  for (let i = 0; i < spanDays; i++) addMeetingDay({ label: `Day ${i+1} — ${fmtDate(addDaysISO(d.start,i))}`, rooms: [] });
-};
+document.getElementById("addMeetingRoomBtn").onclick = () => addMeetingRoom();
 
 // ---------- Concessions ----------
 // NOTE: placeholder list — update once the event planner provides the actual concession list.
@@ -961,6 +977,7 @@ function loadFormFromData(data) {
 
   makeRoomRows(data.guestRooms);
   document.getElementById("colocation").value = data.colocation || "";
+  document.getElementById("meetingSpaceDayCount").value = data.meetingSpaceDayCount || 1;
   makeMeetingSpaceRows(data.meetingSpace);
   makeConcessionRows(data.concessions);
   makeFnbDays(data.fnb);
@@ -997,6 +1014,7 @@ function collectFormData() {
     guestRooms: getRoomRows(),
     colocation: document.getElementById("colocation").value,
     meetingSpace: getMeetingSpaceRows(),
+    meetingSpaceDayCount: currentMeetingDayCount(),
     concessions: getConcessionRows(),
     fnb: getFnbDays(),
     siteInspection: document.getElementById("siteInspection").value,
