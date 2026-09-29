@@ -117,6 +117,18 @@ async function generateUniqueSlug(env, acronym, eventName) {
   return slug;
 }
 
+// The date venues actually need to hit is earlier than the planner's own
+// internal deadline (the "RFP Response Report Due Date") — she needs
+// buffer time to compile responses before her own report is due. Public
+// pages always show this computed date, never the internal one.
+function computeProposalDueDate(rfpDueDate) {
+  if (!rfpDueDate) return "";
+  const d = new Date(rfpDueDate + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  d.setDate(d.getDate() - 14);
+  return d.toISOString().slice(0, 10);
+}
+
 // Explicit allow-list of fields shown on public pages. New internal-only
 // fields (like the budget numbers) are private by default unless added
 // here on purpose.
@@ -129,7 +141,7 @@ function publicRfpDetail(record) {
     websiteLink: d.websiteLink || "",
     logoUrl: d.logoDataUrl || d.logoUrl || "",
     eventLogoUrl: d.eventLogoDataUrl || "",
-    rfpDueDate: d.rfpDueDate || "",
+    proposalDueDate: computeProposalDueDate(d.rfpDueDate),
     sectionPriorities: d.sectionPriorities || [],
     cities: d.cities || [],
     dates: d.dates || [],
@@ -159,8 +171,13 @@ function publicRfpSummary(record) {
     acronym: d.acronym || "",
     logoUrl: d.logoDataUrl || d.logoUrl || "",
     eventLogoUrl: d.eventLogoDataUrl || "",
-    rfpDueDate: d.rfpDueDate || "",
-    dates: d.dates || []
+    proposalDueDate: computeProposalDueDate(d.rfpDueDate),
+    dates: d.dates || [],
+    cities: d.cities || [],
+    attendanceType: d.attendanceType || "",
+    attendanceMin: d.attendanceMin || "",
+    attendanceMax: d.attendanceMax || "",
+    attendanceScope: d.attendanceScope || ""
   };
 }
 
