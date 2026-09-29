@@ -68,14 +68,16 @@
   .btn-ghost:disabled { color: var(--charcoal-soft); cursor: not-allowed; text-decoration: none; }
   .btn-danger-ghost { background: transparent; color: #A33; padding: 2px 6px; font-size: 1rem; line-height: 1; }
   #newRfpBtn { width: 100%; margin-bottom: 14px; padding: 11px; }
+  .status-filter-bar { margin-bottom: 12px; }
 
   .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: #EEEAE3; padding: 4px; border-radius: 9px; width: fit-content; }
   .tab-btn { background: transparent; color: var(--charcoal-soft); border-radius: 6px; padding: 8px 16px; }
   .tab-btn.active { background: #fff; color: var(--burgundy); box-shadow: var(--shadow); }
   .responses-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .responses-table th, .responses-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  .responses-table th, .responses-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; white-space: nowrap; }
   .responses-table th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
-  .proposal-detail-row td { background: var(--bg); }
+  .table-scroll { overflow-x: auto; }
+  .proposal-detail-row td { background: var(--bg); white-space: normal; }
   .proposal-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 0.85rem; }
   .proposal-detail-grid .k { color: var(--charcoal-soft); }
   .tab-panel { display: none; } .tab-panel.active { display: block; }
@@ -193,6 +195,12 @@
   <aside id="sidebarAside">
     <h2>RFPs</h2>
     <button id="newRfpBtn" class="btn-primary" disabled>+ New RFP</button>
+    <div class="chip-grid status-filter-bar">
+      <label class="chip" for="filterDraft"><input type="checkbox" id="filterDraft" class="status-filter-cb" value="draft" checked><span>Draft</span></label>
+      <label class="chip" for="filterOpen"><input type="checkbox" id="filterOpen" class="status-filter-cb" value="open" checked><span>Open</span></label>
+      <label class="chip" for="filterClosed"><input type="checkbox" id="filterClosed" class="status-filter-cb" value="closed"><span>Closed</span></label>
+      <label class="chip" for="filterAwarded"><input type="checkbox" id="filterAwarded" class="status-filter-cb" value="awarded"><span>Awarded</span></label>
+    </div>
     <ul id="rfpList"></ul>
   </aside>
 
@@ -214,6 +222,9 @@
           <option value="awarded">Awarded</option>
         </select>
         <span id="statusSaveMsg" class="small-note"></span>
+      </div>
+      <div id="lockedBanner" style="display:none; background:#FFF4E0; border:1px solid var(--gold); border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:0.85rem; color:var(--charcoal);">
+        This RFP is locked for editing because its status isn't Draft. Only an admin or the event planner can make changes now.
       </div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="intake">Intake Form</button>
@@ -367,8 +378,8 @@
             <div class="section-body">
               <div class="check-row"><input type="checkbox" id="exhibitsNeeded"><label for="exhibitsNeeded">Exhibits needed for this event</label></div>
               <div class="row">
-                <div><label>Standard Booths Budgeted</label><input type="number" min="0" id="exhibitStandardCount"></div>
-                <div><label>Premium / Double Booths Budgeted</label><input type="number" min="0" id="exhibitPremiumCount"></div>
+                <div><label>Tables Budgeted</label><input type="number" min="0" id="exhibitStandardCount"></div>
+                <div><label>Booths (10x10 preferred) Budgeted</label><input type="number" min="0" id="exhibitPremiumCount"></div>
                 <div><label>Desired Placement</label><input type="text" id="exhibitPlacement" placeholder="e.g. registration foyer"></div>
               </div>
             </div>
@@ -386,6 +397,7 @@
 
           <div class="actions-bar">
             <button type="submit" class="btn-primary" id="saveBtn">Save</button>
+            <button type="button" class="btn-outline" id="duplicateRfpBtn" style="display:none;">Duplicate as New RFP</button>
             <span id="saveStatus"></span>
             <button type="button" class="btn-delete" id="deleteRfpBtn" style="display:none;">Delete RFP</button>
           </div>
@@ -447,7 +459,7 @@ async function checkAuth() {
     document.getElementById("identityAvatar").textContent = initials(currentIdentity.name);
     document.getElementById("identityAdminBadge").style.display = currentIdentity.isAdmin ? "inline" : "none";
     document.getElementById("newRfpBtn").disabled = false;
-    document.getElementById("responsesTabBtn").style.display = (currentIdentity.isAdmin || currentIdentity.isPlanner) ? "inline-block" : "none";
+    document.getElementById("responsesTabBtn").style.display = (currentIdentity.isAdmin || currentIdentity.isPlanner || currentIdentity.orgRestriction) ? "inline-block" : "none";
     return true;
   } catch (e) {
     document.getElementById("identityBlock").style.display = "none";
@@ -471,12 +483,19 @@ const GROUP_PRESETS = [
   { name: "Counseling Compact Commission", acronym: "CCC", website: "https://counselingcompact.gov" },
   { name: "Coalition for Physician Enhancement", acronym: "CPE", website: "https://www.cpehq.org" },
   { name: "National Association of State Administrators and Supervisors of Private Schools", acronym: "NASASPS", website: "https://nasasps.org" },
-  { name: "National Reentry Workforce Collaborative", acronym: "NRWC", website: "https://thenrwc.org" }
+  { name: "National Reentry Workforce Coalition", acronym: "NRWC", website: "https://thenrwc.org" }
 
 ];
 function populateGroupSelect() {
   const sel = document.getElementById("groupName");
-  sel.innerHTML = `<option value="">— Select a group —</option>` + GROUP_PRESETS.map(g => `<option value="${g.name}">${g.name}</option>`).join("");
+  // An org-restricted user (e.g. an NRWC-domain staffer) only ever sees
+  // their own organization in this dropdown — enforced again server-side
+  // on create/edit, so this is just keeping the UI from offering choices
+  // that would get rejected anyway.
+  const visiblePresets = (currentIdentity && currentIdentity.orgRestriction)
+    ? GROUP_PRESETS.filter(g => g.acronym === currentIdentity.orgRestriction)
+    : GROUP_PRESETS;
+  sel.innerHTML = `<option value="">— Select a group —</option>` + visiblePresets.map(g => `<option value="${g.name}">${g.name}</option>`).join("");
 }
 function logoUrlForAcronym(acronym) {
   return acronym ? `https://events-site-68h.pages.dev/${acronym.toUpperCase()}-logo.png` : "";
@@ -492,8 +511,8 @@ function renderLogoPreview() {
   img.onload = () => { img.style.display = "inline-block"; missing.style.display = "none"; };
   img.src = src;
 }
-document.getElementById("groupName").addEventListener("change", (e) => {
-  const preset = GROUP_PRESETS.find(g => g.name === e.target.value);
+function applyGroupPreset(name) {
+  const preset = GROUP_PRESETS.find(g => g.name === name);
   if (preset) {
     document.getElementById("acronym").value = preset.acronym;
     document.getElementById("websiteLink").value = preset.website;
@@ -501,7 +520,8 @@ document.getElementById("groupName").addEventListener("change", (e) => {
     window._logoDataUrl = null;
     renderLogoPreview();
   }
-});
+}
+document.getElementById("groupName").addEventListener("change", (e) => applyGroupPreset(e.target.value));
 document.getElementById("resetLogoBtn").onclick = () => { window._logoDataUrl = null; renderLogoPreview(); };
 document.getElementById("logoUpload").addEventListener("change", (e) => {
   const file = e.target.files[0];
@@ -717,7 +737,7 @@ document.getElementById("autoGenRooms").onclick = () => {
 
 // ---------- Meeting space ----------
 const FLOOR_SETS = ["Classroom","Theater","Banquet Rounds","Crescent Rounds","U-Shape","Reception","Conference / Boardroom","Other"];
-const AV_OPTIONS = ["Projector","Screen","Podium Mic(s)","Table Mic(s)","Floor Mic(s) (Q&A)","Lav Mic(s)","Speakers","Virtual Meeting Accommodations","Other"];
+const AV_OPTIONS = ["Projector","Screen","Podium Mic(s)","Table Mic(s)","Floor Mic(s) (Q&A)","Lav Mic(s)","Speakers","Virtual Meeting Accommodations","Attendee Power","Other"];
 const MAX_MEETING_DAYS = 14;
 
 function currentMeetingDayCount() {
@@ -1037,9 +1057,10 @@ async function loadRfpList() {
   renderRfpList();
 }
 function renderRfpList() {
+  const activeStatuses = [...document.querySelectorAll(".status-filter-cb:checked")].map(cb => cb.value);
   const ul = document.getElementById("rfpList");
   ul.innerHTML = "";
-  rfpSummaries.forEach(r => {
+  rfpSummaries.filter(r => activeStatuses.includes(r.status)).forEach(r => {
     const li = document.createElement("li");
     li.className = currentRecord && currentRecord.id === r.id ? "active" : "";
     li.innerHTML = `<div class="rfp-name">${r.groupName || "(untitled)"}</div><div class="rfp-event">${r.eventName || ""}</div><div class="status-row status-${r.status}"><span class="status-dot"></span><span class="status-label">${r.status}</span></div>`;
@@ -1047,6 +1068,7 @@ function renderRfpList() {
     ul.appendChild(li);
   });
 }
+document.querySelectorAll(".status-filter-cb").forEach(cb => cb.addEventListener("change", renderRfpList));
 async function openRfp(id) {
   const res = await fetch(`${API_BASE}/api/rfps/${id}`, { credentials: "include" });
   if (!res.ok) { alert("Could not load that RFP."); return; }
@@ -1055,14 +1077,24 @@ async function openRfp(id) {
   document.getElementById("formArea").style.display = "block";
   loadFormFromData(currentRecord.data);
   renderNotes(); renderHistory(); renderRfpList(); renderStatusControl();
-  if (currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner)) renderResponses();
+  if (currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner || currentIdentity.orgRestriction)) renderResponses();
   document.getElementById("deleteRfpBtn").style.display = (currentIdentity && currentIdentity.isAdmin) ? "inline-block" : "none";
+  document.getElementById("duplicateRfpBtn").style.display = "inline-block";
+  applyEditLock();
+  applyDueDateMin();
 }
 function startNewRfp() {
   currentRecord = null;
   document.getElementById("emptyState").style.display = "none";
   document.getElementById("formArea").style.display = "block";
   loadFormFromData({});
+  if (currentIdentity && currentIdentity.orgRestriction) {
+    const preset = GROUP_PRESETS.find(g => g.acronym === currentIdentity.orgRestriction);
+    if (preset) {
+      document.getElementById("groupName").value = preset.name;
+      applyGroupPreset(preset.name);
+    }
+  }
   document.getElementById("notesList").innerHTML = "<p class='small-note'>Save the RFP first to start adding notes.</p>";
   document.getElementById("historyList").innerHTML = "<p class='small-note'>Save the RFP first to see version history.</p>";
   document.getElementById("responsesList").innerHTML = "<p class='small-note'>Save the RFP first to collect responses.</p>";
@@ -1071,7 +1103,46 @@ function startNewRfp() {
   renderRfpList();
   renderStatusControl();
   document.getElementById("deleteRfpBtn").style.display = "none";
+  document.getElementById("deleteRfpBtn").style.display = "none";
   document.getElementById("sidebarAside").classList.add("collapsed");
+  document.getElementById("duplicateRfpBtn").style.display = "none";
+  applyEditLock();
+  applyDueDateMin();
+}
+
+// ---------- Draft-only edit lock ----------
+// Once an RFP leaves Draft, only admins and the planner can still edit
+// its intake fields — everyone else can view it and still add notes,
+// but the form itself and Save button lock up. Enforced again
+// server-side on the PUT endpoint, so this is just keeping the UI
+// honest rather than the actual security boundary.
+function applyEditLock() {
+  const locked = !!(currentRecord && currentRecord.status !== "draft" && !(currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner)));
+  document.getElementById("lockedBanner").style.display = locked ? "block" : "none";
+  document.getElementById("saveBtn").style.display = locked ? "none" : "inline-block";
+  document.querySelectorAll("#intakeForm input, #intakeForm select, #intakeForm textarea, #intakeForm button").forEach(el => {
+    if (el.id === "saveBtn" || el.id === "duplicateRfpBtn" || el.id === "deleteRfpBtn") return;
+    el.disabled = locked;
+  });
+}
+
+// ---------- Due date floor (45 days out) ----------
+function applyDueDateMin() {
+  const input = document.getElementById("rfpDueDate");
+  // Admins and the planner can override and pick a sooner date when
+  // there's a real reason to; everyone else is held to the 45-day floor.
+  if (currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner)) {
+    input.removeAttribute("min");
+    return;
+  }
+  // Proposal due dates must give venues at least 45 days' notice. For a
+  // brand-new RFP that's 45 days from today; once it's been created,
+  // the floor stays fixed at 45 days from that original creation date —
+  // it doesn't creep forward every time the RFP gets resaved later.
+  const baseline = (currentRecord && (currentRecord.createdAt || currentRecord.updatedAt)) || new Date().toISOString();
+  const minDate = new Date(baseline);
+  minDate.setDate(minDate.getDate() + 45);
+  input.min = minDate.toISOString().slice(0, 10);
 }
 
 // ---------- Status control ----------
@@ -1194,7 +1265,7 @@ function diffVersions(oldData, newData) {
   });
   return out || "<div class='small-note'>No field changes detected.</div>";
 }
-function escapeHtml(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeHtml(str) { return String(str == null ? "" : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 // ---------- Responses (venue proposals) ----------
 // Visible only to admins and the planner (Candela) — the tab button
@@ -1213,20 +1284,23 @@ async function renderResponses() {
     window._currentProposals = proposals;
     if (!proposals.length) { panel.innerHTML = "<p class='small-note'>No proposals submitted yet.</p>"; return; }
     panel.innerHTML = `
+      <div class="table-scroll">
       <table class="responses-table">
-        <tr><th>Property</th><th>City/State</th><th>Room Rate</th><th>Commissionable</th><th>Submitted</th><th></th></tr>
+        <tr><th>City/State</th><th>Property</th><th>Room Rate</th><th>F&amp;B Minimum</th><th>F&amp;B Guarantee</th><th>Submitted</th><th></th></tr>
         ${proposals.map((p, i) => `
           <tr>
+            <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", ")) || "—"}</td>
             <td>${escapeHtml(p.propertyName)}</td>
-            <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", "))}</td>
-            <td>${escapeHtml(p.guestRoomRate)}</td>
-            <td>${p.commissionable === "yes" ? "Yes" + (p.commissionPercent ? ` (${escapeHtml(p.commissionPercent)})` : "") : p.commissionable === "no" ? "No" : "—"}</td>
+            <td>${escapeHtml(p.guestRoomRate) || "—"}</td>
+            <td>${escapeHtml(p.fnbMinimum) || "—"}</td>
+            <td>${escapeHtml(p.fnbGuarantee) || "—"}</td>
             <td>${new Date(p.submittedAt).toLocaleDateString()}</td>
             <td><button type="button" class="btn-ghost" onclick="toggleProposalDetail(${i})">Details</button></td>
           </tr>
-          <tr class="proposal-detail-row" id="proposalDetail${i}" style="display:none;"><td colspan="6">${proposalDetailHtml(p)}</td></tr>
+          <tr class="proposal-detail-row" id="proposalDetail${i}" style="display:none;"><td colspan="7">${proposalDetailHtml(p)}</td></tr>
         `).join("")}
       </table>
+      </div>
     `;
   } catch (e) {
     panel.innerHTML = "<p class='small-note'>Couldn't load responses.</p>";
@@ -1236,6 +1310,21 @@ function toggleProposalDetail(i) {
   const row = document.getElementById("proposalDetail" + i);
   row.style.display = row.style.display === "none" ? "table-row" : "none";
 }
+// Turns any URL-looking line into a clickable link. floorPlanFnbAvLinks
+// can hold several links (one per line), so each line is checked on its
+// own rather than treating the whole field as a single URL.
+function linkifyLines(text) {
+  if (!text) return "";
+  return String(text).split("\n").map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return "";
+    if (/^(https?:\/\/|www\.)/i.test(trimmed)) {
+      const href = trimmed.toLowerCase().startsWith("http") ? trimmed : `https://${trimmed}`;
+      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(trimmed)}</a>`;
+    }
+    return escapeHtml(trimmed);
+  }).filter(Boolean).join("<br>");
+}
 function proposalDetailHtml(p) {
   const dateLabels = (p.proposedDateRanks || []).map(rank => {
     const d = (p.rfpDatesSnapshot || []).find(x => x.rank === rank);
@@ -1244,24 +1333,24 @@ function proposalDetailHtml(p) {
   const fees = ["taxes","resortFee","destinationFee"].filter(k => p.rateFees && p.rateFees[k]).map(k => ({taxes:"Taxes",resortFee:"Resort Fee",destinationFee:"Destination Fee"}[k]));
   if (p.rateFees && p.rateFees.other) fees.push(p.rateFees.otherText || "Other");
   const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
+  const rowLink = (k, v) => v ? `<div><span class="k">${k}:</span> ${linkifyLines(v)}</div>` : "";
   return `<div class="proposal-detail-grid">
     ${row("Address", [p.streetAddress, p.city, p.stateProvince, p.zipCode].filter(Boolean).join(", "))}
     ${row("Phone", p.phone)}
-    ${row("Website", p.website)}
+    ${rowLink("Website", p.website)}
     ${row("Contact", [p.contactName, p.contactPhone, p.contactEmail].filter(Boolean).join(" · "))}
     ${row("Dates proposed", dateLabels)}
+    ${row("Commissionable", p.commissionable === "yes" ? "Yes" + (p.commissionPercent ? ` (${escapeHtml(p.commissionPercent)})` : "") : p.commissionable === "no" ? "No" : "")}
     ${row("Rate fees included", fees.join(", ") || "—")}
-    ${row("F&B Minimum", p.fnbMinimum)}
     ${row("Meeting Room Rental Fee", p.meetingRoomRentalFee)}
     ${row("Cumulative Attrition %", p.cumulativeAttritionPercent)}
-    ${row("F&B Guarantee", p.fnbGuarantee)}
     ${row("Concessions", p.concessions)}
     ${row("Meeting space one floor", p.meetingSpaceOneFloor)}
     ${row("Floors explanation", p.meetingSpaceFloorsExplain)}
     ${row("Exhibits location", [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" — "))}
     ${row("Area description", p.areaDescription)}
-    ${row("Proposal document", p.proposalDocumentLink)}
-    ${row("Floor plan/F&B/AV links", p.floorPlanFnbAvLinks)}
+    ${rowLink("Proposal document", p.proposalDocumentLink)}
+    ${rowLink("Floor plan/F&B/AV links", p.floorPlanFnbAvLinks)}
     ${row("CVB promotions", p.cvbPromotions)}
     ${row("Site inspection support", p.siteInspectionSupport)}
     ${row("Additional notes", p.additionalNotes)}
@@ -1290,6 +1379,40 @@ document.getElementById("exportResponsesBtn").addEventListener("click", () => {
   a.download = `${(currentRecord && currentRecord.data && currentRecord.data.eventName || "rfp-responses").replace(/[^a-z0-9]+/gi, "-")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+});
+
+// ---------- Duplicate RFP ----------
+// Copies the currently-open RFP's data into a brand-new draft record,
+// so staff can use an existing RFP as a template for a similar future
+// event instead of rebuilding one from scratch. The due date and any
+// event-specific logo are cleared since those almost certainly need to
+// change for the new instance; everything else carries over as-is for
+// the user to adjust.
+document.getElementById("duplicateRfpBtn").addEventListener("click", async () => {
+  if (!currentRecord) return;
+  const btn = document.getElementById("duplicateRfpBtn");
+  btn.disabled = true; btn.textContent = "Duplicating…";
+  try {
+    const copy = JSON.parse(JSON.stringify(currentRecord.data));
+    copy.rfpDueDate = "";
+    copy.eventLogoDataUrl = null;
+    const res = await fetch(`${API_BASE}/api/rfps`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(copy)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const newRecord = await res.json();
+    await loadRfpList();
+    await openRfp(newRecord.id);
+    switchTab("intake");
+    alert("Duplicated as a new draft. Update the event name, dates, and due date as needed.");
+  } catch (err) {
+    alert("Couldn't duplicate this RFP.");
+    console.error(err);
+  } finally {
+    btn.disabled = false; btn.textContent = "Duplicate as New RFP";
+  }
 });
 
 // ---------- Delete RFP ----------
@@ -1337,9 +1460,9 @@ function switchTab(tab) {
 }
 
 (async function init() {
-  populateGroupSelect();
   renderPriorityTable();
   const ok = await checkAuth();
+  populateGroupSelect();
   if (ok) await loadRfpList();
 })();
 </script>
