@@ -79,6 +79,10 @@ function generateId() {
   return "rfp_" + crypto.randomUUID().split("-")[0];
 }
 
+function generateProposalId() {
+  return "prop_" + crypto.randomUUID().split("-")[0];
+}
+
 // ---------------- Public slugs ----------------
 // Human-readable URL for a public RFP page, e.g. "nasasps-2027-annual-conference".
 // Generated once, the first time a record is set to "open", and kept
@@ -187,10 +191,120 @@ export async function onRequest(context) {
       return jsonResponse(publicRfpDetail(record));
     }
 
+    // ---- POST /api/public/rfps/:slug/proposals ----
+    // A venue submitting a proposal response. Public, no login — anyone
+    // with the link can submit while the RFP is open. Each submission is
+    // stored as its own KV entry (not nested inside the RFP record) so a
+    // large number of proposals never bloats the RFP's own record, and so
+    // staff can list/filter proposals independently of any one RFP.
+    const publicProposalMatch = path.match(/^\/api\/public\/rfps\/([^/]+)\/proposals$/);
+    if (publicProposalMatch && method === "POST") {
+      const slug = publicProposalMatch[1];
+      const rfpId = await env.RFP_DATA.get(`slug:${slug}`);
+      if (!rfpId) return errorResponse("This RFP could not be found.", 404);
+      const raw = await env.RFP_DATA.get(`rfp:${rfpId}`);
+      if (!raw) return errorResponse("This RFP could not be found.", 404);
+      const rfpRecord = JSON.parse(raw);
+      if (rfpRecord.status !== "open") {
+        return errorResponse("This RFP is not currently accepting proposals.", 409);
+      }
+
+      const body = await request.json();
+      if (!body.propertyName || !body.propertyName.trim()) {
+        return errorResponse("Property name is required.", 400);
+      }
+      if (!body.contactEmail || !body.contactEmail.trim()) {
+        return errorResponse("A contact email is required.", 400);
+      }
+
+      const proposalId = generateProposalId();
+      const proposal = {
+        id: proposalId,
+        rfpId,
+        rfpSlug: slug,
+        // Denormalized from the RFP at submission time so the cross-event
+        // proposals view never has to join back to the RFP record just to
+        // show which event/group a proposal was for.
+        eventName: rfpRecord.data?.eventName || "",
+        groupName: rfpRecord.data?.groupName || "",
+        acronym: rfpRecord.data?.acronym || "",
+        submittedAt: new Date().toISOString(),
+
+        propertyName: (body.propertyName || "").trim(),
+        streetAddress: body.streetAddress || "",
+        city: body.city || "",
+        stateProvince: body.stateProvince || "",
+        zipCode: body.zipCode || "",
+        phone: body.phone || "",
+        website: body.website || "",
+        contactName: body.contactName || "",
+        contactPhone: body.contactPhone || "",
+        contactEmail: (body.contactEmail || "").trim(),
+
+        proposedDateRanks: Array.isArray(body.proposedDateRanks) ? body.proposedDateRanks : [],
+        rfpDatesSnapshot: rfpRecord.data?.dates || [],
+
+        guestRoomRate: body.guestRoomRate || "",
+        rateFees: {
+          taxes: !!body.rateFees?.taxes,
+          resortFee: !!body.rateFees?.resortFee,
+          destinationFee: !!body.rateFees?.destinationFee,
+          other: !!body.rateFees?.other,
+          otherText: body.rateFees?.otherText || ""
+        },
+        commissionable: body.commissionable || "",
+        commissionPercent: body.commissionPercent || "",
+
+        fnbMinimum: body.fnbMinimum || "",
+        meetingRoomRentalFee: body.meetingRoomRentalFee || "",
+        cumulativeAttritionPercent: body.cumulativeAttritionPercent || "",
+        fnbGuarantee: body.fnbGuarantee || "",
+
+        concessions: body.concessions || "",
+
+        meetingSpaceOneFloor: body.meetingSpaceOneFloor || "",
+        meetingSpaceFloorsExplain: body.meetingSpaceFloorsExplain || "",
+        exhibitsLocation: body.exhibitsLocation || "",
+        exhibitsLocationOther: body.exhibitsLocationOther || "",
+
+        areaDescription: body.areaDescription || "",
+        proposalDocumentLink: body.proposalDocumentLink || "",
+        floorPlanFnbAvLinks: body.floorPlanFnbAvLinks || "",
+        cvbPromotions: body.cvbPromotions || "",
+        siteInspectionSupport: body.siteInspectionSupport || "",
+        additionalNotes: body.additionalNotes || ""
+      };
+
+      await env.RFP_DATA.put(`proposal:${rfpId}:${proposalId}`, JSON.stringify(proposal));
+      return jsonResponse(proposal, 201);
+    }
+
     // ---- Everything below this line requires staff login ----
     const identity = getIdentity(request);
     if (!identity) {
       return errorResponse("Not authenticated. Access identity header missing.", 401);
+    }
+
+    // ---- GET /api/proposals[?rfpId=xxx] ----
+    // Staff view of submitted proposals — either scoped to one RFP (the
+    // "Responses" tab) or across every RFP (the cross-event proposals
+    // page). Restricted to admins and the planner, same as status changes
+    // — everyone else is fully denied, not just blocked from editing,
+    // since this is proposal/pricing data from venues.
+    if (path === "/api/proposals" && method === "GET") {
+      if (!identity.isAdmin && !identity.isPlanner) {
+        return errorResponse("Only admins or the event planner can view proposals", 403);
+      }
+      const rfpIdFilter = url.searchParams.get("rfpId");
+      const prefix = rfpIdFilter ? `proposal:${rfpIdFilter}:` : "proposal:";
+      const list = await env.RFP_DATA.list({ prefix });
+      const proposals = await Promise.all(
+        list.keys.map(async (k) => {
+          const raw = await env.RFP_DATA.get(k.name);
+          return raw ? JSON.parse(raw) : null;
+        })
+      );
+      return jsonResponse(proposals.filter(Boolean));
     }
 
     // ---- GET /api/whoami ----
