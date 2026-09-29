@@ -17,6 +17,7 @@
   header { background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%); color: #fff; padding: 22px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
   header .back-link { color: rgba(255,255,255,0.75); font-size: 0.82rem; text-decoration: none; }
   .btn-download { background: var(--gold); color: var(--burgundy-dark); border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+  .btn-share { background: #fff; color: var(--charcoal); border: 1px solid rgba(255,255,255,0.5); padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
   .btn-respond { background: var(--burgundy); color: #fff; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; display: inline-block; }
   .respond-bottom { text-align: center; margin: 24px 0 8px; }
   .respond-bottom .btn-respond { padding: 13px 28px; font-size: 1rem; }
@@ -35,6 +36,12 @@
   .due-banner strong { color: var(--blue); }
   .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
   .section h2 { font-size: 1rem; margin: 0 0 12px; color: var(--burgundy); }
+  .fnb-narrative { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--charcoal); }
+  .fnb-narrative p { margin: 0 0 10px; }
+  .fnb-narrative p:last-child { margin-bottom: 0; }
+  .fnb-narrative ul { margin: 0 0 10px; padding-left: 20px; }
+  .fnb-narrative li { margin-bottom: 6px; }
+  .fnb-subheader { font-size: 0.88rem; margin: 0 0 8px; color: var(--charcoal); }
   .kv-row { display: flex; gap: 10px; font-size: 0.9rem; padding: 4px 0; }
   .kv-row .k { color: var(--charcoal-soft); min-width: 160px; flex-shrink: 0; }
   table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -49,7 +56,7 @@
   .day-block h3 { font-size: 0.88rem; margin: 0 0 6px; }
   .small-note { font-size: 0.8rem; color: var(--charcoal-soft); }
   @media print {
-    header .back-link, .btn-download, .btn-respond, .respond-bottom { display: none; }
+    header .back-link, .btn-download, .btn-respond, .btn-share, .respond-bottom { display: none; }
     body { background: #fff; }
     .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   }
@@ -60,6 +67,7 @@
   <a class="back-link" href="/rfps">&larr; All open RFPs</a>
   <div style="display:flex; gap:10px;">
     <a class="btn-respond" id="respondBtnTop" href="#">Submit a Proposal</a>
+    <button class="btn-share" id="shareBtnTop" onclick="shareRfp(this)">Share this RFP</button>
     <button class="btn-download" onclick="window.print()">Download PDF</button>
   </div>
 </header>
@@ -86,7 +94,22 @@
     <div class="section" id="secRooms"><h2>Guest Room Needs</h2><div id="roomsBody"></div></div>
     <div class="section" id="secMeeting"><h2>Meeting Space Needs</h2><div id="meetingBody"></div></div>
     <div class="section" id="secConcessions"><h2>Must-Have Concessions</h2><div id="concessionsBody"></div></div>
-    <div class="section" id="secFnb"><h2>Food &amp; Beverage</h2><div id="fnbBody"></div></div>
+    <div class="section" id="secFnb">
+      <h2>Food &amp; Beverage</h2>
+      <div class="fnb-narrative">
+        <p>Our group has had success working with venues to establish a customized food and beverage (F&amp;B) guarantee. For this RFP, an F&amp;B guarantee means an agreed-upon price for the meal and beverage services listed in this section, based on the attendee count provided earlier in the form. The venue determines the specific menu offerings it can provide at its proposed price, and the group reviews and approves those menus before they are finalized.</p>
+        <p>If willing to include an F&amp;B guarantee in your proposal, please submit one that includes:</p>
+        <ul>
+          <li>A total price for the meal and beverage services listed below at the stated attendee count, with taxes, service charges, and other fees clearly identified.</li>
+          <li>An additional per-attendee price if attendance exceeds the stated count, with applicable taxes, service charges, and other fees clearly identified.</li>
+          <li>Initial customized menu options within 60 days of contract signing, or a proposed alternative timeline.</li>
+          <li>Accommodation of dietary restrictions, such as nut allergies, vegetarian diets, and gluten-free diets, at no additional cost—or a clear description of any exceptions.</li>
+        </ul>
+        <p>If a reception or bar service is requested, that cost will be priced separately and not included in the F&amp;B guarantee.</p>
+      </div>
+      <h3 class="fnb-subheader">Requested F&amp;B Services</h3>
+      <div id="fnbBody"></div>
+    </div>
     <div class="section" id="secSite"><h2>Site Inspection</h2><div id="siteBody"></div></div>
     <div class="section" id="secExhibits"><h2>Exhibitor &amp; Sponsor Space</h2><div id="exhibitsBody"></div></div>
     <div class="respond-bottom"><a class="btn-respond" id="respondBtnBottom" href="#">Submit a Proposal</a></div>
@@ -184,9 +207,10 @@ function render(r) {
   } else hide("secRooms");
 
   // Meeting space
+  // Note: colocation is intentionally not shown here — it's an internal
+  // planning question, not relevant to a venue reviewing the RFP.
   if (r.meetingSpace && r.meetingSpace.length) {
     document.getElementById("meetingBody").innerHTML =
-      (r.colocation ? `<div class="kv-row"><span class="k">Colocation</span><span>${esc(r.colocation)}</span></div>` : "") +
       r.meetingSpace.map(room => `
         <div class="day-block">
           <h3>${esc(room.roomLabel || "Room")}</h3>
@@ -234,6 +258,32 @@ function render(r) {
       `<div class="kv-row"><span class="k">Booths (10x10 preferred)</span><span>${esc(r.exhibits.premiumCount || "—")}</span></div>` +
       (r.exhibits.placement ? `<div class="kv-row"><span class="k">Desired placement</span><span>${esc(r.exhibits.placement)}</span></div>` : "");
   } else hide("secExhibits");
+}
+
+function shareRfp(btn) {
+  const url = window.location.href;
+  const original = btn.textContent;
+  const showCopied = () => { btn.textContent = "Link copied!"; setTimeout(() => { btn.textContent = original; }, 2000); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(showCopied).catch(() => fallbackCopy(url, showCopied));
+  } else {
+    fallbackCopy(url, showCopied);
+  }
+}
+function fallbackCopy(text, onSuccess) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try {
+    document.execCommand("copy");
+    onSuccess();
+  } catch (e) {
+    prompt("Copy this link:", text);
+  }
+  document.body.removeChild(ta);
 }
 
 loadRfp();
