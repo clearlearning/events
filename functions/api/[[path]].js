@@ -237,11 +237,53 @@ export async function onRequest(context) {
       }
 
       const body = await request.json();
-      if (!body.propertyName || !body.propertyName.trim()) {
-        return errorResponse("Property name is required.", 400);
+
+      // Required-field validation, mirroring what the form enforces
+      // client-side — never trust the client alone for this.
+      const requiredFields = [
+        ["propertyName", "Property name"],
+        ["streetAddress", "Street address"],
+        ["city", "City"],
+        ["stateProvince", "State/Province"],
+        ["zipCode", "Zip/Postal code"],
+        ["phone", "Phone number"],
+        ["website", "Website"],
+        ["contactName", "Sales contact name"],
+        ["contactPhone", "Sales contact phone number"],
+        ["contactEmail", "Sales contact email address"],
+        ["guestRoomRate", "Guest room rate"],
+        ["commissionable", "Whether the rate is commissionable"],
+        ["fnbMinimum", "Food & Beverage minimum"],
+        ["meetingRoomRentalFee", "Meeting room rental fee"],
+        ["cumulativeAttritionPercent", "Cumulative attrition %"],
+        ["fnbGuaranteeOffered", "Whether an F&B guarantee is offered"],
+        ["propertyType", "Property type"]
+      ];
+      for (const [key, label] of requiredFields) {
+        if (!body[key] || !String(body[key]).trim()) {
+          return errorResponse(`${label} is required.`, 400);
+        }
       }
-      if (!body.contactEmail || !body.contactEmail.trim()) {
-        return errorResponse("A contact email is required.", 400);
+      if (body.fnbGuaranteeOffered === "yes") {
+        const fnbRequired = [
+          ["fnbGuaranteeAttendeeCount", "F&B guarantee attendee count"],
+          ["fnbGuaranteeDays", "F&B guarantee number of days"],
+          ["fnbGuaranteeAmount", "F&B guarantee total proposed amount"],
+          ["fnbGuaranteeInclusive", "Whether the F&B amount is inclusive or exclusive"]
+        ];
+        for (const [key, label] of fnbRequired) {
+          if (!body[key] || !String(body[key]).trim()) {
+            return errorResponse(`${label} is required when offering an F&B guarantee.`, 400);
+          }
+        }
+        if (body.fnbGuaranteeInclusive === "exclusive") {
+          if (!body.fnbGuaranteeTaxRate || !body.fnbGuaranteeServiceChargeRate) {
+            return errorResponse("Tax rate(s) and service charge rate(s) are required when the F&B amount is exclusive.", 400);
+          }
+        }
+      }
+      if (!body.termsConfirmed) {
+        return errorResponse("You must confirm that the terms and pricing will remain valid for 30 days after the proposal response deadline.", 400);
       }
 
       const proposalId = generateProposalId();
@@ -285,7 +327,16 @@ export async function onRequest(context) {
         fnbMinimum: body.fnbMinimum || "",
         meetingRoomRentalFee: body.meetingRoomRentalFee || "",
         cumulativeAttritionPercent: body.cumulativeAttritionPercent || "",
-        fnbGuarantee: body.fnbGuarantee || "",
+
+        // F&B guarantee: yes/no, then — only if yes — the madlib terms.
+        fnbGuaranteeOffered: body.fnbGuaranteeOffered || "",
+        fnbGuaranteeAttendeeCount: body.fnbGuaranteeAttendeeCount || "",
+        fnbGuaranteeDays: body.fnbGuaranteeDays || "",
+        fnbGuaranteeAmount: body.fnbGuaranteeAmount || "",
+        fnbGuaranteeInclusive: body.fnbGuaranteeInclusive || "",
+        fnbGuaranteeTaxRate: body.fnbGuaranteeTaxRate || "",
+        fnbGuaranteeServiceChargeRate: body.fnbGuaranteeServiceChargeRate || "",
+        fnbGuaranteeOtherFees: body.fnbGuaranteeOtherFees || "",
 
         concessions: body.concessions || "",
 
@@ -294,12 +345,20 @@ export async function onRequest(context) {
         exhibitsLocation: body.exhibitsLocation || "",
         exhibitsLocationOther: body.exhibitsLocationOther || "",
 
-        areaDescription: body.areaDescription || "",
+        // Property type & area characteristics — replaces the old
+        // free-text "About the Area" field.
+        propertyType: body.propertyType || "",
+        propertyTypeOtherText: body.propertyTypeOtherText || "",
+        areaCharacteristics: Array.isArray(body.areaCharacteristics) ? body.areaCharacteristics : [],
+        areaCharacteristicsOtherText: body.areaCharacteristicsOtherText || "",
+        walkabilityDescription: body.walkabilityDescription || "",
+
         proposalDocumentLink: body.proposalDocumentLink || "",
         floorPlanFnbAvLinks: body.floorPlanFnbAvLinks || "",
         cvbPromotions: body.cvbPromotions || "",
         siteInspectionSupport: body.siteInspectionSupport || "",
-        additionalNotes: body.additionalNotes || ""
+        additionalNotes: body.additionalNotes || "",
+        termsConfirmed: !!body.termsConfirmed
       };
 
       await env.RFP_DATA.put(`proposal:${rfpId}:${proposalId}`, JSON.stringify(proposal));
