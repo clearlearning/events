@@ -50,6 +50,17 @@
   .btn-primary { background: var(--burgundy); color: #fff; padding: 10px 18px; }
   .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
   .btn-primary:disabled { background: #C9BFC2; cursor: not-allowed; }
+  .btn-delete { background: var(--gold); color: var(--burgundy-dark); padding: 10px 18px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-left: auto; }
+  .btn-delete:hover { filter: brightness(1.05); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(20,10,10,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+  .modal-card { background: #fff; border-radius: var(--radius); padding: 24px; max-width: 420px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+  .modal-card h3 { margin: 0 0 8px; color: var(--burgundy); }
+  .modal-card p { font-size: 0.88rem; color: var(--charcoal-soft); margin: 0 0 4px; }
+  .modal-card input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; margin-top: 12px; font-family: inherit; font-size: 0.9rem; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .btn-outline-modal { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 9px 16px; font-size: 0.88rem; cursor: pointer; }
+  .btn-confirm-delete { background: #B3261E; color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+  .btn-confirm-delete:disabled { background: #E3B4B0; cursor: not-allowed; }
   .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--charcoal); padding: 8px 14px; }
   .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); }
   .btn-ghost { background: transparent; color: var(--blue); padding: 6px 4px; font-size: 0.82rem; }
@@ -374,8 +385,22 @@
           <div class="actions-bar">
             <button type="submit" class="btn-primary" id="saveBtn">Save</button>
             <span id="saveStatus"></span>
+            <button type="button" class="btn-delete" id="deleteRfpBtn" style="display:none;">Delete RFP</button>
           </div>
         </form>
+      </div>
+
+      <div class="modal-overlay" id="deleteModal" style="display:none;">
+        <div class="modal-card">
+          <h3>Delete this RFP?</h3>
+          <p>This permanently deletes the RFP, its notes, version history, and cannot be undone.</p>
+          <p>Type <strong>delete</strong> below to confirm.</p>
+          <input type="text" id="deleteConfirmInput" autocomplete="off" placeholder="Type delete to confirm">
+          <div class="modal-actions">
+            <button type="button" class="btn-outline-modal" id="deleteCancelBtn">Cancel</button>
+            <button type="button" class="btn-confirm-delete" id="deleteConfirmBtn" disabled>Delete</button>
+          </div>
+        </div>
       </div>
 
       <div class="tab-panel" id="tab-notes">
@@ -1013,6 +1038,7 @@ async function openRfp(id) {
   loadFormFromData(currentRecord.data);
   renderNotes(); renderHistory(); renderRfpList(); renderStatusControl();
   if (currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner)) renderResponses();
+  document.getElementById("deleteRfpBtn").style.display = (currentIdentity && currentIdentity.isAdmin) ? "inline-block" : "none";
 }
 function startNewRfp() {
   currentRecord = null;
@@ -1026,6 +1052,7 @@ function startNewRfp() {
   switchTab("intake");
   renderRfpList();
   renderStatusControl();
+  document.getElementById("deleteRfpBtn").style.display = "none";
   document.getElementById("sidebarAside").classList.add("collapsed");
 }
 
@@ -1245,6 +1272,43 @@ document.getElementById("exportResponsesBtn").addEventListener("click", () => {
   a.download = `${(currentRecord && currentRecord.data && currentRecord.data.eventName || "rfp-responses").replace(/[^a-z0-9]+/gi, "-")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+});
+
+// ---------- Delete RFP ----------
+// Button only shows for admins (openRfp/startNewRfp toggle it); the
+// server independently enforces admin-only on the DELETE endpoint
+// regardless, so this is just keeping the UI honest about who can
+// actually use it.
+document.getElementById("deleteRfpBtn").addEventListener("click", () => {
+  document.getElementById("deleteConfirmInput").value = "";
+  document.getElementById("deleteConfirmBtn").disabled = true;
+  document.getElementById("deleteModal").style.display = "flex";
+  document.getElementById("deleteConfirmInput").focus();
+});
+document.getElementById("deleteCancelBtn").addEventListener("click", () => {
+  document.getElementById("deleteModal").style.display = "none";
+});
+document.getElementById("deleteConfirmInput").addEventListener("input", (e) => {
+  document.getElementById("deleteConfirmBtn").disabled = e.target.value.trim().toLowerCase() !== "delete";
+});
+document.getElementById("deleteConfirmBtn").addEventListener("click", async () => {
+  if (!currentRecord) return;
+  const btn = document.getElementById("deleteConfirmBtn");
+  btn.disabled = true; btn.textContent = "Deleting…";
+  try {
+    const res = await fetch(`${API_BASE}/api/rfps/${currentRecord.id}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok) throw new Error(await res.text());
+    document.getElementById("deleteModal").style.display = "none";
+    currentRecord = null;
+    document.getElementById("formArea").style.display = "none";
+    document.getElementById("emptyState").style.display = "block";
+    await loadRfpList();
+  } catch (err) {
+    alert("Couldn't delete this RFP. " + (err.message || ""));
+    console.error(err);
+  } finally {
+    btn.disabled = false; btn.textContent = "Delete";
+  }
 });
 
 // ---------- Tabs ----------
