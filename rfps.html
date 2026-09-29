@@ -19,6 +19,13 @@
   header p { margin: 4px 0 0; font-size: 0.9rem; color: rgba(255,255,255,0.75); }
   main { max-width: 1120px; margin: 0 auto; padding: 28px; }
   #emptyState { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--charcoal-soft); }
+  .filters-bar { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; }
+  .filters-bar .field label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; color: var(--charcoal-soft); margin-bottom: 4px; }
+  .filters-bar input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.88rem; }
+  .filters-bar .minmax { display: flex; gap: 6px; }
+  .btn-clear-filters { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; color: var(--charcoal); height: fit-content; }
+  .btn-clear-filters:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .result-count { font-size: 0.82rem; color: var(--charcoal-soft); margin-bottom: 12px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
   .rfp-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 0 0 16px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; transition: transform .1s ease, box-shadow .1s ease; overflow: hidden; }
   .rfp-card:hover { transform: translateY(-2px); box-shadow: 0 4px 18px rgba(30,20,10,0.1); }
@@ -27,8 +34,8 @@
   .rfp-card-body { padding: 0 18px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
   .rfp-group { font-size: 0.75rem; color: var(--charcoal-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
   .rfp-event { font-size: 1.05rem; font-weight: 700; color: var(--charcoal); line-height: 1.3; }
-  .rfp-dates-header { font-size: 0.7rem; font-weight: 700; color: var(--charcoal-soft); text-transform: uppercase; letter-spacing: 0.02em; margin-top: 4px; }
-  .rfp-dates { font-size: 0.8rem; color: var(--charcoal-soft); }
+  .rfp-section-header { font-size: 0.7rem; font-weight: 700; color: var(--charcoal-soft); text-transform: uppercase; letter-spacing: 0.02em; margin-top: 4px; }
+  .rfp-dates, .rfp-cities, .rfp-attendance { font-size: 0.8rem; color: var(--charcoal-soft); }
   .rfp-due { font-size: 0.82rem; color: var(--blue); font-weight: 600; margin-top: auto; padding-top: 6px; }
 </style>
 </head>
@@ -38,41 +45,120 @@
   <p>Current CLEAR events open for venue and hotel proposals</p>
 </header>
 <main>
+  <div class="filters-bar">
+    <div class="field">
+      <label for="filterLocation">Preferred City</label>
+      <input type="text" id="filterLocation" placeholder="e.g. Austin">
+    </div>
+    <div class="field">
+      <label>Date Range</label>
+      <div class="minmax">
+        <input type="date" id="filterDateStart">
+        <input type="date" id="filterDateEnd">
+      </div>
+    </div>
+    <div class="field">
+      <label>Event Size (attendees)</label>
+      <div class="minmax">
+        <input type="number" id="filterSizeMin" placeholder="Min" min="0">
+        <input type="number" id="filterSizeMax" placeholder="Max" min="0">
+      </div>
+    </div>
+    <button type="button" class="btn-clear-filters" id="clearFiltersBtn">Clear filters</button>
+  </div>
+  <div class="result-count" id="resultCount"></div>
   <div id="emptyState" style="display:none;">No RFPs are currently open. Check back soon.</div>
   <div class="grid" id="rfpGrid"></div>
 </main>
 
 <script>
+let allRfps = [];
+
 async function loadOpenRfps() {
   try {
     const res = await fetch("/api/public/rfps");
     if (!res.ok) throw new Error("failed");
-    const rfps = await res.json();
-    const grid = document.getElementById("rfpGrid");
-    const empty = document.getElementById("emptyState");
-    if (!rfps.length) { empty.style.display = "block"; return; }
-    grid.innerHTML = rfps.map(r => {
-      const cardImg = r.eventLogoUrl || r.logoUrl;
-      return `
-      <a class="rfp-card" href="/rfps/${encodeURIComponent(r.slug)}">
-        <div class="rfp-logo-wrap">${cardImg ? `<img src="${cardImg}" alt="${r.eventName || r.groupName} logo">` : ""}</div>
-        <div class="rfp-card-body">
-          <div class="rfp-group">${r.groupName || ""}</div>
-          <div class="rfp-event">${r.eventName || "(untitled event)"}</div>
-          ${r.dates && r.dates.length ? `
-            <div class="rfp-dates-header">Preferred Dates</div>
-            ${[...r.dates].sort((a,b) => a.rank - b.rank).map(d => `<div class="rfp-dates">${fmtDateRange(d)}</div>`).join("")}
-          ` : ""}
-          ${r.rfpDueDate ? `<div class="rfp-due">Proposals due ${fmtDate(r.rfpDueDate)}</div>` : ""}
-        </div>
-      </a>
-    `;
-    }).join("");
+    allRfps = await res.json();
+    render();
   } catch (e) {
     document.getElementById("emptyState").style.display = "block";
     document.getElementById("emptyState").textContent = "Couldn't load open RFPs right now.";
   }
 }
+
+function normalizedAttendance(r) {
+  const min = Number(r.attendanceMin) || null;
+  const max = Number(r.attendanceMax) || null;
+  return { min: min ?? max ?? null, max: max ?? min ?? null };
+}
+
+function filteredRfps() {
+  const location = document.getElementById("filterLocation").value.trim().toLowerCase();
+  const dateStart = document.getElementById("filterDateStart").value;
+  const dateEnd = document.getElementById("filterDateEnd").value;
+  const sizeMin = document.getElementById("filterSizeMin").value;
+  const sizeMax = document.getElementById("filterSizeMax").value;
+
+  return allRfps.filter(r => {
+    if (location) {
+      const cities = (r.cities || []).map(c => (c.name || "").toLowerCase());
+      if (!cities.some(c => c.includes(location))) return false;
+    }
+    if (dateStart || dateEnd) {
+      const dates = r.dates || [];
+      const rangeStart = dateStart || "0000-01-01";
+      const rangeEnd = dateEnd || "9999-12-31";
+      const overlaps = dates.some(d => d.start && d.end && d.start <= rangeEnd && d.end >= rangeStart);
+      if (!overlaps) return false;
+    }
+    if (sizeMin || sizeMax) {
+      const { min, max } = normalizedAttendance(r);
+      if (min == null && max == null) return false;
+      const filterMin = sizeMin ? Number(sizeMin) : 0;
+      const filterMax = sizeMax ? Number(sizeMax) : Infinity;
+      if (max < filterMin || min > filterMax) return false;
+    }
+    return true;
+  });
+}
+
+function render() {
+  const rfps = filteredRfps();
+  const grid = document.getElementById("rfpGrid");
+  const empty = document.getElementById("emptyState");
+  document.getElementById("resultCount").textContent = allRfps.length
+    ? `Showing ${rfps.length} of ${allRfps.length} open RFP${allRfps.length === 1 ? "" : "s"}`
+    : "";
+  if (!allRfps.length) { empty.style.display = "block"; empty.textContent = "No RFPs are currently open. Check back soon."; grid.innerHTML = ""; return; }
+  if (!rfps.length) { empty.style.display = "block"; empty.textContent = "No open RFPs match those filters."; grid.innerHTML = ""; return; }
+  empty.style.display = "none";
+  grid.innerHTML = rfps.map(r => {
+    const cardImg = r.eventLogoUrl || r.logoUrl;
+    return `
+    <a class="rfp-card" href="/rfps/${encodeURIComponent(r.slug)}">
+      <div class="rfp-logo-wrap">${cardImg ? `<img src="${cardImg}" alt="${r.eventName || r.groupName} logo">` : ""}</div>
+      <div class="rfp-card-body">
+        <div class="rfp-group">${r.groupName || ""}</div>
+        <div class="rfp-event">${r.eventName || "(untitled event)"}</div>
+        ${r.cities && r.cities.length ? `
+          <div class="rfp-section-header">Preferred Cities</div>
+          <div class="rfp-cities">${[...r.cities].sort((a,b) => a.rank - b.rank).map(c => c.name).join(", ")}</div>
+        ` : ""}
+        ${r.dates && r.dates.length ? `
+          <div class="rfp-section-header">Preferred Dates</div>
+          ${[...r.dates].sort((a,b) => a.rank - b.rank).map(d => `<div class="rfp-dates">${fmtDateRange(d)}</div>`).join("")}
+        ` : ""}
+        ${fmtAttendance(r) ? `
+          <div class="rfp-section-header">Expected Attendance</div>
+          <div class="rfp-attendance">${fmtAttendance(r)}</div>
+        ` : ""}
+        ${r.proposalDueDate ? `<div class="rfp-due">Proposal due ${fmtDate(r.proposalDueDate)}</div>` : ""}
+      </div>
+    </a>
+  `;
+  }).join("");
+}
+
 function fmtDate(iso) { if (!iso) return ""; return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
 function fmtDateRange(dateOption) {
   if (!dateOption || !dateOption.start) return "";
@@ -80,6 +166,23 @@ function fmtDateRange(dateOption) {
   const end = dateOption.end ? fmtDate(dateOption.end) : "";
   return end && end !== start ? `${start} – ${end}` : start;
 }
+function fmtAttendance(r) {
+  if (!r.attendanceType) return "";
+  const range = r.attendanceType === "range" ? `${r.attendanceMin || "?"}–${r.attendanceMax || "?"}` : (r.attendanceMin || r.attendanceMax || "?");
+  const scope = r.attendanceScope === "per-day" ? "per day" : "total";
+  return `${range} (${scope})`;
+}
+
+["filterLocation","filterDateStart","filterDateEnd","filterSizeMin","filterSizeMax"].forEach(id => {
+  document.getElementById(id).addEventListener("input", render);
+});
+document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+  ["filterLocation","filterDateStart","filterDateEnd","filterSizeMin","filterSizeMax"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  render();
+});
+
 loadOpenRfps();
 </script>
 </body>
