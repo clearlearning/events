@@ -187,15 +187,14 @@ function render(r) {
   if (r.meetingSpace && r.meetingSpace.length) {
     document.getElementById("meetingBody").innerHTML =
       (r.colocation ? `<div class="kv-row"><span class="k">Colocation</span><span>${esc(r.colocation)}</span></div>` : "") +
-      r.meetingSpace.map(day => `
+      r.meetingSpace.map(room => `
         <div class="day-block">
-          <h3>${esc(day.label)}</h3>
-          ${(day.rooms || []).map(room => `
-            <div class="kv-row"><span class="k">${esc(room.roomLabel || "Room")}</span>
-              <span>${esc(room.floorSet || "")}${room.maxSeats ? " · up to " + esc(room.maxSeats) + " seats" : ""}</span></div>
-            ${(room.avNeeds || []).filter(a => a.name).map(a => `<span class="chip">${esc(a.name)}${a.qty ? " × " + esc(a.qty) : ""}${a.name === "Other" && a.otherText ? ": " + esc(a.otherText) : ""}</span>`).join("")}
-            ${room.notes ? `<div class="small-note">${esc(room.notes)}</div>` : ""}
-          `).join("")}
+          <h3>${esc(room.roomLabel || "Room")}</h3>
+          <div class="kv-row"><span class="k">Setup</span>
+            <span>${esc(room.floorSet || "")}${room.maxSeats ? " · up to " + esc(room.maxSeats) + " seats" : ""}</span></div>
+          ${(room.days || []).length ? `<div style="margin:4px 0;">${(room.days || []).slice().sort((a,b)=>a-b).map(d => `<span class="chip">Day ${esc(d)}</span>`).join("")}</div>` : ""}
+          ${(room.avNeeds || []).filter(a => a.name).map(a => `<span class="chip">${esc(a.name)}${a.qty ? " × " + esc(a.qty) : ""}${a.name === "Other" && a.otherText ? ": " + esc(a.otherText) : ""}</span>`).join("")}
+          ${room.notes ? `<div class="small-note">${esc(room.notes)}</div>` : ""}
         </div>
       `).join("");
   } else hide("secMeeting");
