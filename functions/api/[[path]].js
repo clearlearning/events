@@ -58,6 +58,15 @@ function errorResponse(message, status = 400) {
 
 // ---------------- Identity ----------------
 
+// Staff whose email domain ties them to one specific organization only
+// see and manage that organization's RFPs and proposals — e.g. Jason
+// Whyte (jason@thenrwc.org) is scoped to NRWC only. Admins and the
+// planner are exempt regardless of which email domain they log in
+// with, since they need full cross-org access by design.
+const DOMAIN_ORG_RESTRICTIONS = {
+  "thenrwc.org": "NRWC"
+};
+
 // Cloudflare Access injects this header once a request has passed the
 // login wall. If it's missing, either the request didn't come through
 // Access, or Access isn't correctly configured in front of this Worker.
@@ -69,8 +78,10 @@ function getIdentity(request) {
   const name = STAFF_DIRECTORY[normalizedEmail] || normalizedEmail;
   const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
   const isPlanner = PLANNER_EMAILS.includes(normalizedEmail);
+  const domain = normalizedEmail.split("@")[1] || "";
+  const orgRestriction = (!isAdmin && !isPlanner && DOMAIN_ORG_RESTRICTIONS[domain]) || null;
 
-  return { email: normalizedEmail, name, isAdmin, isPlanner };
+  return { email: normalizedEmail, name, isAdmin, isPlanner, orgRestriction };
 }
 
 // ---------------- ID generator ----------------
@@ -288,22 +299,27 @@ export async function onRequest(context) {
     // ---- GET /api/proposals[?rfpId=xxx] ----
     // Staff view of submitted proposals — either scoped to one RFP (the
     // "Responses" tab) or across every RFP (the cross-event proposals
-    // page). Restricted to admins and the planner, same as status changes
-    // — everyone else is fully denied, not just blocked from editing,
-    // since this is proposal/pricing data from venues.
+    // page). Admins and the planner see everything; an org-restricted
+    // user (e.g. an NRWC-domain staffer) can view too, but only ever
+    // sees proposals for their own organization. Everyone else is
+    // fully denied, not just blocked from editing.
     if (path === "/api/proposals" && method === "GET") {
-      if (!identity.isAdmin && !identity.isPlanner) {
+      if (!identity.isAdmin && !identity.isPlanner && !identity.orgRestriction) {
         return errorResponse("Only admins or the event planner can view proposals", 403);
       }
       const rfpIdFilter = url.searchParams.get("rfpId");
       const prefix = rfpIdFilter ? `proposal:${rfpIdFilter}:` : "proposal:";
       const list = await env.RFP_DATA.list({ prefix });
-      const proposals = await Promise.all(
+      let proposals = await Promise.all(
         list.keys.map(async (k) => {
           const raw = await env.RFP_DATA.get(k.name);
           return raw ? JSON.parse(raw) : null;
         })
       );
+      proposals = proposals.filter(Boolean);
+      if (identity.orgRestriction) {
+        proposals = proposals.filter(p => p.acronym === identity.orgRestriction);
+      }
       return jsonResponse(proposals.filter(Boolean));
     }
 
@@ -316,6 +332,9 @@ export async function onRequest(context) {
 
     // ---- GET /api/rfps ----
     // Summary list for a dashboard/listing view (not full version history).
+    // Sorted by the RFP's own due date (soonest first) — KV's natural
+    // list order is essentially random (lexicographic by a random id),
+    // which isn't useful for staff triaging what's coming up.
     if (path === "/api/rfps" && method === "GET") {
       const list = await env.RFP_DATA.list({ prefix: "rfp:" });
       const records = await Promise.all(
@@ -323,17 +342,26 @@ export async function onRequest(context) {
           const raw = await env.RFP_DATA.get(k.name);
           if (!raw) return null;
           const record = JSON.parse(raw);
+          if (identity.orgRestriction && record.data?.acronym !== identity.orgRestriction) return null;
           return {
             id: record.id,
             status: record.status,
             currentVersion: record.currentVersion,
             groupName: record.data?.groupName || "(untitled)",
             eventName: record.data?.eventName || "",
+            rfpDueDate: record.data?.rfpDueDate || null,
             updatedAt: record.updatedAt
           };
         })
       );
-      return jsonResponse(records.filter(Boolean));
+      const filtered = records.filter(Boolean);
+      filtered.sort((a, b) => {
+        if (!a.rfpDueDate && !b.rfpDueDate) return 0;
+        if (!a.rfpDueDate) return 1;
+        if (!b.rfpDueDate) return -1;
+        return a.rfpDueDate.localeCompare(b.rfpDueDate);
+      });
+      return jsonResponse(filtered);
     }
 
     const singleMatch = path.match(/^\/api\/rfps\/([^/]+)$/);
@@ -344,13 +372,20 @@ export async function onRequest(context) {
       const id = singleMatch[1];
       const raw = await env.RFP_DATA.get(`rfp:${id}`);
       if (!raw) return errorResponse("Not found", 404);
-      return jsonResponse(JSON.parse(raw));
+      const record = JSON.parse(raw);
+      if (identity.orgRestriction && record.data?.acronym !== identity.orgRestriction) {
+        return errorResponse("Not found", 404);
+      }
+      return jsonResponse(record);
     }
 
     // ---- POST /api/rfps ----
     // Create a new RFP record. Body = the intake form field data.
     if (path === "/api/rfps" && method === "POST") {
       const body = await request.json();
+      if (identity.orgRestriction && body.acronym !== identity.orgRestriction) {
+        return errorResponse(`You can only create RFPs for ${identity.orgRestriction}.`, 403);
+      }
       const id = generateId();
       const now = new Date().toISOString();
 
@@ -359,6 +394,7 @@ export async function onRequest(context) {
         status: "draft",
         currentVersion: 1,
         data: body,
+        createdAt: now,
         updatedAt: now,
         versions: [
           {
@@ -385,7 +421,22 @@ export async function onRequest(context) {
       if (!raw) return errorResponse("Not found", 404);
 
       const record = JSON.parse(raw);
+
+      if (identity.orgRestriction && record.data?.acronym !== identity.orgRestriction) {
+        return errorResponse("Not found", 404);
+      }
+
+      // Once an RFP leaves Draft, only admins or the planner can still
+      // edit its intake data — everyone else is locked out of changes,
+      // though they can still view it and add notes.
+      if (record.status !== "draft" && !identity.isAdmin && !identity.isPlanner) {
+        return errorResponse(`This RFP is locked for editing because its status is "${record.status}", not "draft". Only an admin or the event planner can change it now.`, 403);
+      }
+
       const body = await request.json();
+      if (identity.orgRestriction && body.acronym !== identity.orgRestriction) {
+        return errorResponse(`You can only edit RFPs for ${identity.orgRestriction}.`, 403);
+      }
       const now = new Date().toISOString();
       const newVersion = record.currentVersion + 1;
 
