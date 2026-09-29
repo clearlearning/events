@@ -426,11 +426,12 @@ export async function onRequest(context) {
         return errorResponse("Not found", 404);
       }
 
-      // Once an RFP leaves Draft, only admins or the planner can still
-      // edit its intake data — everyone else is locked out of changes,
-      // though they can still view it and add notes.
-      if (record.status !== "draft" && !identity.isAdmin && !identity.isPlanner) {
-        return errorResponse(`This RFP is locked for editing because its status is "${record.status}", not "draft". Only an admin or the event planner can change it now.`, 403);
+      // Once an RFP leaves Draft, its intake data is locked for everyone
+      // — no exception for admins or the planner. Status changes are a
+      // separate endpoint (PUT /api/rfps/:id/status) and aren't affected
+      // by this; this only blocks editing the RFP's own field data.
+      if (record.status !== "draft") {
+        return errorResponse(`This RFP is locked for editing because its status is "${record.status}", not "draft". Change its status back to Draft to edit it.`, 403);
       }
 
       const body = await request.json();
