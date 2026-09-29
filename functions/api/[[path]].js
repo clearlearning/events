@@ -1,13 +1,8 @@
 /**
- * CLEAR Events RFP — Pages Function version
- * Runs as part of the events-site Pages project itself, reachable at
- * events-site-68h.pages.dev/api/... (or events.clear-hq.org/api/... once
- * the custom domain is usable again — this same file serves both, no
- * changes needed). Genuinely same-origin with the form page, so no
- * cross-site cookie issues, and it shares the SAME RFP_DATA KV
- * namespace as the standalone Worker — same data either way.
- *
- * File location in the repo: functions/api/[[path]].js
+ * CLEAR Events RFP Worker
+ * Handles all data operations for the RFP intake system.
+ * Bound KV namespace: RFP_DATA
+ * Identity comes from Cloudflare Access (Cf-Access-Authenticated-User-Email header)
  */
 
 // ---- Staff directory: email -> display name ----
@@ -151,9 +146,8 @@ function publicRfpSummary(record) {
 
 // ---------------- Main handler ----------------
 
-export async function onRequest(context) {
-  const { request, env } = context;
-  {
+export default {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
@@ -179,15 +173,14 @@ export async function onRequest(context) {
     if (publicSingleMatch && method === "GET") {
       const slug = publicSingleMatch[1];
       const id = await env.RFP_DATA.get(`slug:${slug}`);
-      if (!id) return errorResponse("Not found", 404);
+      if (!id) return errorResponse(`No record indexed under slug "${slug}" (slug->id lookup failed)`, 404);
       const raw = await env.RFP_DATA.get(`rfp:${id}`);
-      if (!raw) return errorResponse("Not found", 404);
+      if (!raw) return errorResponse(`Slug "${slug}" points at id "${id}", but no record exists with that id`, 404);
       const record = JSON.parse(raw);
-      if (record.status !== "open") return errorResponse("Not found", 404);
+      if (record.status !== "open") return errorResponse(`Record found for slug "${slug}", but its status is "${record.status}", not "open"`, 404);
       return jsonResponse(publicRfpDetail(record));
     }
 
-    // ---- Everything below this line requires staff login ----
     const identity = getIdentity(request);
     if (!identity) {
       return errorResponse("Not authenticated. Access identity header missing.", 401);
@@ -366,4 +359,4 @@ export async function onRequest(context) {
 
     return errorResponse("Not found", 404);
   }
-}
+};
