@@ -145,10 +145,10 @@ function render(r) {
       badgeImg.style.display = "none";
     }
   }
-  if (r.rfpDueDate) {
+  if (r.proposalDueDate) {
     const banner = document.getElementById("dueBanner");
     banner.style.display = "block";
-    banner.innerHTML = `Proposals are due by <strong>${fmtDate(r.rfpDueDate)}</strong>`;
+    banner.innerHTML = `Proposals are due by <strong>${fmtDate(r.proposalDueDate)}</strong>`;
   }
 
   // Cities
@@ -230,8 +230,8 @@ function render(r) {
   // Exhibits
   if (r.exhibits && r.exhibits.needed) {
     document.getElementById("exhibitsBody").innerHTML =
-      `<div class="kv-row"><span class="k">Standard booths</span><span>${esc(r.exhibits.standardCount || "—")}</span></div>` +
-      `<div class="kv-row"><span class="k">Premium / double booths</span><span>${esc(r.exhibits.premiumCount || "—")}</span></div>` +
+      `<div class="kv-row"><span class="k">Tables</span><span>${esc(r.exhibits.standardCount || "—")}</span></div>` +
+      `<div class="kv-row"><span class="k">Booths (10x10 preferred)</span><span>${esc(r.exhibits.premiumCount || "—")}</span></div>` +
       (r.exhibits.placement ? `<div class="kv-row"><span class="k">Desired placement</span><span>${esc(r.exhibits.placement)}</span></div>` : "");
   } else hide("secExhibits");
 }
