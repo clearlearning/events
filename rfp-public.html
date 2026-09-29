@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RFP — CLEAR Events</title>
-  <link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
+<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
 <style>
   :root {
     --burgundy: #64092C; --burgundy-dark: #4A0620; --gold: #DDA838;
@@ -17,6 +17,9 @@
   header { background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%); color: #fff; padding: 22px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
   header .back-link { color: rgba(255,255,255,0.75); font-size: 0.82rem; text-decoration: none; }
   .btn-download { background: var(--gold); color: var(--burgundy-dark); border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+  .btn-respond { background: var(--burgundy); color: #fff; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; display: inline-block; }
+  .respond-bottom { text-align: center; margin: 24px 0 8px; }
+  .respond-bottom .btn-respond { padding: 13px 28px; font-size: 1rem; }
   main { max-width: 860px; margin: 0 auto; padding: 28px; }
   #loadingState, #errorState { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--charcoal-soft); }
   #errorState { display: none; }
@@ -46,7 +49,7 @@
   .day-block h3 { font-size: 0.88rem; margin: 0 0 6px; }
   .small-note { font-size: 0.8rem; color: var(--charcoal-soft); }
   @media print {
-    header .back-link, .btn-download { display: none; }
+    header .back-link, .btn-download, .btn-respond, .respond-bottom { display: none; }
     body { background: #fff; }
     .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   }
@@ -55,7 +58,10 @@
 <body>
 <header>
   <a class="back-link" href="/rfps">&larr; All open RFPs</a>
-  <button class="btn-download" onclick="window.print()">Download PDF</button>
+  <div style="display:flex; gap:10px;">
+    <a class="btn-respond" id="respondBtnTop" href="#">Submit a Proposal</a>
+    <button class="btn-download" onclick="window.print()">Download PDF</button>
+  </div>
 </header>
 <main>
   <div id="loadingState">Loading…</div>
@@ -83,6 +89,7 @@
     <div class="section" id="secFnb"><h2>Food &amp; Beverage</h2><div id="fnbBody"></div></div>
     <div class="section" id="secSite"><h2>Site Inspection</h2><div id="siteBody"></div></div>
     <div class="section" id="secExhibits"><h2>Exhibitor &amp; Sponsor Space</h2><div id="exhibitsBody"></div></div>
+    <div class="respond-bottom"><a class="btn-respond" id="respondBtnBottom" href="#">Submit a Proposal</a></div>
   </div>
 </main>
 
@@ -93,6 +100,8 @@ function hide(id) { document.getElementById(id).style.display = "none"; }
 
 async function loadRfp() {
   const slug = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop());
+  document.getElementById("respondBtnTop").href = `/rfps/${encodeURIComponent(slug)}/respond`;
+  document.getElementById("respondBtnBottom").href = `/rfps/${encodeURIComponent(slug)}/respond`;
   try {
     const res = await fetch(`/api/public/rfps/${encodeURIComponent(slug)}`);
     if (!res.ok) {
@@ -122,10 +131,19 @@ function render(r) {
   }
   // If we're leading with the event logo and there's also a group logo,
   // show it as a small secondary badge so the org still gets credit.
-  if (r.eventLogoUrl && r.logoUrl) {
+  // Show "Presented by [group]" whenever an event logo is the hero image,
+  // regardless of whether an org logo image happens to be available —
+  // the group name should always show even if the logo itself can't.
+  if (r.eventLogoUrl) {
     document.getElementById("orgBadge").style.display = "flex";
-    document.getElementById("orgBadgeImg").src = r.logoUrl;
     document.getElementById("orgBadgeText").textContent = `Presented by ${r.groupName || "the group"}`;
+    const badgeImg = document.getElementById("orgBadgeImg");
+    if (r.logoUrl) {
+      badgeImg.src = r.logoUrl;
+      badgeImg.style.display = "inline-block";
+    } else {
+      badgeImg.style.display = "none";
+    }
   }
   if (r.rfpDueDate) {
     const banner = document.getElementById("dueBanner");
