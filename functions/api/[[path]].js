@@ -35,7 +35,6 @@ const ADMIN_EMAILS = [
 // RFP's status (draft/open/closed/awarded) in addition to admins.
 const PLANNER_EMAILS = [
   "cgomez@clearhq.org",
-  "candela@thenrwc.org",
   "candela.gomez@nasasps.org"
 ];
 
