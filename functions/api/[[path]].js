@@ -84,6 +84,38 @@ function getIdentity(request) {
   return { email: normalizedEmail, name, isAdmin, isPlanner, orgRestriction };
 }
 
+// ---------------- Candela notification email ----------------
+
+// Set as a Cloudflare Pages environment variable (Secret) named
+// POWER_AUTOMATE_WEBHOOK_URL — the "HTTP POST URL" from the Power
+// Automate flow's trigger. The flow itself builds the email subject and
+// body from the eventName/groupName fields posted here, so this code
+// only needs to send those two values.
+
+// Fire-and-forget: a failed or misconfigured webhook must never block a
+// staff member from actually saving their work. Any error here is
+// logged (visible in the Cloudflare Pages Functions log) and swallowed.
+async function notifyCandela(env, { eventName, groupName }) {
+  if (!env.POWER_AUTOMATE_WEBHOOK_URL) {
+    console.error("notifyCandela: POWER_AUTOMATE_WEBHOOK_URL is not set, skipping notification");
+    return;
+  }
+  const eventLabel = eventName || "(untitled event)";
+  const groupLabel = groupName || "(no group set)";
+  try {
+    const res = await fetch(env.POWER_AUTOMATE_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventName: eventLabel, groupName: groupLabel })
+    });
+    if (!res.ok) {
+      console.error("notifyCandela: Power Automate webhook returned", res.status, await res.text());
+    }
+  } catch (err) {
+    console.error("notifyCandela: failed to call webhook", err);
+  }
+}
+
 // ---------------- ID generator ----------------
 
 function generateId() {
@@ -483,6 +515,7 @@ export async function onRequest(context) {
       };
 
       await env.RFP_DATA.put(`rfp:${id}`, JSON.stringify(record));
+      context.waitUntil(notifyCandela(env, { eventName: body.eventName, groupName: body.groupName }));
       return jsonResponse(record, 201);
     }
 
@@ -527,6 +560,7 @@ export async function onRequest(context) {
       });
 
       await env.RFP_DATA.put(`rfp:${id}`, JSON.stringify(record));
+      context.waitUntil(notifyCandela(env, { eventName: body.eventName, groupName: body.groupName }));
       return jsonResponse(record);
     }
 
