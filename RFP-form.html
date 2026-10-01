@@ -483,7 +483,7 @@ const GROUP_PRESETS = [
   { name: "Counseling Compact Commission", acronym: "CCC", website: "https://counselingcompact.gov" },
   { name: "Coalition for Physician Enhancement", acronym: "CPE", website: "https://www.cpehq.org" },
   { name: "National Association of State Administrators and Supervisors of Private Schools", acronym: "NASASPS", website: "https://nasasps.org" },
-  { name: "National Reentry Workforce Collaborative", acronym: "NRWC", website: "https://thenrwc.org" }
+  { name: "National Reentry Workforce Coalition", acronym: "NRWC", website: "https://thenrwc.org" }
 
 ];
 function populateGroupSelect() {
@@ -1326,10 +1326,11 @@ function linkifyLines(text) {
   }).filter(Boolean).join("<br>");
 }
 function proposalDetailHtml(p) {
-  const dateLabels = (p.proposedDateRanks || []).map(rank => {
-    const d = (p.rfpDatesSnapshot || []).find(x => x.rank === rank);
-    return d ? `Option ${rank} (${fmtDate(d.start)}–${fmtDate(d.end)})` : `Option ${rank}`;
-  }).join(", ") || "—";
+  // Look up by array position, not by rank — ranks can tie, positions can't.
+  const dateLabels = (p.proposedDateIndexes || []).map(idx => {
+    const d = (p.rfpDatesSnapshot || [])[idx];
+    return d ? `${fmtDate(d.start)}–${fmtDate(d.end)}` : "";
+  }).filter(Boolean).join(", ") || "—";
   const fees = ["taxes","resortFee","destinationFee"].filter(k => p.rateFees && p.rateFees[k]).map(k => ({taxes:"Taxes",resortFee:"Resort Fee",destinationFee:"Destination Fee"}[k]));
   if (p.rateFees && p.rateFees.other) fees.push(p.rateFees.otherText || "Other");
   const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
