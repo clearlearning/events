@@ -169,6 +169,13 @@ function computePeakNights(guestRooms) {
   return counts.length ? Math.max(...counts) : 0;
 }
 
+// Same pattern for attendance: Peak Attendance isn't a separately-entered
+// field, it's just the highest value across the day-by-day breakdown.
+function computePeakAttendance(attendanceByDay) {
+  const counts = (attendanceByDay || []).map(a => Number(a.count) || 0);
+  return counts.length ? Math.max(...counts) : 0;
+}
+
 // Explicit allow-list of fields shown on public pages. New internal-only
 // fields (like the budget numbers) are private by default unless added
 // here on purpose.
@@ -188,8 +195,8 @@ function publicRfpDetail(record) {
     patternFlexible: !!d.patternFlexible,
     noFriday: !!d.noFriday,
     patternNotes: d.patternNotes || "",
-    maxAttendance: d.maxAttendance || "",
     attendanceByDay: d.attendanceByDay || [],
+    peakAttendance: computePeakAttendance(d.attendanceByDay),
     guestRooms: d.guestRooms || [],
     maxNightlyRoomRate: d.maxNightlyRoomRate || "",
     peakNights: computePeakNights(d.guestRooms),
@@ -213,7 +220,7 @@ function publicRfpSummary(record) {
     proposalDueDate: computeProposalDueDate(d.rfpDueDate),
     dates: d.dates || [],
     cities: d.cities || [],
-    maxAttendance: d.maxAttendance || "",
+    peakAttendance: computePeakAttendance(d.attendanceByDay),
     peakNights: computePeakNights(d.guestRooms)
   };
 }
