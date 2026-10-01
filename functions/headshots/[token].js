@@ -45,7 +45,11 @@ const PAGE = `<!doctype html>
   body { margin:0; font-family:"Open Sans","Trebuchet MS",Arial,sans-serif; color:#2b2b2b; background:var(--paper); line-height:1.55; }
   .band { background:var(--burgundy); color:#fff; padding:calc(32px + env(safe-area-inset-top, 0px)) 24px 76px; border-bottom:5px solid var(--gold); }
   .wrap { max-width:1080px; margin:0 auto; }
-  .event { font-family:"Trebuchet MS","Open Sans",sans-serif; color:var(--gold); font-weight:700; font-size:15px; margin:0; }
+  .logo-plate { display:inline-block; background:#fff; border-radius:6px; padding:10px 16px; }
+  .logo-plate img { display:block; height:64px; width:auto; max-width:100%; }
+  .sponsor { display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-top:44px; padding-top:24px; border-top:1px solid var(--line); }
+  .sponsor img { display:block; height:44px; width:auto; }
+  .sponsor p { margin:0; font-size:14px; color:var(--charcoal); max-width:46ch; }
   h1 { font-size:clamp(30px, 5.5vw, 48px); line-height:1.12; margin:12px 0 10px; font-weight:700; max-width:18ch; }
   .sub { margin:0; max-width:60ch; color:#f3e6ea; }
   main { padding:0 24px calc(64px + env(safe-area-inset-bottom, 0px)); }
@@ -73,13 +77,17 @@ const PAGE = `<!doctype html>
 <body>
   <div class="band">
     <div class="wrap">
-      <p class="event">__EVENT__</p>
+      <div class="logo-plate"><img src="https://clearlearning.github.io/digitalsignage/CLEAR25_PortlandLogo_FullColor.png" alt="__EVENT__"></div>
       <h1 id="title">Your headshots</h1>
       <p class="sub" id="sub">Loading your photos…</p>
     </div>
   </div>
   <main>
     <div class="wrap lift" id="content"><div class="skeleton"></div></div>
+    <div class="wrap sponsor">
+      <img src="https://clearlearning.github.io/digitalsignage/pearson.png" alt="Pearson">
+      <p>Thank you to Pearson for sponsoring the conference headshots.</p>
+    </div>
   </main>
 <script>
 (function () {
