@@ -100,7 +100,7 @@ const PAGE = `<!doctype html>
       <div class="s-logo"><img src="https://clearlearning.github.io/digitalsignage/Pearson.png" alt="Pearson"></div>
       <div>
         <h2>Headshots made possible by Pearson</h2>
-        <p>Thank you to Pearson for sponsoring professional headshots for CLEAR members at this year's conference.</p>
+        <p>Thank you to Pearson for sponsoring professional headshots for attendees of this year's conference.</p>
       </div>
     </aside>
   </main>
