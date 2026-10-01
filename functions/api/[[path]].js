@@ -1,5 +1,5 @@
 /**
- * CLEAR Events RFP — Pages Function version 
+ * CLEAR Events RFP — Pages Function version
  * Runs as part of the events-site Pages project itself, reachable at
  * events-site-68h.pages.dev/api/... (or events.clear-hq.org/api/... once
  * the custom domain is usable again — this same file serves both, no
@@ -161,6 +161,14 @@ function computeProposalDueDate(rfpDueDate) {
   return d.toISOString().slice(0, 10);
 }
 
+// Peak Nights is the highest room count across all listed nights — the
+// headline number venues actually need to judge fit on, derived here
+// rather than trusting a separately-entered value to stay in sync.
+function computePeakNights(guestRooms) {
+  const counts = (guestRooms || []).map(g => Number(g.rooms) || 0);
+  return counts.length ? Math.max(...counts) : 0;
+}
+
 // Explicit allow-list of fields shown on public pages. New internal-only
 // fields (like the budget numbers) are private by default unless added
 // here on purpose.
@@ -180,11 +188,11 @@ function publicRfpDetail(record) {
     patternFlexible: !!d.patternFlexible,
     noFriday: !!d.noFriday,
     patternNotes: d.patternNotes || "",
-    attendanceType: d.attendanceType || "",
-    attendanceMin: d.attendanceMin || "",
-    attendanceMax: d.attendanceMax || "",
-    attendanceScope: d.attendanceScope || "",
+    maxAttendance: d.maxAttendance || "",
+    attendanceByDay: d.attendanceByDay || [],
     guestRooms: d.guestRooms || [],
+    maxNightlyRoomRate: d.maxNightlyRoomRate || "",
+    peakNights: computePeakNights(d.guestRooms),
     meetingSpace: d.meetingSpace || [],
     concessions: d.concessions || [],
     fnb: d.fnb || [],
@@ -205,10 +213,8 @@ function publicRfpSummary(record) {
     proposalDueDate: computeProposalDueDate(d.rfpDueDate),
     dates: d.dates || [],
     cities: d.cities || [],
-    attendanceType: d.attendanceType || "",
-    attendanceMin: d.attendanceMin || "",
-    attendanceMax: d.attendanceMax || "",
-    attendanceScope: d.attendanceScope || ""
+    maxAttendance: d.maxAttendance || "",
+    peakNights: computePeakNights(d.guestRooms)
   };
 }
 
