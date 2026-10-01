@@ -300,18 +300,14 @@
           </details>
 
           <details class="section">
-            <summary>Attendance &amp; Event Days <span class="chev">&#9656;</span></summary>
+            <summary>Attendance <span class="chev">&#9656;</span></summary>
             <div class="section-body">
-              <div class="section-hint">Set the total number of event days once here — Meeting Space Needs uses this same day count, so "Day 1" always means the same day in both sections.</div>
-              <button type="button" class="btn-outline" id="autoGenMeeting">Auto-set day count from Date Option 1</button>
-              <label style="margin-top:14px;">Total number of days</label>
-              <input type="number" id="eventDayCount" min="1" max="14" value="1" style="max-width:100px;">
-
-              <label style="margin-top:18px;">Max Attendance (peak)</label>
+              <label>Max Attendance (peak)</label>
               <div class="hint">The highest number of attendees at any point in the program — shown to venues so they can judge fit before applying.</div>
               <input type="number" id="maxAttendance" min="0" style="max-width:160px;">
 
               <label style="margin-top:16px;">Expected attendance by day</label>
+              <div class="hint">Fills in automatically based on Date Option 1 — set that date range first.</div>
               <div id="attendanceDayRows"></div>
             </div>
           </details>
@@ -338,7 +334,7 @@
           <details class="section">
             <summary>Meeting Space Needs <span class="chev">&#9656;</span></summary>
             <div class="section-body">
-              <div class="section-hint">Add each room setup you need and pick which days it applies to (using the day count set under Attendance &amp; Event Days).</div>
+              <div class="section-hint">Days below are based on Date Option 1 automatically. Add each room setup you need and pick which days it applies to.</div>
 
               <label style="margin-top:16px;">Open to colocating meeting space with other organizations?</label>
               <select id="colocation">
@@ -560,7 +556,7 @@ document.getElementById("eventLogoUpload").addEventListener("change", (e) => {
 const PRIORITY_SECTIONS = [
   { key: "cities", label: "Preferred Cities" },
   { key: "dates", label: "Preferred Dates" },
-  { key: "attendance", label: "Attendance & Event Days" },
+  { key: "attendance", label: "Attendance" },
   { key: "guestRooms", label: "Guest Room Needs" },
   { key: "meetingSpace", label: "Meeting Space Needs" },
   { key: "concessions", label: "Must-Have Concessions" },
@@ -662,12 +658,17 @@ function addDateRow(d) {
     <div style="flex:0 0 110px;"><label style="font-size:0.72rem;margin:0 0 3px;">Preference Rank</label><input type="number" class="date-rank-input" min="1" value="${d.rank||1}"></div>
     <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
   `;
-  row.querySelector(".remove-row").onclick = () => { row.remove(); updateDateAddBtn(); };
+  row.querySelector(".remove-row").onclick = () => { row.remove(); updateDateAddBtn(); refreshDerivedDaySpan(); };
   if (!isFirst) {
     row.querySelector(".date-start-input").addEventListener("change", (e) => {
       const dur = firstOptionDuration();
       if (dur !== null && e.target.value) row.querySelector(".date-end-input").value = addDaysISO(e.target.value, dur);
     });
+  } else {
+    // Date Option 1 drives the live day span used by Meeting Space Needs
+    // and Attendance — recompute whenever either date changes.
+    row.querySelector(".date-start-input").addEventListener("change", () => refreshDerivedDaySpan());
+    row.querySelector(".date-end-input").addEventListener("change", () => refreshDerivedDaySpan());
   }
   wrap.appendChild(row);
   updateDateAddBtn();
@@ -750,28 +751,25 @@ document.getElementById("autoGenRooms").onclick = () => {
   addRoomRow({ label: "Night After Event 1", timing: "after", rooms: "" });
 };
 
-// ---------- Attendance & shared event day count ----------
+// ---------- Attendance & shared event day span ----------
+// Day span is computed live from Date Option 1 — never a separately-set
+// number — so Meeting Space Needs and Attendance can never drift out of
+// sync with the actual dates, or with each other.
 const MAX_EVENT_DAYS = 14;
-function currentEventDayCount() {
-  return Math.max(1, Math.min(MAX_EVENT_DAYS, parseInt(document.getElementById("eventDayCount").value, 10) || 1));
-}
-document.getElementById("autoGenMeeting").onclick = () => {
+function liveEventDaySpan() {
   const d = firstDateOption();
-  if (!d || !d.start || !d.end) { alert("Fill in Date Option 1's start and end date first."); return; }
-  const spanDays = Math.min(MAX_EVENT_DAYS, daysDiff(d.start, d.end) + 1);
-  if (spanDays < 1) { alert("End date must be on or after start date."); return; }
-  document.getElementById("eventDayCount").value = spanDays;
+  if (!d || !d.start || !d.end) return 1;
+  const span = daysDiff(d.start, d.end) + 1;
+  return Math.max(1, Math.min(MAX_EVENT_DAYS, span));
+}
+function refreshDerivedDaySpan() {
   updateAllDayChipVisibility();
   updateAttendanceDayVisibility();
-};
-document.getElementById("eventDayCount").addEventListener("input", () => {
-  updateAllDayChipVisibility();
-  updateAttendanceDayVisibility();
-});
+}
 
 // Attendance day rows are pre-rendered up to MAX_EVENT_DAYS (same pattern
-// as the meeting-space day chips) and just shown/hidden by the shared day
-// count — typed values are preserved if the count is reduced then raised
+// as the meeting-space day chips) and just shown/hidden by the live day
+// span — typed values are preserved if Date Option 1 shrinks then grows
 // again, since unlike the chips these hold real data, not a toggle.
 function renderAttendanceDayRows(byDay) {
   const wrap = document.getElementById("attendanceDayRows");
@@ -787,7 +785,7 @@ function renderAttendanceDayRows(byDay) {
   updateAttendanceDayVisibility();
 }
 function updateAttendanceDayVisibility() {
-  const count = currentEventDayCount();
+  const count = liveEventDaySpan();
   document.querySelectorAll(".attendance-day-row").forEach(row => {
     row.style.display = Number(row.dataset.day) <= count ? "flex" : "none";
   });
@@ -804,10 +802,10 @@ const FLOOR_SETS = ["Classroom","Theater","Banquet Rounds","Crescent Rounds","U-
 const AV_OPTIONS = ["Projector","Screen","Podium Mic(s)","Table Mic(s)","Floor Mic(s) (Q&A)","Lav Mic(s)","Speakers","Virtual Meeting Accommodations","Attendee Power","Other"];
 
 // Day chips are pre-rendered up to MAX_EVENT_DAYS in every room card, and
-// we just show/hide + uncheck the ones beyond the current day count, so
-// growing the count back later doesn't need to regenerate anything.
+// we just show/hide + uncheck the ones beyond the live day span, so a
+// shrinking date range doesn't need anything regenerated — it just hides.
 function updateAllDayChipVisibility() {
-  const count = currentEventDayCount();
+  const count = liveEventDaySpan();
   document.querySelectorAll(".ms-day-chip-label").forEach(label => {
     const day = Number(label.dataset.day);
     const show = day <= count;
@@ -816,7 +814,7 @@ function updateAllDayChipVisibility() {
   });
 }
 function dayChipsHtml(selectedDays) {
-  const count = currentEventDayCount();
+  const count = liveEventDaySpan();
   let html = "";
   for (let day = 1; day <= MAX_EVENT_DAYS; day++) {
     const id = "ms-day-chip-" + Math.random().toString(36).slice(2);
@@ -1041,7 +1039,6 @@ function loadFormFromData(data) {
   document.getElementById("noFriday").checked = !!data.noFriday;
   document.getElementById("patternNotes").value = data.patternNotes || "";
 
-  document.getElementById("eventDayCount").value = data.eventDayCount || 1;
   document.getElementById("maxAttendance").value = data.maxAttendance ?? "";
   renderAttendanceDayRows(data.attendanceByDay);
 
@@ -1077,7 +1074,6 @@ function collectFormData() {
     patternFlexible: document.getElementById("patternFlexible").checked,
     noFriday: document.getElementById("noFriday").checked,
     patternNotes: document.getElementById("patternNotes").value,
-    eventDayCount: currentEventDayCount(),
     maxAttendance: document.getElementById("maxAttendance").value,
     attendanceByDay: getAttendanceByDay(),
     guestRooms: getRoomRows(),
