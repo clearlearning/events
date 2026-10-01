@@ -148,11 +148,11 @@ function fmtDateRange(dateOption) {
   return end && end !== start ? `${start} – ${end}` : start;
 }
 
-["filterLocation","filterDateStart","filterDateEnd","filterSizeMin","filterSizeMax"].forEach(id => {
+["filterLocation","filterDateStart","filterDateEnd"].forEach(id => {
   document.getElementById(id).addEventListener("input", render);
 });
 document.getElementById("clearFiltersBtn").addEventListener("click", () => {
-  ["filterLocation","filterDateStart","filterDateEnd","filterSizeMin","filterSizeMax"].forEach(id => {
+  ["filterLocation","filterDateStart","filterDateEnd"].forEach(id => {
     document.getElementById(id).value = "";
   });
   render();
