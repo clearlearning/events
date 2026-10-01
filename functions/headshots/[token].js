@@ -85,7 +85,7 @@ const PAGE = `<!doctype html>
   <main>
     <div class="wrap lift" id="content"><div class="skeleton"></div></div>
     <div class="wrap sponsor">
-      <img src="https://clearlearning.github.io/digitalsignage/pearson.png" alt="Pearson">
+      <img src="https://clearlearning.github.io/digitalsignage/Pearson.png" alt="Pearson">
       <p>Thank you to Pearson for sponsoring the conference headshots.</p>
     </div>
   </main>
