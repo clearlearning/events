@@ -341,7 +341,9 @@ export async function onRequest(context) {
         contactPhone: body.contactPhone || "",
         contactEmail: (body.contactEmail || "").trim(),
 
-        proposedDateRanks: Array.isArray(body.proposedDateRanks) ? body.proposedDateRanks : [],
+        // Array positions into rfpDatesSnapshot below, not rank values —
+        // ranks can tie or sit untouched, positions are always unambiguous.
+        proposedDateIndexes: Array.isArray(body.proposedDateIndexes) ? body.proposedDateIndexes : [],
         rfpDatesSnapshot: rfpRecord.data?.dates || [],
 
         guestRoomRate: body.guestRoomRate || "",
