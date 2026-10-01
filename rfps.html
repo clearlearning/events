@@ -57,13 +57,6 @@
         <input type="date" id="filterDateEnd">
       </div>
     </div>
-    <div class="field">
-      <label>Event Size (attendees)</label>
-      <div class="minmax">
-        <input type="number" id="filterSizeMin" placeholder="Min" min="0">
-        <input type="number" id="filterSizeMax" placeholder="Max" min="0">
-      </div>
-    </div>
     <button type="button" class="btn-clear-filters" id="clearFiltersBtn">Clear filters</button>
   </div>
   <div class="result-count" id="resultCount"></div>
@@ -90,8 +83,6 @@ function filteredRfps() {
   const location = document.getElementById("filterLocation").value.trim().toLowerCase();
   const dateStart = document.getElementById("filterDateStart").value;
   const dateEnd = document.getElementById("filterDateEnd").value;
-  const sizeMin = document.getElementById("filterSizeMin").value;
-  const sizeMax = document.getElementById("filterSizeMax").value;
 
   return allRfps.filter(r => {
     if (location) {
@@ -104,13 +95,6 @@ function filteredRfps() {
       const rangeEnd = dateEnd || "9999-12-31";
       const overlaps = dates.some(d => d.start && d.end && d.start <= rangeEnd && d.end >= rangeStart);
       if (!overlaps) return false;
-    }
-    if (sizeMin || sizeMax) {
-      const max = Number(r.maxAttendance) || null;
-      if (max == null) return false;
-      const filterMin = sizeMin ? Number(sizeMin) : 0;
-      const filterMax = sizeMax ? Number(sizeMax) : Infinity;
-      if (max < filterMin || max > filterMax) return false;
     }
     return true;
   });
@@ -142,10 +126,10 @@ function render() {
           <div class="rfp-section-header">Preferred Dates</div>
           ${[...r.dates].sort((a,b) => (a.rank - b.rank) || (a.start||"").localeCompare(b.start||"")).map(d => `<div class="rfp-dates">${fmtDateRange(d)}</div>`).join("")}
         ` : ""}
-        ${r.maxAttendance || r.peakNights ? `
+        ${r.peakAttendance || r.peakNights ? `
           <div class="rfp-section-header">Peak Numbers</div>
           <div class="rfp-attendance">${[
-            r.maxAttendance ? `Peak Attendance: ${r.maxAttendance}` : "",
+            r.peakAttendance ? `Peak Attendance: ${r.peakAttendance}` : "",
             r.peakNights ? `Peak Nights: ${r.peakNights} rooms` : ""
           ].filter(Boolean).join(" · ")}</div>
         ` : ""}
