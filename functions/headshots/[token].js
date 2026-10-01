@@ -45,11 +45,21 @@ const PAGE = `<!doctype html>
   body { margin:0; font-family:"Open Sans","Trebuchet MS",Arial,sans-serif; color:#2b2b2b; background:var(--paper); line-height:1.55; }
   .band { background:var(--burgundy); color:#fff; padding:calc(32px + env(safe-area-inset-top, 0px)) 24px 76px; border-bottom:5px solid var(--gold); }
   .wrap { max-width:1080px; margin:0 auto; }
-  .logo-plate { display:inline-block; background:#fff; border-radius:6px; padding:10px 16px; }
-  .logo-plate img { display:block; height:64px; width:auto; max-width:100%; }
-  .sponsor { display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-top:44px; padding-top:24px; border-top:1px solid var(--line); }
-  .sponsor img { display:block; height:44px; width:auto; }
-  .sponsor p { margin:0; font-size:14px; color:var(--charcoal); max-width:46ch; }
+  .band-row { display:flex; align-items:center; justify-content:space-between; gap:32px; }
+  .band-text { min-width:0; }
+  .logo-plate { flex:none; background:#fff; border-radius:6px; padding:12px 18px; }
+  .logo-plate img { display:block; height:84px; width:auto; max-width:100%; }
+  .sponsor { display:flex; align-items:center; gap:28px; margin-top:48px; padding:24px 28px; background:#fff; border:1px solid var(--line); border-left:6px solid var(--gold); border-radius:4px; }
+  .sponsor .s-logo { flex:none; padding-right:28px; border-right:1px solid var(--line); }
+  .sponsor .s-logo img { display:block; height:56px; width:auto; max-width:100%; }
+  .sponsor h2 { margin:0 0 4px; font-size:18px; line-height:1.3; color:var(--burgundy); }
+  .sponsor p { margin:0; font-size:14px; color:var(--charcoal); max-width:52ch; }
+  @media (max-width:680px) {
+    .band-row { flex-direction:column-reverse; align-items:flex-start; gap:18px; }
+    .logo-plate img { height:60px; }
+    .sponsor { flex-direction:column; align-items:flex-start; gap:16px; }
+    .sponsor .s-logo { padding-right:0; border-right:0; }
+  }
   h1 { font-size:clamp(30px, 5.5vw, 48px); line-height:1.12; margin:12px 0 10px; font-weight:700; max-width:18ch; }
   .sub { margin:0; max-width:60ch; color:#f3e6ea; }
   main { padding:0 24px calc(64px + env(safe-area-inset-bottom, 0px)); }
@@ -76,18 +86,23 @@ const PAGE = `<!doctype html>
 </head>
 <body>
   <div class="band">
-    <div class="wrap">
+    <div class="wrap band-row">
+      <div class="band-text">
+        <h1 id="title">Your headshots</h1>
+        <p class="sub" id="sub">Loading your photos…</p>
+      </div>
       <div class="logo-plate"><img src="https://clearlearning.github.io/digitalsignage/CLEAR25_PortlandLogo_FullColor.png" alt="__EVENT__"></div>
-      <h1 id="title">Your headshots</h1>
-      <p class="sub" id="sub">Loading your photos…</p>
     </div>
   </div>
   <main>
     <div class="wrap lift" id="content"><div class="skeleton"></div></div>
-    <div class="wrap sponsor">
-      <img src="https://clearlearning.github.io/digitalsignage/Pearson.png" alt="Pearson">
-      <p>Thank you to Pearson for sponsoring the conference headshots.</p>
-    </div>
+    <aside class="wrap sponsor" aria-label="Sponsor">
+      <div class="s-logo"><img src="https://clearlearning.github.io/digitalsignage/pearson.png" alt="Pearson"></div>
+      <div>
+        <h2>Headshots made possible by Pearson</h2>
+        <p>Thank you to Pearson for sponsoring professional headshots for CLEAR members at this year's conference.</p>
+      </div>
+    </aside>
   </main>
 <script>
 (function () {
