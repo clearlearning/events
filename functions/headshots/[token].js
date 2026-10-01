@@ -47,8 +47,8 @@ const PAGE = `<!doctype html>
   .wrap { max-width:1080px; margin:0 auto; }
   .band-row { display:flex; align-items:center; justify-content:space-between; gap:32px; }
   .band-text { min-width:0; }
-  .logo-plate { flex:none; background:#fff; border-radius:6px; padding:12px 18px; }
-  .logo-plate img { display:block; height:84px; width:auto; max-width:100%; }
+  .logo-plate { flex:none; background:#fff; border-radius:6px; padding:12px 18px; margin-top:40px; }
+  .logo-plate img { display:block; height:200px; width:auto; max-width:100%; }
   .sponsor { display:flex; align-items:center; gap:28px; margin-top:48px; padding:24px 28px; background:#fff; border:1px solid var(--line); border-left:6px solid var(--gold); border-radius:4px; }
   .sponsor .s-logo { flex:none; padding-right:28px; border-right:1px solid var(--line); }
   .sponsor .s-logo img { display:block; height:56px; width:auto; max-width:100%; }
@@ -157,7 +157,7 @@ const PAGE = `<!doctype html>
       '<div class="notes">' +
         '<p>Each download is the full-resolution file from the photographer, ready for LinkedIn, your agency directory, or a speaker bio.</p>' +
         '<p>On a phone, press and hold a photo and choose Save to Photos. The Download link saves to your Files app instead.</p>' +
-        '<p>This link is personal to you. Please don\\'t forward it.</p>' +
+        '<p>This link is personal to you and will only display your photos.</p>' +
         contactLine() +
       '</div>';
 
