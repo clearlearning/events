@@ -181,11 +181,14 @@ function render(r) {
       .map(c => `<span class="chip">#${c.rank} ${esc(c.name)}</span>`).join("");
   } else hide("secCities");
 
-  // Dates
+  // Dates — numbered by display position (rank, with chronological order
+  // as the tiebreak) rather than printing the raw rank value, since
+  // ranks can legitimately tie or sit untouched at 1 for every option.
   if (r.dates && r.dates.length) {
     document.getElementById("datesBody").innerHTML = r.dates
-      .sort((a,b) => a.rank - b.rank)
-      .map(d => `<div class="kv-row"><span class="k">Option ${d.rank}</span><span>${fmtDate(d.start)} – ${fmtDate(d.end)}</span></div>`).join("")
+      .slice()
+      .sort((a,b) => (a.rank - b.rank) || (a.start||"").localeCompare(b.start||""))
+      .map((d, i) => `<div class="kv-row"><span class="k">Option ${i+1}</span><span>${fmtDate(d.start)} – ${fmtDate(d.end)}</span></div>`).join("")
       + (r.patternNotes ? `<div class="small-note" style="margin-top:8px;">${esc(r.patternNotes)}</div>` : "")
       + `<div class="small-note" style="margin-top:4px;">${r.patternFlexible ? "Dates are flexible. " : ""}${r.noFriday ? "No Friday start preferred." : ""}</div>`;
   } else hide("secDates");
