@@ -302,12 +302,8 @@
           <details class="section">
             <summary>Attendance <span class="chev">&#9656;</span></summary>
             <div class="section-body">
-              <label>Max Attendance (peak)</label>
-              <div class="hint">The highest number of attendees at any point in the program — shown to venues so they can judge fit before applying.</div>
-              <input type="number" id="maxAttendance" min="0" style="max-width:160px;">
-
-              <label style="margin-top:16px;">Expected attendance by day</label>
-              <div class="hint">Fills in automatically based on Date Option 1 — set that date range first.</div>
+              <div class="section-hint">Days below are based on Date Option 1 automatically.</div>
+              <label>Expected attendance by day</label>
               <div id="attendanceDayRows"></div>
             </div>
           </details>
@@ -318,7 +314,6 @@
               <div class="section-hint">Auto-fill nights from Date Option 1, then adjust as needed.</div>
               <button type="button" class="btn-outline" id="autoGenRooms">Auto-generate nights from Date Option 1</button>
               <label style="margin-top:14px;">Max Nightly Room Rate (before tax)</label>
-              <div class="hint">One ceiling rate for the whole program, not per night.</div>
               <input type="number" id="maxNightlyRoomRate" min="0" style="max-width:160px;">
               <div class="table-wrap" style="margin-top:12px;">
                 <table class="clean">
@@ -326,7 +321,6 @@
                   <tbody id="roomRows"></tbody>
                 </table>
               </div>
-              <div class="hint" id="peakNightsHint" style="margin-top:6px;"></div>
               <button type="button" class="btn-ghost" id="addRoomRow" style="margin-top:10px;">+ Add night manually</button>
             </div>
           </details>
@@ -690,7 +684,7 @@ document.getElementById("addDateRow").onclick = () => addDateRow();
 function firstDateOption() { const rows = getDateRows(); return rows.length ? rows[0] : null; }
 
 // ---------- Guest rooms ----------
-function makeRoomRows(rooms) { const tbody = document.getElementById("roomRows"); tbody.innerHTML = ""; (rooms || []).forEach(r => addRoomRow(r)); updatePeakNightsHint(); }
+function makeRoomRows(rooms) { const tbody = document.getElementById("roomRows"); tbody.innerHTML = ""; (rooms || []).forEach(r => addRoomRow(r)); }
 function addRoomRow(r) {
   r = r || { label: "", timing: "during", rooms: "" };
   const tbody = document.getElementById("roomRows");
@@ -705,11 +699,9 @@ function addRoomRow(r) {
     <td><input type="number" class="room-count" value="${r.rooms||''}"></td>
     <td><button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button></td>
   `;
-  tr.querySelector(".remove-row").onclick = () => { tr.remove(); updatePeakNightsHint(); };
-  tr.querySelector(".room-count").addEventListener("input", updatePeakNightsHint);
+  tr.querySelector(".remove-row").onclick = () => tr.remove();
   tbody.appendChild(tr);
   attachRoomAutoLabel(tr);
-  updatePeakNightsHint();
 }
 function attachRoomAutoLabel(tr) {
   const select = tr.querySelector(".room-timing");
@@ -730,14 +722,6 @@ function getRoomRows() {
     rooms: tr.querySelector(".room-count").value
   }));
 }
-// "Peak Nights" is derived, not entered — the highest room count across
-// every night listed. Shown live here so staff see the number they're
-// actually committing venues to evaluate against.
-function updatePeakNightsHint() {
-  const counts = [...document.querySelectorAll("#roomRows .room-count")].map(el => Number(el.value) || 0);
-  const peak = counts.length ? Math.max(...counts) : 0;
-  document.getElementById("peakNightsHint").textContent = peak ? `Peak Nights: ${peak} rooms (shown to venues)` : "";
-}
 document.getElementById("addRoomRow").onclick = () => addRoomRow();
 document.getElementById("autoGenRooms").onclick = () => {
   const d = firstDateOption();
@@ -751,10 +735,9 @@ document.getElementById("autoGenRooms").onclick = () => {
   addRoomRow({ label: "Night After Event 1", timing: "after", rooms: "" });
 };
 
-// ---------- Attendance & shared event day span ----------
-// Day span is computed live from Date Option 1 — never a separately-set
-// number — so Meeting Space Needs and Attendance can never drift out of
-// sync with the actual dates, or with each other.
+// ---------- Shared event day span (Meeting Space Needs & Attendance) ----------
+// Derived live from Date Option 1 — never a separately-set number — so
+// these sections can never drift out of sync with the actual dates.
 const MAX_EVENT_DAYS = 14;
 function liveEventDaySpan() {
   const d = firstDateOption();
@@ -771,6 +754,8 @@ function refreshDerivedDaySpan() {
 // as the meeting-space day chips) and just shown/hidden by the live day
 // span — typed values are preserved if Date Option 1 shrinks then grows
 // again, since unlike the chips these hold real data, not a toggle.
+// Peak Attendance isn't a separate field — it's just the highest value
+// typed across these days, same derivation pattern as Peak Nights.
 function renderAttendanceDayRows(byDay) {
   const wrap = document.getElementById("attendanceDayRows");
   let html = "";
@@ -1039,7 +1024,6 @@ function loadFormFromData(data) {
   document.getElementById("noFriday").checked = !!data.noFriday;
   document.getElementById("patternNotes").value = data.patternNotes || "";
 
-  document.getElementById("maxAttendance").value = data.maxAttendance ?? "";
   renderAttendanceDayRows(data.attendanceByDay);
 
   document.getElementById("maxNightlyRoomRate").value = data.maxNightlyRoomRate ?? "";
@@ -1074,9 +1058,8 @@ function collectFormData() {
     patternFlexible: document.getElementById("patternFlexible").checked,
     noFriday: document.getElementById("noFriday").checked,
     patternNotes: document.getElementById("patternNotes").value,
-    maxAttendance: document.getElementById("maxAttendance").value,
-    attendanceByDay: getAttendanceByDay(),
     guestRooms: getRoomRows(),
+    attendanceByDay: getAttendanceByDay(),
     maxNightlyRoomRate: document.getElementById("maxNightlyRoomRate").value,
     colocation: document.getElementById("colocation").value,
     meetingSpace: getMeetingSpaceRows(),
