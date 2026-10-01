@@ -97,7 +97,7 @@ const PAGE = `<!doctype html>
   <main>
     <div class="wrap lift" id="content"><div class="skeleton"></div></div>
     <aside class="wrap sponsor" aria-label="Sponsor">
-      <div class="s-logo"><img src="https://clearlearning.github.io/digitalsignage/pearson.png" alt="Pearson"></div>
+      <div class="s-logo"><img src="https://clearlearning.github.io/digitalsignage/Pearson.png" alt="Pearson"></div>
       <div>
         <h2>Headshots made possible by Pearson</h2>
         <p>Thank you to Pearson for sponsoring professional headshots for CLEAR members at this year's conference.</p>
