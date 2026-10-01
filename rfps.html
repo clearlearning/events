@@ -146,7 +146,7 @@ function render() {
         ` : ""}
         ${r.dates && r.dates.length ? `
           <div class="rfp-section-header">Preferred Dates</div>
-          ${[...r.dates].sort((a,b) => a.rank - b.rank).map(d => `<div class="rfp-dates">${fmtDateRange(d)}</div>`).join("")}
+          ${[...r.dates].sort((a,b) => (a.rank - b.rank) || (a.start||"").localeCompare(b.start||"")).map(d => `<div class="rfp-dates">${fmtDateRange(d)}</div>`).join("")}
         ` : ""}
         ${fmtAttendance(r) ? `
           <div class="rfp-section-header">Expected Attendance</div>
