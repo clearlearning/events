@@ -86,12 +86,6 @@ async function loadOpenRfps() {
   }
 }
 
-function normalizedAttendance(r) {
-  const min = Number(r.attendanceMin) || null;
-  const max = Number(r.attendanceMax) || null;
-  return { min: min ?? max ?? null, max: max ?? min ?? null };
-}
-
 function filteredRfps() {
   const location = document.getElementById("filterLocation").value.trim().toLowerCase();
   const dateStart = document.getElementById("filterDateStart").value;
@@ -112,11 +106,11 @@ function filteredRfps() {
       if (!overlaps) return false;
     }
     if (sizeMin || sizeMax) {
-      const { min, max } = normalizedAttendance(r);
-      if (min == null && max == null) return false;
+      const max = Number(r.maxAttendance) || null;
+      if (max == null) return false;
       const filterMin = sizeMin ? Number(sizeMin) : 0;
       const filterMax = sizeMax ? Number(sizeMax) : Infinity;
-      if (max < filterMin || min > filterMax) return false;
+      if (max < filterMin || max > filterMax) return false;
     }
     return true;
   });
@@ -148,9 +142,12 @@ function render() {
           <div class="rfp-section-header">Preferred Dates</div>
           ${[...r.dates].sort((a,b) => (a.rank - b.rank) || (a.start||"").localeCompare(b.start||"")).map(d => `<div class="rfp-dates">${fmtDateRange(d)}</div>`).join("")}
         ` : ""}
-        ${fmtAttendance(r) ? `
-          <div class="rfp-section-header">Expected Attendance</div>
-          <div class="rfp-attendance">${fmtAttendance(r)}</div>
+        ${r.maxAttendance || r.peakNights ? `
+          <div class="rfp-section-header">Peak Numbers</div>
+          <div class="rfp-attendance">${[
+            r.maxAttendance ? `Peak Attendance: ${r.maxAttendance}` : "",
+            r.peakNights ? `Peak Nights: ${r.peakNights} rooms` : ""
+          ].filter(Boolean).join(" · ")}</div>
         ` : ""}
         ${r.proposalDueDate ? `<div class="rfp-due">Proposal due ${fmtDate(r.proposalDueDate)}</div>` : ""}
       </div>
@@ -165,12 +162,6 @@ function fmtDateRange(dateOption) {
   const start = fmtDate(dateOption.start);
   const end = dateOption.end ? fmtDate(dateOption.end) : "";
   return end && end !== start ? `${start} – ${end}` : start;
-}
-function fmtAttendance(r) {
-  if (!r.attendanceType) return "";
-  const range = r.attendanceType === "range" ? `${r.attendanceMin || "?"}–${r.attendanceMax || "?"}` : (r.attendanceMin || r.attendanceMax || "?");
-  const scope = r.attendanceScope === "per-day" ? "per day" : "total";
-  return `${range} (${scope})`;
 }
 
 ["filterLocation","filterDateStart","filterDateEnd","filterSizeMin","filterSizeMax"].forEach(id => {
