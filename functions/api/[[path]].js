@@ -1,5 +1,5 @@
 /**
- * CLEAR Events RFP — Pages Function version
+ * CLEAR Events RFP — Pages Function version 
  * Runs as part of the events-site Pages project itself, reachable at
  * events-site-68h.pages.dev/api/... (or events.clear-hq.org/api/... once
  * the custom domain is usable again — this same file serves both, no
