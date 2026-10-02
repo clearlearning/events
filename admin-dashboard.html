@@ -11,6 +11,7 @@
     --charcoal: #2B2B2B; --charcoal-soft: #6B6660; --blue: #084D78;
     --bg: #F7F6F3; --card: #ffffff; --border: #E3DFD8; --border-soft: #EEEBE5;
     --radius: 10px; --shadow: 0 1px 2px rgba(30,20,10,0.04), 0 4px 14px rgba(30,20,10,0.05);
+    --green: #2E7D4F; --orange: #B5700A; --red: #B3261E;
   }
   * { box-sizing: border-box; }
   body { font-family: 'Open Sans', 'Trebuchet MS', sans-serif; background: var(--bg); color: var(--charcoal); margin: 0; -webkit-font-smoothing: antialiased; }
@@ -36,6 +37,72 @@
   .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 0.85rem; }
   .detail-grid .k { color: var(--charcoal-soft); }
   .count-line { font-size: 0.82rem; color: var(--charcoal-soft); margin-bottom: 10px; }
+
+  /* ---- Top-level view tabs (Browse / Evaluate) ---- */
+  .view-tabs { display: flex; gap: 6px; background: var(--border-soft); border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; }
+  .view-tab-btn { background: transparent; border: none; border-radius: 7px; padding: 9px 18px; font-size: 0.88rem; font-weight: 600; color: var(--charcoal-soft); cursor: pointer; font-family: inherit; }
+  .view-tab-btn.active { background: #fff; color: var(--burgundy); box-shadow: var(--shadow); }
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  /* ---- Evaluate sub-tabs ---- */
+  .eval-tabs { display: flex; gap: 6px; background: var(--border-soft); border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; }
+  .eval-tab-btn { background: transparent; border: none; border-radius: 7px; padding: 9px 18px; font-size: 0.88rem; font-weight: 600; color: var(--charcoal-soft); cursor: pointer; font-family: inherit; }
+  .eval-tab-btn.active { background: #fff; color: var(--burgundy); box-shadow: var(--shadow); }
+  .eval-tab-panel { display: none; }
+  .eval-tab-panel.active { display: block; }
+
+  .picker-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 20px; }
+  .picker-card label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--charcoal-soft); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 6px; }
+  .picker-card select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; background: #fff; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
+  .section h2 { font-size: 1rem; margin: 0 0 4px; color: var(--burgundy); }
+  .section .sub { font-size: 0.82rem; color: var(--charcoal-soft); margin-bottom: 14px; }
+
+  .criterion-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+  .criterion-row:last-child { border-bottom: none; }
+  .criterion-name { flex: 1 1 220px; font-size: 0.9rem; font-weight: 600; }
+  .criterion-mode-tag { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--charcoal-soft); background: var(--border-soft); border-radius: 10px; padding: 2px 8px; margin-left: 6px; }
+  .weight-slider-wrap { display: flex; align-items: center; gap: 8px; flex: 0 0 220px; }
+  .weight-slider-wrap input[type=range] { flex: 1; }
+  .weight-val { font-weight: 700; color: var(--burgundy); min-width: 18px; text-align: right; }
+
+  .proposal-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 14px; overflow: hidden; }
+  .proposal-card-header { padding: 14px 18px; background: var(--border-soft); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .proposal-card-header .pname { font-weight: 700; }
+  .proposal-card-body { padding: 16px 18px; display: none; }
+  .proposal-card-body.open { display: block; }
+  .manual-crit { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
+  .manual-crit:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .manual-crit .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .manual-crit .label-row .name { font-weight: 600; font-size: 0.88rem; }
+  .manual-crit .label-row .val { font-weight: 700; color: var(--burgundy); }
+  .manual-crit .source-text { font-size: 0.85rem; color: var(--charcoal-soft); background: var(--bg); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; white-space: pre-wrap; }
+  .manual-crit input[type=range] { width: 100%; }
+
+  .btn-primary { background: var(--burgundy); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+
+  table.rank-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  table.rank-table th, table.rank-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border-soft); }
+  table.rank-table th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; }
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--border-soft); font-weight: 700; font-size: 0.78rem; }
+  tr.top-rank .rank-badge { background: var(--gold); color: var(--burgundy-dark); }
+
+  .report-only { display: none; }
+  @media print {
+    header, .view-tabs, .eval-tabs, .toolbar, .no-print { display: none !important; }
+    .report-only { display: block !important; }
+    .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  }
+
+  .top-pick { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; }
+  .top-pick.first { border-left: 4px solid var(--gold); background: #FFFBF0; }
+  .top-pick .pp-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .top-pick .pp-name { font-size: 1.05rem; font-weight: 700; color: var(--burgundy); }
+  .top-pick .pp-score { font-size: 1.2rem; font-weight: 700; }
+  .top-pick .pp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px 16px; font-size: 0.82rem; }
+  .top-pick .pp-grid .k { color: var(--charcoal-soft); }
 </style>
 </head>
 <body>
@@ -48,27 +115,83 @@
   <div id="emptyState">No proposals have been submitted yet.</div>
 
   <div id="resultsWrap">
-    <div class="toolbar">
-      <input type="search" id="searchBox" placeholder="Search by property name, city, or event...">
-      <select id="eventFilter"><option value="">All events</option></select>
-      <button type="button" class="btn-outline" id="exportBtn">Export CSV</button>
+    <div class="view-tabs no-print">
+      <button class="view-tab-btn active" data-view="browse">Browse Proposals</button>
+      <button class="view-tab-btn" data-view="evaluate">Evaluate an RFP</button>
     </div>
-    <div class="count-line" id="countLine"></div>
-    <div class="table-scroll">
-    <table class="proposals-table">
-      <thead>
-        <tr>
-          <th data-sort="city">City/State</th>
-          <th data-sort="propertyName">Property</th>
-          <th data-sort="eventName">Event</th>
-          <th data-sort="guestRoomRate">Room Rate</th>
-          <th data-sort="fnbMinimum">F&amp;B Minimum</th>
-          <th data-sort="fnbGuaranteeOffered">F&amp;B Guarantee</th>
-          <th data-sort="submittedAt">Submitted</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+
+    <div class="view-panel active" id="view-browse">
+      <div class="toolbar">
+        <input type="search" id="searchBox" placeholder="Search by property name, city, or event...">
+        <select id="eventFilter"><option value="">All events</option></select>
+        <button type="button" class="btn-outline" id="exportBtn">Export CSV</button>
+      </div>
+      <div class="count-line" id="countLine"></div>
+      <div class="table-scroll">
+      <table class="proposals-table">
+        <thead>
+          <tr>
+            <th data-sort="city">City/State</th>
+            <th data-sort="propertyName">Property</th>
+            <th data-sort="eventName">Event</th>
+            <th data-sort="guestRoomRate">Room Rate</th>
+            <th data-sort="fnbMinimum">F&amp;B Minimum</th>
+            <th data-sort="fnbGuaranteeOffered">F&amp;B Guarantee</th>
+            <th data-sort="submittedAt">Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="view-panel" id="view-evaluate">
+      <div class="picker-card">
+        <label for="rfpSelect">Which RFP are you evaluating?</label>
+        <select id="rfpSelect">
+          <option value="">— Select an RFP —</option>
+        </select>
+      </div>
+
+      <div id="evalWorkArea" style="display:none;">
+        <div class="eval-tabs no-print">
+          <button class="eval-tab-btn active" data-tab="weights">Weights</button>
+          <button class="eval-tab-btn" data-tab="score">Score Proposals</button>
+          <button class="eval-tab-btn" data-tab="report">Report</button>
+        </div>
+
+        <div class="eval-tab-panel active" id="eval-tab-weights">
+          <div class="section">
+            <h2>Criteria &amp; Weights</h2>
+            <div class="sub">Adjust how much each criterion matters. Numeric criteria (rate, fees) are scored relative to the other proposals submitted for this RFP — not a fixed dollar threshold — so the same rubric works fairly whether rates run $150 or $400. Weights are saved in this browser and carry over between evaluations.</div>
+            <div id="criteriaList"></div>
+          </div>
+          <button type="button" class="btn-outline no-print" id="resetWeightsBtn">Reset weights to defaults</button>
+        </div>
+
+        <div class="eval-tab-panel" id="eval-tab-score">
+          <div class="section">
+            <h2>Score Each Proposal</h2>
+            <div class="sub">Numeric and yes/no criteria are scored automatically. For the criteria below, read the venue's actual submitted text and set a score yourself.</div>
+          </div>
+          <div id="proposalCards"></div>
+          <button type="button" class="btn-primary no-print" id="runEvalBtn">Run Evaluation &amp; See Rankings</button>
+          <div id="rankingsWrap" style="margin-top:20px; display:none;">
+            <div class="section">
+              <h2>Rankings</h2>
+              <div class="table-scroll"><table class="rank-table" id="rankTable"></table></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="eval-tab-panel" id="eval-tab-report">
+          <div class="section no-print">
+            <button type="button" class="btn-primary" onclick="window.print()">Print / Save PDF</button>
+            <button type="button" class="btn-outline" id="exportHtmlBtn">Export as HTML file</button>
+          </div>
+          <div id="reportContent"></div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -94,6 +217,7 @@ async function init() {
     document.getElementById("loadingState").style.display = "none";
     if (!allProposals.length) { document.getElementById("emptyState").style.display = "block"; return; }
     populateEventFilter();
+    populateRfpSelect();
     document.getElementById("resultsWrap").style.display = "block";
     render();
   } catch (e) {
@@ -170,10 +294,11 @@ function linkifyLines(text) {
 function detailHtml(p) {
   const fees = ["taxes","resortFee","destinationFee"].filter(k => p.rateFees && p.rateFees[k]).map(k => ({taxes:"Taxes",resortFee:"Resort Fee",destinationFee:"Destination Fee"}[k]));
   if (p.rateFees && p.rateFees.other) fees.push(p.rateFees.otherText || "Other");
-  const dateLabels = (p.proposedDateRanks || []).map(rank => {
-    const d = (p.rfpDatesSnapshot || []).find(x => x.rank === rank);
-    return d ? `Option ${rank} (${fmtDate(d.start)}–${fmtDate(d.end)})` : `Option ${rank}`;
-  }).join(", ") || "—";
+  // Look up by array position, not by rank — ranks can tie, positions can't.
+  const dateLabels = (p.proposedDateIndexes || []).map(idx => {
+    const d = (p.rfpDatesSnapshot || [])[idx];
+    return d ? `${fmtDate(d.start)}–${fmtDate(d.end)}` : "";
+  }).filter(Boolean).join(", ") || "—";
   const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
   const rowLink = (k, v) => v ? `<div><span class="k">${k}:</span> ${linkifyLines(v)}</div>` : "";
 
@@ -260,6 +385,320 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
+// ================================================================
+//  TOP-LEVEL VIEW SWITCH (Browse / Evaluate)
+// ================================================================
+document.querySelectorAll(".view-tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".view-tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+    document.querySelectorAll(".view-panel").forEach(p => p.classList.toggle("active", p.id === "view-" + btn.dataset.view));
+  });
+});
+
+// ================================================================
+//  EVALUATE AN RFP — uses the same allProposals already loaded above,
+//  grouped by rfpId, rather than a separate fetch per RFP.
+// ================================================================
+let currentRfpId = null;
+let currentRfpLabel = "";
+let rfpProposals = [];
+let weights = {};
+let manualScores = {};
+let scoredResults = [];
+
+const CRITERIA = [
+  { id: "guestRoomRate", name: "Guest Room Rate", mode: "numeric", lowerIsBetter: true, defaultWeight: 9,
+    getValue: p => parseFirstNumber(p.guestRoomRate) },
+  { id: "fnbMinimum", name: "F&B Minimum", mode: "numeric", lowerIsBetter: true, defaultWeight: 7,
+    getValue: p => parseFirstNumber(p.fnbMinimum) },
+  { id: "meetingRoomRentalFee", name: "Meeting Room Rental Fee", mode: "numeric", lowerIsBetter: true, defaultWeight: 5,
+    getValue: p => parseFirstNumber(p.meetingRoomRentalFee) },
+  { id: "attrition", name: "Cumulative Attrition Allowance", mode: "numeric", lowerIsBetter: false, defaultWeight: 6,
+    getValue: p => parseFirstNumber(p.cumulativeAttritionPercent) },
+  { id: "commissionable", name: "Commissionable Rate", mode: "boolean", defaultWeight: 4,
+    getValue: p => p.commissionable === "yes" },
+  { id: "fnbGuarantee", name: "F&B Guarantee Offered", mode: "boolean", defaultWeight: 6,
+    getValue: p => p.fnbGuaranteeOffered === "yes" },
+  { id: "oneFloor", name: "Meeting Space on One Floor", mode: "boolean", defaultWeight: 4,
+    getValue: p => p.meetingSpaceOneFloor === "yes" },
+  { id: "concessions", name: "Concessions Quality", mode: "manual", defaultWeight: 6,
+    getSourceText: p => p.concessions || "(none provided)" },
+  { id: "locationFit", name: "Location & Area Fit", mode: "manual", defaultWeight: 6,
+    getSourceText: p => [
+      p.propertyType === "Other" ? p.propertyTypeOtherText : p.propertyType,
+      (p.areaCharacteristics || []).map(c => c === "Other" ? (p.areaCharacteristicsOtherText || "Other") : c).join(", "),
+      p.walkabilityDescription
+    ].filter(Boolean).join(" — ") || "(none provided)" },
+  { id: "siteInspection", name: "Site Inspection Support", mode: "manual", defaultWeight: 3,
+    getSourceText: p => p.siteInspectionSupport || "(none provided)" },
+  { id: "cvbPromotions", name: "CVB Promotions / Incentives", mode: "manual", defaultWeight: 3,
+    getSourceText: p => p.cvbPromotions || "(none provided)" }
+];
+
+function parseFirstNumber(str) {
+  if (!str) return null;
+  const match = String(str).replace(/,/g, "").match(/[\d.]+/);
+  return match ? parseFloat(match[0]) : null;
+}
+
+function populateRfpSelect() {
+  // Group already-loaded proposals by rfpId — an RFP only appears here
+  // once it actually has at least one proposal to evaluate.
+  const byRfp = new Map();
+  allProposals.forEach(p => {
+    if (!byRfp.has(p.rfpId)) byRfp.set(p.rfpId, { groupName: p.groupName, eventName: p.eventName, count: 0 });
+    byRfp.get(p.rfpId).count++;
+  });
+  const sel = document.getElementById("rfpSelect");
+  sel.innerHTML = `<option value="">— Select an RFP —</option>` +
+    [...byRfp.entries()].map(([id, info]) =>
+      `<option value="${id}">${escapeHtml(info.groupName)} — ${escapeHtml(info.eventName)} (${info.count} proposal${info.count === 1 ? "" : "s"})</option>`
+    ).join("");
+}
+document.getElementById("rfpSelect").addEventListener("change", (e) => {
+  currentRfpId = e.target.value;
+  if (!currentRfpId) { document.getElementById("evalWorkArea").style.display = "none"; return; }
+  rfpProposals = allProposals.filter(p => p.rfpId === currentRfpId);
+  const first = rfpProposals[0];
+  currentRfpLabel = first ? `${first.groupName} — ${first.eventName}` : "";
+  document.getElementById("evalWorkArea").style.display = "block";
+  document.getElementById("rankingsWrap").style.display = "none";
+  renderProposalCards();
+});
+
+document.querySelectorAll(".eval-tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".eval-tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+    document.querySelectorAll(".eval-tab-panel").forEach(p => p.classList.toggle("active", p.id === "eval-tab-" + btn.dataset.tab));
+    if (btn.dataset.tab === "report") renderReport();
+  });
+});
+
+// ---------- Weights (persisted per-browser) ----------
+function loadWeights() {
+  const saved = localStorage.getItem("clear_evaluate_weights_v1");
+  const parsed = saved ? JSON.parse(saved) : {};
+  CRITERIA.forEach(c => { weights[c.id] = parsed[c.id] ?? c.defaultWeight; });
+}
+function saveWeightsToStorage() {
+  localStorage.setItem("clear_evaluate_weights_v1", JSON.stringify(weights));
+}
+function renderWeightsEditor() {
+  document.getElementById("criteriaList").innerHTML = CRITERIA.map(c => `
+    <div class="criterion-row">
+      <div class="criterion-name">${escapeHtml(c.name)}<span class="criterion-mode-tag">${c.mode === "manual" ? "Manual" : c.mode === "boolean" ? "Yes/No" : "Relative"}</span></div>
+      <div class="weight-slider-wrap">
+        <input type="range" min="1" max="10" value="${weights[c.id]}" data-crit="${c.id}" class="weight-input">
+        <span class="weight-val" id="weightVal_${c.id}">${weights[c.id]}</span>
+      </div>
+    </div>
+  `).join("");
+  document.querySelectorAll(".weight-input").forEach(input => {
+    input.addEventListener("input", () => {
+      const id = input.dataset.crit;
+      weights[id] = Number(input.value);
+      document.getElementById("weightVal_" + id).textContent = input.value;
+      saveWeightsToStorage();
+    });
+  });
+}
+document.getElementById("resetWeightsBtn").addEventListener("click", () => {
+  if (!confirm("Reset all weights to their defaults?")) return;
+  CRITERIA.forEach(c => { weights[c.id] = c.defaultWeight; });
+  saveWeightsToStorage();
+  renderWeightsEditor();
+});
+
+// ---------- Manual scores (persisted per-browser, per proposal) ----------
+function loadManualScores() {
+  const saved = localStorage.getItem("clear_evaluate_manual_v1");
+  manualScores = saved ? JSON.parse(saved) : {};
+}
+function saveManualScores() {
+  localStorage.setItem("clear_evaluate_manual_v1", JSON.stringify(manualScores));
+}
+function getManualScore(proposalId, critId) {
+  return manualScores[proposalId]?.[critId] ?? 5;
+}
+function setManualScore(proposalId, critId, val) {
+  if (!manualScores[proposalId]) manualScores[proposalId] = {};
+  manualScores[proposalId][critId] = Number(val);
+  saveManualScores();
+}
+
+// ---------- Score Proposals tab ----------
+function renderProposalCards() {
+  const manualCriteria = CRITERIA.filter(c => c.mode === "manual");
+  document.getElementById("proposalCards").innerHTML = rfpProposals.map((p, i) => `
+    <div class="proposal-card">
+      <div class="proposal-card-header" onclick="toggleProposalCard(${i})">
+        <span class="pname">${escapeHtml(p.propertyName)}</span>
+        <span style="font-size:0.8rem; color:var(--charcoal-soft);">${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", "))}</span>
+      </div>
+      <div class="proposal-card-body" id="propBody${i}">
+        ${manualCriteria.map(c => `
+          <div class="manual-crit">
+            <div class="label-row">
+              <span class="name">${escapeHtml(c.name)}</span>
+              <span class="val" id="manualVal_${p.id}_${c.id}">${getManualScore(p.id, c.id)}</span>
+            </div>
+            <div class="source-text">${escapeHtml(c.getSourceText(p))}</div>
+            <input type="range" min="1" max="10" value="${getManualScore(p.id, c.id)}"
+              oninput="document.getElementById('manualVal_${p.id}_${c.id}').textContent = this.value; setManualScore('${p.id}','${c.id}', this.value);">
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+function toggleProposalCard(i) {
+  document.getElementById("propBody" + i).classList.toggle("open");
+}
+
+// ---------- Scoring ----------
+function runEvaluation() {
+  const numericCriteria = CRITERIA.filter(c => c.mode === "numeric");
+  const ranges = {};
+  numericCriteria.forEach(c => {
+    const values = rfpProposals.map(p => c.getValue(p)).filter(v => v != null && !isNaN(v));
+    ranges[c.id] = values.length ? { min: Math.min(...values), max: Math.max(...values) } : null;
+  });
+
+  scoredResults = rfpProposals.map(p => {
+    const scores = {};
+    let totalWeighted = 0;
+    let totalMaxWeighted = 0;
+
+    CRITERIA.forEach(c => {
+      const weight = weights[c.id] || c.defaultWeight;
+      let points;
+      let display;
+
+      if (c.mode === "numeric") {
+        const val = c.getValue(p);
+        const range = ranges[c.id];
+        if (val == null || !range || range.max === range.min) {
+          points = 5.5;
+        } else {
+          const norm = c.lowerIsBetter
+            ? (range.max - val) / (range.max - range.min)
+            : (val - range.min) / (range.max - range.min);
+          points = 1 + norm * 9;
+        }
+        display = val != null ? val : "—";
+      } else if (c.mode === "boolean") {
+        const val = c.getValue(p);
+        points = val ? 10 : 4;
+        display = val ? "Yes" : "No";
+      } else {
+        points = getManualScore(p.id, c.id);
+        display = points + "/10";
+      }
+
+      scores[c.id] = { points, display, weight };
+      totalWeighted += points * weight;
+      totalMaxWeighted += 10 * weight;
+    });
+
+    const percentScore = totalMaxWeighted > 0 ? Math.round((totalWeighted / totalMaxWeighted) * 100) : 0;
+    return { proposal: p, scores, totalWeighted: Math.round(totalWeighted * 10) / 10, totalMaxWeighted, percentScore };
+  });
+
+  scoredResults.sort((a, b) => b.totalWeighted - a.totalWeighted);
+  scoredResults.forEach((r, i) => r.rank = i + 1);
+
+  renderRankTable();
+  document.getElementById("rankingsWrap").style.display = "block";
+}
+document.getElementById("runEvalBtn").addEventListener("click", runEvaluation);
+
+function scoreColor(pct) {
+  return pct >= 80 ? "var(--green)" : pct >= 60 ? "var(--blue)" : pct >= 40 ? "var(--orange)" : "var(--red)";
+}
+function renderRankTable() {
+  document.getElementById("rankTable").innerHTML = `
+    <tr><th>Rank</th><th>Property</th><th>City/State</th><th>Score</th><th>%</th></tr>
+    ${scoredResults.map(r => `
+      <tr class="${r.rank <= 3 ? "top-rank" : ""}">
+        <td><span class="rank-badge">${r.rank}</span></td>
+        <td>${escapeHtml(r.proposal.propertyName)}</td>
+        <td>${escapeHtml([r.proposal.city, r.proposal.stateProvince].filter(Boolean).join(", "))}</td>
+        <td>${r.totalWeighted} / ${r.totalMaxWeighted}</td>
+        <td style="color:${scoreColor(r.percentScore)}; font-weight:700;">${r.percentScore}%</td>
+      </tr>
+    `).join("")}
+  `;
+}
+
+// ---------- Report ----------
+function renderReport() {
+  if (!scoredResults.length) {
+    document.getElementById("reportContent").innerHTML = `<div class="section">Run an evaluation on the "Score Proposals" tab first.</div>`;
+    return;
+  }
+  const top3 = scoredResults.slice(0, 3);
+  const today = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  const eventLabel = currentRfpLabel || "Venue Evaluation";
+
+  document.getElementById("reportContent").innerHTML = `
+    <div class="section report-only" style="display:block;">
+      <h2 style="font-size:1.3rem;">${escapeHtml(eventLabel)}</h2>
+      <div style="color:var(--charcoal-soft); font-size:0.85rem; margin-bottom:16px;">Venue Proposal Evaluation Report — Generated ${today} — ${scoredResults.length} proposal${scoredResults.length === 1 ? "" : "s"} evaluated</div>
+
+      <h3 style="font-size:1rem; color:var(--burgundy);">Executive Summary</h3>
+      <p style="font-size:0.9rem; line-height:1.7;">
+        ${scoredResults.length} venue proposal${scoredResults.length === 1 ? " was" : "s were"} evaluated against ${CRITERIA.length} weighted criteria for ${escapeHtml(eventLabel)}.
+        <strong>${escapeHtml(top3[0].proposal.propertyName)}</strong> ranked first with a composite score of ${top3[0].percentScore}%.
+        ${top3[1] ? `<strong>${escapeHtml(top3[1].proposal.propertyName)}</strong> (${top3[1].percentScore}%)` : ""}
+        ${top3[2] ? ` and <strong>${escapeHtml(top3[2].proposal.propertyName)}</strong> (${top3[2].percentScore}%) ${top3[1] ? "are" : "is"} recommended as ${top3[1] ? "alternates" : "an alternate"}.` : ""}
+      </p>
+
+      <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Scoring Criteria &amp; Weights</h3>
+      <table class="rank-table">
+        <tr><th>Criterion</th><th>Method</th><th>Weight</th></tr>
+        ${CRITERIA.map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${c.mode === "manual" ? "Manual" : c.mode === "boolean" ? "Yes/No" : "Relative"}</td><td>${weights[c.id]}</td></tr>`).join("")}
+      </table>
+
+      <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Top Recommendations</h3>
+      ${top3.map((r, i) => `
+        <div class="top-pick ${i === 0 ? "first" : ""}">
+          <div class="pp-head">
+            <span class="pp-name">#${r.rank} ${escapeHtml(r.proposal.propertyName)}${i === 0 ? " \u2605" : ""}</span>
+            <span class="pp-score" style="color:${scoreColor(r.percentScore)};">${r.percentScore}%</span>
+          </div>
+          <div class="pp-grid">
+            ${CRITERIA.map(c => `<div><span class="k">${escapeHtml(c.name)}:</span> ${escapeHtml(String(r.scores[c.id].display))}</div>`).join("")}
+          </div>
+        </div>
+      `).join("")}
+
+      <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Complete Rankings</h3>
+      <table class="rank-table">
+        <tr><th>Rank</th><th>Property</th><th>Score</th><th>%</th></tr>
+        ${scoredResults.map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.proposal.propertyName)}${r.rank === 1 ? " \u2605" : ""}</td><td>${r.totalWeighted} / ${r.totalMaxWeighted}</td><td>${r.percentScore}%</td></tr>`).join("")}
+      </table>
+
+      <div style="margin-top:24px; padding-top:12px; border-top:2px solid var(--burgundy); font-size:0.75rem; color:var(--charcoal-soft); text-align:center;">
+        CLEAR Events Proposal Evaluation | Report generated ${today}
+      </div>
+    </div>
+  `;
+}
+document.getElementById("exportHtmlBtn").addEventListener("click", () => {
+  const content = document.getElementById("reportContent").innerHTML;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Venue Evaluation Report</title>
+    <style>${document.querySelector("style").textContent}</style></head>
+    <body style="padding:40px; max-width:900px; margin:0 auto;">${content}</body></html>`;
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "venue_evaluation_report.html"; a.click();
+  URL.revokeObjectURL(url);
+});
+
+loadWeights();
+loadManualScores();
+renderWeightsEditor();
 init();
 </script>
 </body>
