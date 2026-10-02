@@ -846,7 +846,7 @@ function addMeetingRoom(r) {
   wrap.appendChild(card);
 }
 function addAvRow(avListEl, a) {
-  a = a || { name: AV_OPTIONS[0], qty: "", otherText: "" };
+  a = a || { name: AV_OPTIONS[0], qty: 1, otherText: "" };
   const row = document.createElement("div");
   row.className = "av-row";
   row.innerHTML = `
