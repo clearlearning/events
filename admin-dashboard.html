@@ -163,10 +163,15 @@
         <div class="eval-tab-panel active" id="eval-tab-weights">
           <div class="section">
             <h2>Criteria &amp; Weights</h2>
-            <div class="sub">Adjust how much each criterion matters. Numeric criteria (rate, fees) are scored relative to the other proposals submitted for this RFP — not a fixed dollar threshold — so the same rubric works fairly whether rates run $150 or $400. Weights are saved in this browser and carry over between evaluations.</div>
+            <div class="sub" id="weightsSub">Adjust how much each criterion matters for this RFP. Numeric criteria (rate, fees, space) are scored relative to the other proposals submitted for this RFP — not a fixed threshold — so the same rubric works fairly whether rates run $150 or $400. Starting weights come from this RFP's own Section Priority ranking; adjust as needed — changes are saved per RFP.</div>
             <div id="criteriaList"></div>
           </div>
-          <button type="button" class="btn-outline no-print" id="resetWeightsBtn">Reset weights to defaults</button>
+          <div class="section" id="optionPointsSection" style="display:none;">
+            <h2>Location &amp; Area Fit — Option Values</h2>
+            <div class="sub">Set how valuable each specific property type and area characteristic is <em>for this event</em>. A venue's Location &amp; Area Fit score comes from whichever options it actually selected.</div>
+            <div id="optionPointsList"></div>
+          </div>
+          <button type="button" class="btn-outline no-print" id="resetWeightsBtn">Reset this RFP's weights to Section Priority defaults</button>
         </div>
 
         <div class="eval-tab-panel" id="eval-tab-score">
@@ -397,41 +402,48 @@ document.querySelectorAll(".view-tab-btn").forEach(btn => {
 
 // ================================================================
 //  EVALUATE AN RFP — uses the same allProposals already loaded above,
-//  grouped by rfpId, rather than a separate fetch per RFP.
+//  grouped by rfpId. Weights and option-values are stored per RFP,
+//  since what matters (and how much) genuinely differs by event.
 // ================================================================
 let currentRfpId = null;
 let currentRfpLabel = "";
+let currentRfpRecord = null; // full /api/rfps/:id record, for sectionPriorities
 let rfpProposals = [];
 let weights = {};
+let optionPoints = { propertyType: {}, areaCharacteristics: {} };
 let manualScores = {};
 let scoredResults = [];
 
+const PROPERTY_TYPE_OPTIONS = ["Hotel", "Resort", "Conference center with guest rooms", "Conference center without guest rooms", "Other"];
+const AREA_CHARACTERISTIC_OPTIONS = ["Beachfront or oceanfront", "Waterfront (not beachfront)", "Downtown or urban", "Suburban", "Airport area", "Mountain or nature setting", "Destination resort", "Highly walkable to off-site restaurants and activities", "Other"];
+
+// Maps each criterion to the RFP's own Section Priority key (from the
+// intake form) so a staff-set priority ranking can drive this
+// criterion's starting weight. Criteria with no sensible match (null)
+// just keep their generic default.
 const CRITERIA = [
-  { id: "guestRoomRate", name: "Guest Room Rate", mode: "numeric", lowerIsBetter: true, defaultWeight: 9,
+  { id: "guestRoomRate", name: "Guest Room Rate", mode: "numeric", lowerIsBetter: true, defaultWeight: 9, prioritySection: "guestRooms",
     getValue: p => parseFirstNumber(p.guestRoomRate) },
-  { id: "fnbMinimum", name: "F&B Minimum", mode: "numeric", lowerIsBetter: true, defaultWeight: 7,
-    getValue: p => parseFirstNumber(p.fnbMinimum) },
-  { id: "meetingRoomRentalFee", name: "Meeting Room Rental Fee", mode: "numeric", lowerIsBetter: true, defaultWeight: 5,
-    getValue: p => parseFirstNumber(p.meetingRoomRentalFee) },
-  { id: "attrition", name: "Cumulative Attrition Allowance", mode: "numeric", lowerIsBetter: false, defaultWeight: 6,
+  { id: "attrition", name: "Cumulative Attrition Allowance", mode: "numeric", lowerIsBetter: false, defaultWeight: 6, prioritySection: "guestRooms",
     getValue: p => parseFirstNumber(p.cumulativeAttritionPercent) },
-  { id: "commissionable", name: "Commissionable Rate", mode: "boolean", defaultWeight: 4,
-    getValue: p => p.commissionable === "yes" },
-  { id: "fnbGuarantee", name: "F&B Guarantee Offered", mode: "boolean", defaultWeight: 6,
-    getValue: p => p.fnbGuaranteeOffered === "yes" },
-  { id: "oneFloor", name: "Meeting Space on One Floor", mode: "boolean", defaultWeight: 4,
+  { id: "meetingRoomRentalFee", name: "Meeting Room Rental Fee", mode: "numeric", lowerIsBetter: true, defaultWeight: 5, prioritySection: "meetingSpace",
+    getValue: p => parseFirstNumber(p.meetingRoomRentalFee) },
+  { id: "roomMatch", name: "Room Capacity Match", mode: "fulfillment", defaultWeight: 8, prioritySection: "meetingSpace",
+    getFulfillment: p => fulfillmentRatio(p.roomMatchProvided) },
+  { id: "avMatch", name: "AV Equipment Match", mode: "fulfillment", defaultWeight: 6, prioritySection: "meetingSpace",
+    getFulfillment: p => fulfillmentRatio(p.avMatchProvided) },
+  { id: "oneFloor", name: "Meeting Space on One Floor", mode: "boolean", defaultWeight: 2, prioritySection: "meetingSpace",
     getValue: p => p.meetingSpaceOneFloor === "yes" },
-  { id: "concessions", name: "Concessions Quality", mode: "manual", defaultWeight: 6,
+  { id: "fnbMinimum", name: "F&B Minimum", mode: "numeric", lowerIsBetter: true, defaultWeight: 7, prioritySection: "fnb",
+    getValue: p => parseFirstNumber(p.fnbMinimum) },
+  { id: "fnbGuarantee", name: "F&B Guarantee Offered", mode: "boolean", defaultWeight: 6, prioritySection: "fnb",
+    getValue: p => p.fnbGuaranteeOffered === "yes" },
+  { id: "commissionable", name: "Commissionable Rate", mode: "boolean", defaultWeight: 4, prioritySection: null,
+    getValue: p => p.commissionable === "yes" },
+  { id: "concessions", name: "Concessions Quality", mode: "manual", defaultWeight: 6, prioritySection: "concessions",
     getSourceText: p => p.concessions || "(none provided)" },
-  { id: "locationFit", name: "Location & Area Fit", mode: "manual", defaultWeight: 6,
-    getSourceText: p => [
-      p.propertyType === "Other" ? p.propertyTypeOtherText : p.propertyType,
-      (p.areaCharacteristics || []).map(c => c === "Other" ? (p.areaCharacteristicsOtherText || "Other") : c).join(", "),
-      p.walkabilityDescription
-    ].filter(Boolean).join(" — ") || "(none provided)" },
-  { id: "siteInspection", name: "Site Inspection Support", mode: "manual", defaultWeight: 3,
-    getSourceText: p => p.siteInspectionSupport || "(none provided)" },
-  { id: "cvbPromotions", name: "CVB Promotions / Incentives", mode: "manual", defaultWeight: 3,
+  { id: "locationFit", name: "Location & Area Fit", mode: "optionWeighted", defaultWeight: 6, prioritySection: "cities" },
+  { id: "cvbPromotions", name: "CVB Promotions / Incentives", mode: "manual", defaultWeight: 3, prioritySection: null,
     getSourceText: p => p.cvbPromotions || "(none provided)" }
 ];
 
@@ -440,10 +452,32 @@ function parseFirstNumber(str) {
   const match = String(str).replace(/,/g, "").match(/[\d.]+/);
   return match ? parseFloat(match[0]) : null;
 }
+// Ratio of what was requested vs. what the venue said it can provide,
+// capped per line item at 100% so over-offering one thing can't mask
+// a shortfall elsewhere. Returns null when there was nothing to compare
+// (no meeting-space requirements on this RFP, or an older proposal
+// submitted before this question existed) rather than falsely scoring
+// it as a 0% match.
+function fulfillmentRatio(items) {
+  if (!items || !items.length) return null;
+  let needed = 0, provided = 0;
+  items.forEach(it => {
+    needed += it.neededQty || 0;
+    provided += Math.min(it.providedQty || 0, it.neededQty || 0);
+  });
+  if (needed === 0) return null;
+  return provided / needed;
+}
+function locationFitPoints(p) {
+  const ptPoints = optionPoints.propertyType[p.propertyType];
+  const chars = p.areaCharacteristics || [];
+  const charPoints = chars.length
+    ? chars.reduce((sum, c) => sum + (optionPoints.areaCharacteristics[c] ?? 5), 0) / chars.length
+    : 5;
+  return ((ptPoints ?? 5) + charPoints) / 2;
+}
 
 function populateRfpSelect() {
-  // Group already-loaded proposals by rfpId — an RFP only appears here
-  // once it actually has at least one proposal to evaluate.
   const byRfp = new Map();
   allProposals.forEach(p => {
     if (!byRfp.has(p.rfpId)) byRfp.set(p.rfpId, { groupName: p.groupName, eventName: p.eventName, count: 0 });
@@ -455,12 +489,24 @@ function populateRfpSelect() {
       `<option value="${id}">${escapeHtml(info.groupName)} — ${escapeHtml(info.eventName)} (${info.count} proposal${info.count === 1 ? "" : "s"})</option>`
     ).join("");
 }
-document.getElementById("rfpSelect").addEventListener("change", (e) => {
+document.getElementById("rfpSelect").addEventListener("change", async (e) => {
   currentRfpId = e.target.value;
   if (!currentRfpId) { document.getElementById("evalWorkArea").style.display = "none"; return; }
   rfpProposals = allProposals.filter(p => p.rfpId === currentRfpId);
   const first = rfpProposals[0];
   currentRfpLabel = first ? `${first.groupName} — ${first.eventName}` : "";
+
+  // Need the RFP's own Section Priorities to derive default weights —
+  // that lives on the full record, not the proposal summaries.
+  try {
+    const res = await fetch(`/api/rfps/${encodeURIComponent(currentRfpId)}`, { credentials: "include" });
+    currentRfpRecord = res.ok ? await res.json() : null;
+  } catch (err) { currentRfpRecord = null; }
+
+  loadWeightsForRfp(currentRfpId);
+  loadOptionPointsForRfp(currentRfpId);
+  renderWeightsEditor();
+  renderOptionPointsEditor();
   document.getElementById("evalWorkArea").style.display = "block";
   document.getElementById("rankingsWrap").style.display = "none";
   renderProposalCards();
@@ -474,19 +520,40 @@ document.querySelectorAll(".eval-tab-btn").forEach(btn => {
   });
 });
 
-// ---------- Weights (persisted per-browser) ----------
-function loadWeights() {
-  const saved = localStorage.getItem("clear_evaluate_weights_v1");
-  const parsed = saved ? JSON.parse(saved) : {};
-  CRITERIA.forEach(c => { weights[c.id] = parsed[c.id] ?? c.defaultWeight; });
+// ---------- Weights (per RFP, persisted per-browser) ----------
+// First time an RFP is evaluated, starting weights come from that RFP's
+// own Section Priority ranking (rank 1 = highest weight). After that,
+// whatever the planner adjusts is remembered for that specific RFP.
+function sectionPriorityWeight(sectionKey) {
+  const priorities = currentRfpRecord?.data?.sectionPriorities || [];
+  const entry = priorities.find(p => p.section === sectionKey);
+  if (!entry || !entry.rank) return null;
+  return Math.max(1, Math.min(10, 11 - Number(entry.rank)));
 }
-function saveWeightsToStorage() {
-  localStorage.setItem("clear_evaluate_weights_v1", JSON.stringify(weights));
+function defaultWeightsForCurrentRfp() {
+  const w = {};
+  CRITERIA.forEach(c => {
+    const derived = c.prioritySection ? sectionPriorityWeight(c.prioritySection) : null;
+    w[c.id] = derived ?? c.defaultWeight;
+  });
+  return w;
+}
+function loadWeightsForRfp(rfpId) {
+  const all = JSON.parse(localStorage.getItem("clear_evaluate_weights_v2") || "{}");
+  weights = all[rfpId] || defaultWeightsForCurrentRfp();
+}
+function saveWeightsForRfp() {
+  const all = JSON.parse(localStorage.getItem("clear_evaluate_weights_v2") || "{}");
+  all[currentRfpId] = weights;
+  localStorage.setItem("clear_evaluate_weights_v2", JSON.stringify(all));
 }
 function renderWeightsEditor() {
+  document.getElementById("weightsSub").textContent = currentRfpRecord
+    ? `Adjust how much each criterion matters for ${currentRfpLabel}. Starting weights come from this RFP's own Section Priority ranking; adjust as needed — changes are saved for this RFP.`
+    : "Adjust how much each criterion matters for this RFP.";
   document.getElementById("criteriaList").innerHTML = CRITERIA.map(c => `
     <div class="criterion-row">
-      <div class="criterion-name">${escapeHtml(c.name)}<span class="criterion-mode-tag">${c.mode === "manual" ? "Manual" : c.mode === "boolean" ? "Yes/No" : "Relative"}</span></div>
+      <div class="criterion-name">${escapeHtml(c.name)}<span class="criterion-mode-tag">${modeLabel(c.mode)}</span></div>
       <div class="weight-slider-wrap">
         <input type="range" min="1" max="10" value="${weights[c.id]}" data-crit="${c.id}" class="weight-input">
         <span class="weight-val" id="weightVal_${c.id}">${weights[c.id]}</span>
@@ -498,16 +565,61 @@ function renderWeightsEditor() {
       const id = input.dataset.crit;
       weights[id] = Number(input.value);
       document.getElementById("weightVal_" + id).textContent = input.value;
-      saveWeightsToStorage();
+      saveWeightsForRfp();
+    });
+  });
+  document.getElementById("optionPointsSection").style.display = "block";
+}
+function modeLabel(mode) {
+  return { manual: "Manual", boolean: "Yes/No", numeric: "Relative", fulfillment: "Fulfillment %", optionWeighted: "Option-based" }[mode] || mode;
+}
+document.getElementById("resetWeightsBtn").addEventListener("click", () => {
+  if (!currentRfpId) return;
+  if (!confirm("Reset this RFP's weights to its Section Priority defaults?")) return;
+  weights = defaultWeightsForCurrentRfp();
+  saveWeightsForRfp();
+  renderWeightsEditor();
+});
+
+// ---------- Location & Area Fit option values (per RFP) ----------
+function loadOptionPointsForRfp(rfpId) {
+  const all = JSON.parse(localStorage.getItem("clear_evaluate_option_points_v1") || "{}");
+  if (all[rfpId]) { optionPoints = all[rfpId]; return; }
+  optionPoints = { propertyType: {}, areaCharacteristics: {} };
+  PROPERTY_TYPE_OPTIONS.forEach(o => optionPoints.propertyType[o] = 5);
+  AREA_CHARACTERISTIC_OPTIONS.forEach(o => optionPoints.areaCharacteristics[o] = 5);
+}
+function saveOptionPointsForRfp() {
+  const all = JSON.parse(localStorage.getItem("clear_evaluate_option_points_v1") || "{}");
+  all[currentRfpId] = optionPoints;
+  localStorage.setItem("clear_evaluate_option_points_v1", JSON.stringify(all));
+}
+function renderOptionPointsEditor() {
+  const rows = (label, group, options) => `
+    <div style="margin-bottom:14px;">
+      <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px;">${escapeHtml(label)}</div>
+      ${options.map(o => `
+        <div class="criterion-row">
+          <div class="criterion-name" style="font-weight:400;">${escapeHtml(o)}</div>
+          <div class="weight-slider-wrap">
+            <input type="range" min="0" max="10" value="${optionPoints[group][o]}" data-group="${group}" data-opt="${escapeHtml(o)}" class="option-point-input">
+            <span class="weight-val" id="optVal_${group}_${o.replace(/[^a-z0-9]/gi,'')}">${optionPoints[group][o]}</span>
+          </div>
+        </div>
+      `).join("")}
+    </div>`;
+  document.getElementById("optionPointsList").innerHTML =
+    rows("Property Type", "propertyType", PROPERTY_TYPE_OPTIONS) +
+    rows("Area Characteristics", "areaCharacteristics", AREA_CHARACTERISTIC_OPTIONS);
+  document.querySelectorAll(".option-point-input").forEach(input => {
+    input.addEventListener("input", () => {
+      const group = input.dataset.group, opt = input.dataset.opt;
+      optionPoints[group][opt] = Number(input.value);
+      document.getElementById(`optVal_${group}_${opt.replace(/[^a-z0-9]/gi,'')}`).textContent = input.value;
+      saveOptionPointsForRfp();
     });
   });
 }
-document.getElementById("resetWeightsBtn").addEventListener("click", () => {
-  if (!confirm("Reset all weights to their defaults?")) return;
-  CRITERIA.forEach(c => { weights[c.id] = c.defaultWeight; });
-  saveWeightsToStorage();
-  renderWeightsEditor();
-});
 
 // ---------- Manual scores (persisted per-browser, per proposal) ----------
 function loadManualScores() {
@@ -586,10 +698,17 @@ function runEvaluation() {
           points = 1 + norm * 9;
         }
         display = val != null ? val : "—";
+      } else if (c.mode === "fulfillment") {
+        const ratio = c.getFulfillment(p);
+        points = ratio == null ? 5.5 : 1 + Math.min(ratio, 1) * 9;
+        display = ratio == null ? "No requirement" : `${Math.round(ratio * 100)}%`;
       } else if (c.mode === "boolean") {
         const val = c.getValue(p);
         points = val ? 10 : 4;
         display = val ? "Yes" : "No";
+      } else if (c.mode === "optionWeighted") {
+        points = locationFitPoints(p);
+        display = [p.propertyType, (p.areaCharacteristics || []).join(", ")].filter(Boolean).join(" — ") || "—";
       } else {
         points = getManualScore(p.id, c.id);
         display = points + "/10";
@@ -656,7 +775,7 @@ function renderReport() {
       <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Scoring Criteria &amp; Weights</h3>
       <table class="rank-table">
         <tr><th>Criterion</th><th>Method</th><th>Weight</th></tr>
-        ${CRITERIA.map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${c.mode === "manual" ? "Manual" : c.mode === "boolean" ? "Yes/No" : "Relative"}</td><td>${weights[c.id]}</td></tr>`).join("")}
+        ${CRITERIA.map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${modeLabel(c.mode)}</td><td>${weights[c.id]}</td></tr>`).join("")}
       </table>
 
       <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Top Recommendations</h3>
@@ -696,9 +815,7 @@ document.getElementById("exportHtmlBtn").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-loadWeights();
 loadManualScores();
-renderWeightsEditor();
 init();
 </script>
 </body>
