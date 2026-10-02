@@ -394,9 +394,11 @@ export async function onRequest(context) {
           roomLabel: r.roomLabel || "", floorSet: r.floorSet || "", maxSeats: r.maxSeats || "",
           neededQty: Number(r.neededQty) || 0, providedQty: Number(r.providedQty) || 0
         })) : [],
+        roomMatchNotes: body.roomMatchNotes || "",
         avMatchProvided: Array.isArray(body.avMatchProvided) ? body.avMatchProvided.map(a => ({
           label: a.label || "", neededQty: Number(a.neededQty) || 0, providedQty: Number(a.providedQty) || 0
         })) : [],
+        avMatchNotes: body.avMatchNotes || "",
         meetingSpaceOneFloor: body.meetingSpaceOneFloor || "",
         meetingSpaceFloorsExplain: body.meetingSpaceFloorsExplain || "",
         exhibitsLocation: body.exhibitsLocation || "",
