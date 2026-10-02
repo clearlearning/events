@@ -391,7 +391,7 @@ export async function onRequest(context) {
         // against them — aggregated client-side from the RFP's own
         // Meeting Space Needs, validated here as a basic sanity check.
         roomMatchProvided: Array.isArray(body.roomMatchProvided) ? body.roomMatchProvided.map(r => ({
-          floorSet: r.floorSet || "", maxSeats: r.maxSeats || "",
+          roomLabel: r.roomLabel || "", floorSet: r.floorSet || "", maxSeats: r.maxSeats || "",
           neededQty: Number(r.neededQty) || 0, providedQty: Number(r.providedQty) || 0
         })) : [],
         avMatchProvided: Array.isArray(body.avMatchProvided) ? body.avMatchProvided.map(a => ({
