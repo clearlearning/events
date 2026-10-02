@@ -333,7 +333,9 @@ function detailHtml(p) {
     ${fnbBlock}
     ${row("Concessions", p.concessions)}
     ${row("Room match", (p.roomMatchProvided || []).map(r => `${r.roomLabel || r.floorSet} (${r.providedQty}/${r.neededQty})`).join(", "))}
+    ${row("Room match notes", p.roomMatchNotes)}
     ${row("AV match", (p.avMatchProvided || []).map(a => `${a.label} (${a.providedQty}/${a.neededQty})`).join(", "))}
+    ${row("AV match notes", p.avMatchNotes)}
     ${row("Meeting space one floor", p.meetingSpaceOneFloor)}
     ${row("Floors explanation", p.meetingSpaceFloorsExplain)}
     ${row("Exhibits location", [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" — "))}
