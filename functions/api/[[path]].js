@@ -299,6 +299,7 @@ export async function onRequest(context) {
         ["guestRoomRate", "Guest room rate"],
         ["fnbMinimum", "Food & Beverage minimum"],
         ["meetingRoomRentalFee", "Meeting room rental fee"],
+
         ["cumulativeAttritionPercent", "Cumulative attrition %"],
         ["fnbGuaranteeOffered", "Whether an F&B guarantee is offered"],
         ["propertyType", "Property type"]
@@ -386,6 +387,16 @@ export async function onRequest(context) {
 
         concessions: body.concessions || "",
 
+        // Room/AV requirements and what the venue says it can provide
+        // against them — aggregated client-side from the RFP's own
+        // Meeting Space Needs, validated here as a basic sanity check.
+        roomMatchProvided: Array.isArray(body.roomMatchProvided) ? body.roomMatchProvided.map(r => ({
+          floorSet: r.floorSet || "", maxSeats: r.maxSeats || "",
+          neededQty: Number(r.neededQty) || 0, providedQty: Number(r.providedQty) || 0
+        })) : [],
+        avMatchProvided: Array.isArray(body.avMatchProvided) ? body.avMatchProvided.map(a => ({
+          label: a.label || "", neededQty: Number(a.neededQty) || 0, providedQty: Number(a.providedQty) || 0
+        })) : [],
         meetingSpaceOneFloor: body.meetingSpaceOneFloor || "",
         meetingSpaceFloorsExplain: body.meetingSpaceFloorsExplain || "",
         exhibitsLocation: body.exhibitsLocation || "",
