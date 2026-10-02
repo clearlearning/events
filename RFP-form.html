@@ -816,7 +816,7 @@ function makeMeetingSpaceRows(rooms) {
   updateAllDayChipVisibility();
 }
 function addMeetingRoom(r) {
-  r = r || { roomLabel: "", floorSet: FLOOR_SETS[0], maxSeats: "", avNeeds: [], notes: "", days: [] };
+  r = r || { roomLabel: "", floorSet: FLOOR_SETS[0], maxSeats: "", quantityNeeded: 1, avNeeds: [], notes: "", days: [] };
   const wrap = document.getElementById("meetingSpaceRows");
   const card = document.createElement("div");
   card.className = "room-card";
@@ -828,7 +828,9 @@ function addMeetingRoom(r) {
     <div class="row" style="margin-top:8px;">
       <div><label>Floor Set</label><select class="ms-floorset">${FLOOR_SETS.map(f=>`<option ${f===r.floorSet?"selected":""}>${f}</option>`).join("")}</select></div>
       <div><label>Est. Max Seats</label><input type="number" class="ms-seats" value="${r.maxSeats||''}"></div>
+      <div><label>Quantity Needed</label><input type="number" min="1" class="ms-qty-needed" value="${r.quantityNeeded || 1}"></div>
     </div>
+    <div class="section-hint">If you need 3 of this exact room type, set Quantity Needed to 3 instead of adding 3 separate room setups — AV needs below apply per room, and get multiplied by this quantity automatically.</div>
     <label>AV Needs</label>
     <div class="av-list"></div>
     <button type="button" class="btn-ghost add-av-btn" style="margin-top:4px;">+ Add AV need</button>
@@ -864,6 +866,7 @@ function getMeetingSpaceRows() {
     roomLabel: card.querySelector(".room-label-input").value,
     floorSet: card.querySelector(".ms-floorset").value,
     maxSeats: card.querySelector(".ms-seats").value,
+    quantityNeeded: Number(card.querySelector(".ms-qty-needed").value) || 1,
     avNeeds: [...card.querySelectorAll(".av-row")].map(row => ({
       name: row.querySelector(".av-name-select").value,
       qty: row.querySelector(".av-qty").value,
