@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NCIT in Raleigh, February 2027 – Interest Form | CLEAR Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --burgundy:#64092C; --burgundy-dk:#4a0620; --gold:#DDA838; --gold-lt:#f7ecd3;
+    --charcoal:#484848; --blue:#084D78; --ink:#1f1f1f; --line:#d9d4cf; --paper:#ffffff; --wash:#f6f4f2;
+    --err:#a8231c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Open Sans","Trebuchet MS",Arial,sans-serif;color:var(--ink);background:var(--wash);line-height:1.55;font-size:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+
+  header{background:var(--burgundy);color:#fff;border-bottom:6px solid var(--gold)}
+  header .wrap{padding-top:40px;padding-bottom:36px}
+  .org{font-size:.9rem;font-weight:600;color:var(--gold);margin:0 0 14px}
+  h1{font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.12;margin:0 0 12px;font-weight:700;letter-spacing:-.01em}
+  .lede{margin:0;max-width:75ch;color:#ffffff}
+
+  main .wrap{padding-top:28px;padding-bottom:60px}
+  fieldset{border:0;margin:0 0 22px;padding:26px 24px;background:var(--paper);border:1px solid var(--line);border-radius:6px}
+  legend{float:left;width:100%;padding:0;font-size:1.2rem;font-weight:700;color:var(--burgundy);margin-bottom:4px}
+  legend + *{clear:both}
+  .hint{color:var(--charcoal);font-size:.92rem;margin:0 0 16px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+  .full{grid-column:1/-1}
+  label.f{display:block;font-weight:600;font-size:.92rem;margin-bottom:5px}
+  .req{color:var(--burgundy)}
+  .opt{font-weight:400;color:var(--charcoal)}
+  input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{
+    width:100%;font:inherit;padding:10px 12px;border:1px solid #bdb6b0;border-radius:4px;background:#fff;color:var(--ink)}
+  select{appearance:none;-webkit-appearance:none;padding-right:36px;cursor:pointer;
+    background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23484848' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center}
+  textarea{min-height:96px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:3px solid rgba(8,77,120,.35);outline-offset:1px;border-color:var(--blue)}
+  .invalid input,.invalid select,.invalid .choices,.invalid .cal{border-color:var(--err)!important}
+  .msg{display:none;color:var(--err);font-size:.86rem;margin-top:6px;font-weight:600}
+  .invalid .msg{display:block}
+
+  /* Program choice */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;border:1px solid transparent;border-radius:6px}
+  .prog{position:relative;display:block;cursor:pointer}
+  .prog input{position:absolute;opacity:0;pointer-events:none}
+  .prog .box{display:block;height:100%;border:2px solid var(--line);border-radius:6px;padding:16px 16px 14px;transition:border-color .15s,background .15s}
+  .prog .name{display:block;font-weight:700;font-size:1.05rem;color:var(--ink)}
+  .prog .seats{display:block;margin-top:6px;font-size:.9rem;color:var(--charcoal)}
+  .prog .seats b{font-size:1.5rem;color:var(--burgundy);font-weight:800;margin-right:4px}
+  .prog input:checked + .box{border-color:var(--burgundy);background:#fbf3f6}
+  .prog input:focus-visible + .box{outline:3px solid rgba(8,77,120,.4);outline-offset:2px}
+
+  .sub{margin-top:16px;padding:14px 16px;background:var(--gold-lt);border-left:4px solid var(--gold);border-radius:0 4px 4px 0;display:none}
+  .sub.show{display:block}
+  .radios{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:6px}
+  .radios label{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.95rem}
+  input[type=radio],input[type=checkbox]{accent-color:var(--burgundy);width:18px;height:18px}
+
+  /* Calendar — the signature element */
+  .cal{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .cal-head{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px;background:var(--charcoal);color:#fff}
+  .cal-head strong{font-size:1.05rem}
+  .cal-head span{font-size:.85rem;color:#ddd}
+  .dow,.days,.bars{display:grid;grid-template-columns:repeat(5,1fr)}
+  .dow div{padding:8px 0;text-align:center;font-size:.82rem;font-weight:600;color:var(--charcoal);background:var(--wash);border-bottom:1px solid var(--line)}
+  .week{padding:0 0 12px;border-bottom:1px solid var(--line)}
+  .week:last-child{border-bottom:0}
+  .days div{text-align:center;padding:10px 0 8px;font-weight:700;font-size:1.15rem;color:var(--ink)}
+  .days div small{display:block;font-size:.72rem;font-weight:600;color:#8a8580}
+  .bars{row-gap:6px;padding:0 6px}
+  .win{position:relative;cursor:pointer;display:block}
+  .win input{position:absolute;opacity:0;pointer-events:none}
+  .win .pill{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 3px;padding:8px 12px;border:2px dashed #b9b2ab;border-radius:999px;font-size:.88rem;font-weight:600;color:var(--charcoal);background:#fff;transition:background .15s,border-color .15s,color .15s}
+  .win .pill .tick{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;flex:none;display:grid;place-items:center;font-size:12px;line-height:1}
+  .win input:checked + .pill{background:var(--blue);border:2px solid var(--blue);color:#fff}
+  .win input:checked + .pill .tick::after{content:"✓"}
+  .win input:focus-visible + .pill{outline:3px solid rgba(221,168,56,.8);outline-offset:2px}
+  .win:hover .pill{border-color:var(--blue)}
+  .mw{grid-column:1 / span 3}
+  .tt{grid-column:2 / span 3}
+  .cal-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--wash);border-top:1px solid var(--line);font-size:.9rem}
+  .linkbtn{font:inherit;font-weight:600;color:var(--blue);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+  .count{color:var(--charcoal)}
+
+  .stack > * + *{margin-top:14px}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+  .actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  button.primary{font:inherit;font-weight:700;font-size:1.05rem;background:var(--burgundy);color:#fff;border:0;border-radius:4px;padding:14px 28px;cursor:pointer}
+  button.primary:hover{background:var(--burgundy-dk)}
+  button.primary:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  button.primary[disabled]{opacity:.6;cursor:progress}
+  .note{font-size:.88rem;color:var(--charcoal);margin:0}
+  .banner{display:none;padding:14px 16px;border-radius:4px;margin-bottom:18px;font-weight:600}
+  .banner.err{display:block;background:#fbeaea;color:var(--err);border:1px solid #efc4c1}
+
+  .done{display:none;background:#fff;border:1px solid var(--line);border-top:6px solid var(--gold);border-radius:6px;padding:34px 28px}
+  .done h2{margin:0 0 10px;color:var(--burgundy);font-size:1.5rem}
+  .done p{margin:0 0 10px;max-width:60ch}
+
+footer{background:var(--burgundy);color:#fff;text-align:center;padding:32px 20px 36px;border-top:6px solid var(--gold)}
+.footer-logo{display:inline-block;margin-bottom:14px}
+.footer-logo img{display:block;max-width:100px;height:auto}
+.footer-logo:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.footer-name{margin:0;font-weight:700;font-size:.95rem}
+.footer-tag{margin:4px 0 0;font-style:italic;font-size:.9rem;color:#f3e6ea}
+
+  @media (max-width:600px){
+    .grid,.choices{grid-template-columns:1fr}
+    fieldset{padding:22px 16px}
+    .days div{font-size:1rem}
+    .win .pill{font-size:.8rem;padding:7px 9px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>NCIT Interest Survey</h1>
+    <p class="lede">We're planning a three-day in-person offering of the <strong>NCIT Basic</strong> and <strong>NCIT Specialized</strong> programs in <strong>early February 2027</strong> in <strong>Raleigh, North Carolina</strong>. Tell us which program you'd attend and which dates work for you to help us set the final schedule.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+<div id="errBanner" class="banner" role="alert"></div>
+    <form id="interestForm" novalidate>
+      <!-- honeypot -->
+      <div class="hp" aria-hidden="true"><label>Leave blank <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+      <fieldset>
+        <legend>About you</legend>
+        <div class="grid">
+          <div data-field="firstName">
+            <label class="f" for="firstName">First name <span class="req">*</span></label>
+            <input type="text" id="firstName" name="firstName" autocomplete="given-name" required>
+            <div class="msg">Enter your first name.</div>
+          </div>
+          <div data-field="lastName">
+            <label class="f" for="lastName">Last name <span class="req">*</span></label>
+            <input type="text" id="lastName" name="lastName" autocomplete="family-name" required>
+            <div class="msg">Enter your last name.</div>
+          </div>
+          <div data-field="email">
+            <label class="f" for="email">Work email <span class="req">*</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+            <div class="msg">Enter a valid email address.</div>
+          </div>
+          <div>
+            <label class="f" for="phone">Phone <span class="opt">(optional)</span></label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel">
+          </div>
+          <div class="full" data-field="organization">
+            <label class="f" for="organization">Agency or organization <span class="req">*</span></label>
+            <input type="text" id="organization" name="organization" autocomplete="organization" required>
+            <div class="msg">Enter your agency or organization.</div>
+          </div>
+          <div>
+            <label class="f" for="jobTitle">Job title <span class="opt">(optional)</span></label>
+            <input type="text" id="jobTitle" name="jobTitle" autocomplete="organization-title">
+          </div>
+          <div data-field="jurisdiction">
+            <label class="f" for="jurisdiction">State <span class="req">*</span></label>
+            <select id="jurisdiction" name="jurisdiction" autocomplete="address-level1" required>
+              <option value="">Select a state</option>
+              <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+              <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+              <option>District of Columbia</option><option>Florida</option><option>Georgia</option><option>Hawaii</option>
+              <option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
+              <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option>
+              <option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option>
+              <option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option>
+              <option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option>
+              <option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
+              <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option>
+              <option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option>
+              <option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option>
+              <option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+            </select>
+            <div class="msg">Select your state.</div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Program</legend>
+        <p class="hint">Choose the program you'd attend. Both will be held on the same three days.</p>
+        <div data-field="program">
+          <div class="choices" role="radiogroup" aria-label="Program">
+            <label class="prog">
+              <input type="radio" name="program" value="NCIT Basic" required>
+              <span class="box">
+                <span class="name">NCIT Basic</span>
+                <span class="seats"><b>70</b>seats available</span>
+              </span>
+            </label>
+            <label class="prog">
+              <input type="radio" name="program" value="NCIT Specialized">
+              <span class="box">
+                <span class="name">NCIT Specialized</span>
+                <span class="seats"><b>50</b>seats available</span>
+              </span>
+            </label>
+          </div>
+          <div class="msg">Choose a program.</div>
+        </div>
+
+        <div class="sub" id="specSub" data-field="basicCompleted">
+          <label class="f" id="basicQ">Have you completed NCIT Basic?</label>
+          <div class="radios" role="radiogroup" aria-labelledby="basicQ">
+            <label><input type="radio" name="basicCompleted" value="Yes"> Yes</label>
+            <label><input type="radio" name="basicCompleted" value="No"> No</label>
+            <label><input type="radio" name="basicCompleted" value="In progress"> In progress</label>
+          </div>
+          <div class="msg">Let us know whether you've completed NCIT Basic.</div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Dates that work for you</legend>
+        <p class="hint">Select every window you could attend. The final offering will be one of these.</p>
+        <div data-field="dates">
+          <div class="cal" id="cal">
+            <div class="cal-head"><strong>February 2027</strong><span>Raleigh, NC</span></div>
+            <div class="dow"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div></div>
+            <div id="weeks"></div>
+            <div class="cal-foot">
+              <span class="count" id="dateCount" aria-live="polite">No windows selected</span>
+              <button type="button" class="linkbtn" id="selectAll">Any of these work for me</button>
+            </div>
+          </div>
+          <div class="msg">Select at least one date window.</div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Planning details</legend>
+        <div class="stack">
+          <div data-field="likelihood">
+            <label class="f" id="likeQ">How likely are you to attend if your dates are chosen? <span class="req">*</span></label>
+            <div class="radios" role="radiogroup" aria-labelledby="likeQ">
+              <label><input type="radio" name="likelihood" value="Very likely"> Very likely</label>
+              <label><input type="radio" name="likelihood" value="Likely, pending approval"> Likely, pending approval</label>
+              <label><input type="radio" name="likelihood" value="Not sure yet"> Not sure yet</label>
+            </div>
+            <div class="msg">Choose how likely you are to attend.</div>
+          </div>
+          <div role="group" aria-labelledby="addlQ">
+            <label class="f" id="addlQ">Likely additional attendees from your organization <span class="opt">(optional)</span></label>
+            <p class="hint" style="margin:0 0 10px">Not counting yourself. A rough estimate is fine.</p>
+            <div class="grid">
+              <div>
+                <label class="f" for="addlBasic">NCIT Basic</label>
+                <input type="number" id="addlBasic" name="additionalBasic" min="0" max="70" inputmode="numeric" placeholder="0">
+              </div>
+              <div>
+                <label class="f" for="addlSpec">NCIT Specialized</label>
+                <input type="number" id="addlSpec" name="additionalSpecialized" min="0" max="50" inputmode="numeric" placeholder="0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" class="primary" id="submitBtn">Send my interest</button>
+        <p class="note">This isn't a registration. We'll email you when registration opens.</p>
+      </div>
+    </form>
+
+    <section class="done" id="done" tabindex="-1" aria-live="polite">
+      <h2>Thanks, we've got your interest</h2>
+      <p id="doneSummary"></p>
+      <p>We'll email you once the dates are set and registration opens. Questions in the meantime can go to the CLEAR Learning team.</p>
+    </section>
+  </div>
+</main>
+
+  <footer>
+    <a href="https://www.clearhq.org" class="footer-logo" target="_blank" rel="noopener">
+      <img src="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png" alt="CLEAR home page">
+    </a>
+    <p class="footer-name">Council on Licensure, Enforcement and Regulation</p>
+    <p class="footer-tag">Promoting Regulatory Excellence</p>
+  </footer>
+<script>
+/* ============ CONFIG ============ */
+const CONFIG = {
+  // POST endpoint (e.g. your Cloudflare Worker route that writes to KV).
+  // Leave blank to run in preview mode: submissions log to the console and show the thank-you screen.
+  endpoint: "",
+  eventId: "raleigh-ncit-2027-02",
+  year: 2027
+};
+
+const WINDOWS = [
+  { id:"wk1-mw", week:1, label:"Mon–Wed, Feb 1–3",  start:"2027-02-01", end:"2027-02-03", cls:"mw" },
+  { id:"wk1-tt", week:1, label:"Tue–Thu, Feb 2–4",  start:"2027-02-02", end:"2027-02-04", cls:"tt" },
+  { id:"wk2-mw", week:2, label:"Mon–Wed, Feb 8–10", start:"2027-02-08", end:"2027-02-10", cls:"mw" },
+  { id:"wk2-tt", week:2, label:"Tue–Thu, Feb 9–11", start:"2027-02-09", end:"2027-02-11", cls:"tt" }
+];
+const WEEK_START = { 1:1, 2:8 }; // Monday date of each week
+
+/* ============ CALENDAR ============ */
+const weeksEl = document.getElementById("weeks");
+[1,2].forEach(w=>{
+  const wk = document.createElement("div");
+  wk.className = "week";
+  const days = document.createElement("div");
+  days.className = "days";
+  for(let i=0;i<5;i++){
+    const d = document.createElement("div");
+    d.innerHTML = `${WEEK_START[w]+i}<small>Feb</small>`;
+    days.appendChild(d);
+  }
+  const bars = document.createElement("div");
+  bars.className = "bars";
+  WINDOWS.filter(x=>x.week===w).forEach(x=>{
+    const lab = document.createElement("label");
+    lab.className = `win ${x.cls}`;
+    lab.innerHTML = `<input type="checkbox" name="dates" value="${x.id}"><span class="pill"><span>${x.label}</span><span class="tick" aria-hidden="true"></span></span>`;
+    bars.appendChild(lab);
+  });
+  wk.append(days,bars);
+  weeksEl.appendChild(wk);
+});
+
+const dateBoxes = [...document.querySelectorAll('input[name="dates"]')];
+const countEl = document.getElementById("dateCount");
+function updateCount(){
+  const n = dateBoxes.filter(b=>b.checked).length;
+  countEl.textContent = n===0 ? "No windows selected" : n===dateBoxes.length ? "All 4 windows selected" : `${n} of 4 windows selected`;
+  if(n) clearErr("dates");
+}
+dateBoxes.forEach(b=>b.addEventListener("change",updateCount));
+document.getElementById("selectAll").addEventListener("click",()=>{
+  const allOn = dateBoxes.every(b=>b.checked);
+  dateBoxes.forEach(b=>b.checked=!allOn);
+  document.getElementById("selectAll").textContent = allOn ? "Any of these work for me" : "Clear selection";
+  updateCount();
+});
+
+/* ============ PROGRAM CONDITIONAL ============ */
+const specSub = document.getElementById("specSub");
+document.querySelectorAll('input[name="program"]').forEach(r=>r.addEventListener("change",()=>{
+  clearErr("program");
+  const spec = r.value==="NCIT Specialized" && r.checked;
+  specSub.classList.toggle("show", spec);
+  if(!spec){ document.querySelectorAll('input[name="basicCompleted"]').forEach(x=>x.checked=false); clearErr("basicCompleted"); }
+}));
+
+/* ============ VALIDATION ============ */
+const form = document.getElementById("interestForm");
+function fieldWrap(name){ return form.querySelector(`[data-field="${name}"]`); }
+function setErr(name){ fieldWrap(name)?.classList.add("invalid"); }
+function clearErr(name){ fieldWrap(name)?.classList.remove("invalid"); }
+form.addEventListener("input",e=>{ const w=e.target.closest("[data-field]"); if(w) w.classList.remove("invalid"); });
+
+function val(name){ const el=form.elements[name]; return el ? (el.value||"").trim() : ""; }
+function radio(name){ const r=form.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ""; }
+
+function validate(){
+  const bad=[];
+  ["firstName","lastName","organization","jurisdiction"].forEach(n=>{ if(!val(n)) bad.push(n); });
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("email"))) bad.push("email");
+  const prog = radio("program");
+  if(!prog) bad.push("program");
+  if(prog==="NCIT Specialized" && !radio("basicCompleted")) bad.push("basicCompleted");
+  if(!dateBoxes.some(b=>b.checked)) bad.push("dates");
+  if(!radio("likelihood")) bad.push("likelihood");
+  form.querySelectorAll(".invalid").forEach(el=>el.classList.remove("invalid"));
+  bad.forEach(setErr);
+  return bad;
+}
+
+/* ============ SUBMIT ============ */
+const banner = document.getElementById("errBanner");
+const btn = document.getElementById("submitBtn");
+
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+  banner.className="banner"; banner.textContent="";
+  if(val("website")) return; // bot
+
+  const bad = validate();
+  if(bad.length){
+    const first = fieldWrap(bad[0]);
+    first.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth", block:"center"});
+    first.querySelector("input,select,textarea")?.focus({preventScroll:true});
+    return;
+  }
+
+  const chosen = WINDOWS.filter(w=>dateBoxes.find(b=>b.value===w.id).checked);
+  const payload = {
+    eventId: CONFIG.eventId,
+    submittedAt: new Date().toISOString(),
+    firstName: val("firstName"),
+    lastName: val("lastName"),
+    email: val("email").toLowerCase(),
+    phone: val("phone"),
+    organization: val("organization"),
+    jobTitle: val("jobTitle"),
+    jurisdiction: val("jurisdiction"),
+    program: radio("program"),
+    basicCompleted: radio("basicCompleted") || null,
+    dateWindows: chosen.map(w=>w.id),
+    dateWindowLabels: chosen.map(w=>w.label),
+    likelihood: radio("likelihood"),
+    additionalBasic: Number(val("additionalBasic"))||0,
+    additionalSpecialized: Number(val("additionalSpecialized"))||0,
+    comments: val("comments")
+  };
+
+  btn.disabled=true; btn.textContent="Sending…";
+  try{
+    if(CONFIG.endpoint){
+      const res = await fetch(CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error(`Server responded ${res.status}`);
+    }else{
+      console.log("[Preview mode] Submission payload:", payload);
+    }
+    showDone(payload);
+  }catch(err){
+    console.error(err);
+    banner.className="banner err";
+    banner.textContent="Your response didn't send. Check your connection and select Send my interest again.";
+    banner.scrollIntoView({block:"start"});
+    btn.disabled=false; btn.textContent="Send my interest";
+  }
+});
+
+function showDone(p){
+  form.style.display="none";
+  const done=document.getElementById("done");
+  document.getElementById("doneSummary").textContent =
+    `${p.firstName}, we've recorded your interest in ${p.program} for ${p.dateWindowLabels.length===4 ? "any of the four date windows" : p.dateWindowLabels.join("; ")}.`;
+  done.style.display="block";
+  done.focus();
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
