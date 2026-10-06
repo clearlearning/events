@@ -126,6 +126,31 @@ function generateProposalId() {
   return "prop_" + crypto.randomUUID().split("-")[0];
 }
 
+function generateTemplateId() {
+  return "rtpl_" + crypto.randomUUID().split("-")[0];
+}
+
+// A saved room-setup template only ever holds these fields — anything
+// else in the request is dropped, and lengths are capped, so a template
+// can't be used to stash arbitrary data. Which days a room is needed is
+// deliberately not included: that's different for every event.
+function sanitizeRoomTemplateData(d) {
+  d = d || {};
+  const str = (v, max) => String(v == null ? "" : v).slice(0, max);
+  return {
+    roomLabel: str(d.roomLabel, 120),
+    floorSet: str(d.floorSet, 60),
+    maxSeats: str(d.maxSeats, 12),
+    quantityNeeded: Math.max(1, Math.min(99, Number(d.quantityNeeded) || 1)),
+    avNeeds: (Array.isArray(d.avNeeds) ? d.avNeeds : []).slice(0, 30).map(a => ({
+      name: str(a && a.name, 80),
+      qty: str(a && a.qty, 12),
+      otherText: str(a && a.otherText, 120)
+    })),
+    notes: str(d.notes, 1000)
+  };
+}
+
 // ---------------- Public slugs ----------------
 // Human-readable URL for a public RFP page, e.g. "nasasps-2027-annual-conference".
 // Generated once, the first time a record is set to "open", and kept
@@ -462,6 +487,65 @@ export async function onRequest(context) {
     // they have admin rights, without needing its own login step.
     if (path === "/api/whoami" && method === "GET") {
       return jsonResponse(identity);
+    }
+
+    // ---- Room setup templates ----
+    // Reusable Meeting Space room setups the planner can drop into any
+    // RFP instead of rebuilding them. Shared across all staff.
+    //
+    // These live under /api/rfps/ on purpose: the existing Access rule
+    // for api/rfps* already protects them, so no new Access destination
+    // needs to be added. They also have to be matched BEFORE the generic
+    // /api/rfps/:id routes below, which would otherwise treat
+    // "room-templates" as an RFP id.
+    if (path === "/api/rfps/room-templates" && method === "GET") {
+      const list = await env.RFP_DATA.list({ prefix: "roomtemplate:" });
+      const templates = (await Promise.all(
+        list.keys.map(async (k) => {
+          const raw = await env.RFP_DATA.get(k.name);
+          return raw ? JSON.parse(raw) : null;
+        })
+      )).filter(Boolean);
+      templates.sort((a, b) => a.name.localeCompare(b.name));
+      return jsonResponse(templates);
+    }
+
+    // Saving under a name that already exists replaces that template
+    // (same id) rather than piling up duplicates.
+    if (path === "/api/rfps/room-templates" && method === "POST") {
+      const body = await request.json();
+      const name = String(body.name || "").trim().slice(0, 80);
+      if (!name) return errorResponse("Template name is required.", 400);
+      const data = sanitizeRoomTemplateData(body.data);
+      const now = new Date().toISOString();
+
+      const list = await env.RFP_DATA.list({ prefix: "roomtemplate:" });
+      let existing = null;
+      for (const k of list.keys) {
+        const raw = await env.RFP_DATA.get(k.name);
+        if (!raw) continue;
+        const t = JSON.parse(raw);
+        if (t.name.toLowerCase() === name.toLowerCase()) { existing = t; break; }
+      }
+
+      const template = existing
+        ? { ...existing, name, data, updatedAt: now, updatedBy: identity.name }
+        : { id: generateTemplateId(), name, data, createdAt: now, createdBy: identity.name, updatedAt: now, updatedBy: identity.name };
+
+      await env.RFP_DATA.put(`roomtemplate:${template.id}`, JSON.stringify(template));
+      return jsonResponse(template, existing ? 200 : 201);
+    }
+
+    const roomTemplateMatch = path.match(/^\/api\/rfps\/room-templates\/([^/]+)$/);
+    if (roomTemplateMatch && method === "DELETE") {
+      if (!identity.isAdmin && !identity.isPlanner) {
+        return errorResponse("Only admins or the event planner can delete room templates.", 403);
+      }
+      const key = `roomtemplate:${roomTemplateMatch[1]}`;
+      const raw = await env.RFP_DATA.get(key);
+      if (!raw) return errorResponse("Not found", 404);
+      await env.RFP_DATA.delete(key);
+      return jsonResponse({ deleted: true });
     }
 
     // ---- GET /api/rfps ----
