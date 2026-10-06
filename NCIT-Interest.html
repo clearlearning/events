@@ -108,6 +108,10 @@ footer{background:var(--burgundy);color:#fff;text-align:center;padding:32px 20px
 .footer-logo:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
 .footer-name{margin:0;font-weight:700;font-size:.95rem}
 .footer-tag{margin:4px 0 0;font-style:italic;font-size:.9rem;color:#f3e6ea}
+body.submitted header{display:none}
+body.submitted footer{background:none;border-top:0;color:var(--charcoal)}
+body.submitted .footer-tag{color:var(--charcoal)}
+body.submitted main .wrap{padding-top:48px}
 
   @media (max-width:600px){
     .grid,.choices{grid-template-columns:1fr}
@@ -437,6 +441,7 @@ form.addEventListener("submit", async e=>{
 
 function showDone(p){
   form.style.display="none";
+  document.body.classList.add("submitted");
   const done=document.getElementById("done");
   document.getElementById("doneSummary").textContent =
     `${p.firstName}, we've recorded your interest in ${p.program} for ${p.dateWindowLabels.length===4 ? "any of the four date windows" : p.dateWindowLabels.join("; ")}.`;
