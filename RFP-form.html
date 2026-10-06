@@ -134,6 +134,12 @@
   .room-card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .room-card-header input.room-label-input { font-weight: 600; border: none; border-bottom: 1px dashed var(--border); background: transparent; padding: 2px 2px; font-size: 0.88rem; flex: 1; }
   .room-card-header input.room-label-input:focus { outline: none; border-bottom-color: var(--blue); }
+  .template-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .template-bar select { width: auto; max-width: 280px; padding: 6px 10px; font-size: 0.82rem; }
+  .template-manager { margin-top: 10px; background: var(--card); border: 1px solid var(--border-soft); border-radius: 8px; padding: 6px 14px; }
+  .template-manager-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-soft); font-size: 0.85rem; }
+  .template-manager-row:last-child { border-bottom: none; }
+  .template-manager-row .tpl-meta { color: var(--charcoal-soft); font-size: 0.76rem; margin-top: 2px; }
 
   .av-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
   .av-row { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-soft); border-radius: 6px; padding: 6px 10px; background: #FCFCFB; }
@@ -338,7 +344,12 @@
               </select>
 
               <div id="meetingSpaceRows" style="margin-top:14px;"></div>
-              <button type="button" class="btn-ghost" id="addMeetingRoomBtn">+ Add room setup</button>
+              <div class="template-bar">
+                <button type="button" class="btn-ghost" id="addMeetingRoomBtn">+ Add room setup</button>
+                <select id="roomTemplateSelect"><option value="">+ Add from template…</option></select>
+                <button type="button" class="btn-ghost" id="manageTemplatesBtn">Manage templates</button>
+              </div>
+              <div class="template-manager" id="templateManager" style="display:none;"></div>
             </div>
           </details>
 
@@ -822,24 +833,26 @@ function addMeetingRoom(r) {
   card.className = "room-card";
   card.innerHTML = `
     <div class="room-card-header">
-      <input type="text" class="room-label-input" value="${r.roomLabel||''}" placeholder="Room label (e.g. General Session)">
+      <input type="text" class="room-label-input" value="${escapeHtml(r.roomLabel||'')}" placeholder="Room label (e.g. General Session)">
+      <button type="button" class="btn-ghost save-template-btn" title="Save this room setup as a reusable template">Save as template</button>
       <button type="button" class="btn-danger-ghost remove-room" title="Remove room setup">&times;</button>
     </div>
     <div class="row" style="margin-top:8px;">
       <div><label>Floor Set</label><select class="ms-floorset">${FLOOR_SETS.map(f=>`<option ${f===r.floorSet?"selected":""}>${f}</option>`).join("")}</select></div>
-      <div><label>Est. Max Seats</label><input type="number" class="ms-seats" value="${r.maxSeats||''}"></div>
-      <div><label>Quantity Needed</label><input type="number" min="1" class="ms-qty-needed" value="${r.quantityNeeded || 1}"></div>
+      <div><label>Est. Max Seats</label><input type="number" class="ms-seats" value="${escapeHtml(r.maxSeats||'')}"></div>
+      <div><label>Quantity Needed</label><input type="number" min="1" class="ms-qty-needed" value="${Number(r.quantityNeeded) || 1}"></div>
     </div>
     <div class="section-hint" style="margin-top:10px;">If you need 3 of this exact room type, set Quantity Needed to 3 instead of adding 3 separate room setups — AV needs below apply per room, and get multiplied by this quantity automatically.</div>
     <label>AV Needs</label>
     <div class="av-list"></div>
     <button type="button" class="btn-ghost add-av-btn" style="margin-top:4px;">+ Add AV need</button>
     <label>Notes</label>
-    <textarea class="ms-room-notes" placeholder="Anything specific to this room...">${r.notes||''}</textarea>
+    <textarea class="ms-room-notes" placeholder="Anything specific to this room...">${escapeHtml(r.notes||'')}</textarea>
     <label style="margin-top:10px;">Which days is this room setup needed?</label>
     <div class="chip-grid">${dayChipsHtml(r.days)}</div>
   `;
   card.querySelector(".remove-room").onclick = () => card.remove();
+  card.querySelector(".save-template-btn").onclick = () => saveRoomAsTemplate(card);
   const avListEl = card.querySelector(".av-list");
   card.querySelector(".add-av-btn").onclick = () => addAvRow(avListEl, null);
   (r.avNeeds && r.avNeeds.length ? r.avNeeds : []).forEach(a => addAvRow(avListEl, a));
@@ -851,8 +864,8 @@ function addAvRow(avListEl, a) {
   row.className = "av-row";
   row.innerHTML = `
     <select class="av-name-select">${AV_OPTIONS.map(o=>`<option ${o===a.name?"selected":""}>${o}</option>`).join("")}</select>
-    <input type="number" min="0" class="av-qty" placeholder="Qty" value="${a.qty||''}">
-    <input type="text" class="av-other-text" placeholder="Specify..." value="${a.otherText||''}" style="${a.name==='Other'?'':'display:none;'} flex:1;">
+    <input type="number" min="0" class="av-qty" placeholder="Qty" value="${escapeHtml(a.qty||'')}">
+    <input type="text" class="av-other-text" placeholder="Specify..." value="${escapeHtml(a.otherText||'')}" style="${a.name==='Other'?'':'display:none;'} flex:1;">
     <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
   `;
   const select = row.querySelector(".av-name-select");
@@ -861,8 +874,8 @@ function addAvRow(avListEl, a) {
   row.querySelector(".remove-row").onclick = () => row.remove();
   avListEl.appendChild(row);
 }
-function getMeetingSpaceRows() {
-  return [...document.querySelectorAll("#meetingSpaceRows .room-card")].map(card => ({
+function readRoomCard(card) {
+  return {
     roomLabel: card.querySelector(".room-label-input").value,
     floorSet: card.querySelector(".ms-floorset").value,
     maxSeats: card.querySelector(".ms-seats").value,
@@ -874,9 +887,113 @@ function getMeetingSpaceRows() {
     })),
     notes: card.querySelector(".ms-room-notes").value,
     days: [...card.querySelectorAll(".ms-day-chip:checked")].map(el => Number(el.value))
-  }));
+  };
+}
+function getMeetingSpaceRows() {
+  return [...document.querySelectorAll("#meetingSpaceRows .room-card")].map(readRoomCard);
 }
 document.getElementById("addMeetingRoomBtn").onclick = () => addMeetingRoom();
+
+// ---------- Room setup templates ----------
+// Shared, server-stored room setups (/api/rfps/room-templates) so the
+// planner can reuse the setups she uses over and over and just change the
+// numbers. A template holds everything about a room EXCEPT which days it's
+// needed — that's different every event — so adding one drops in a
+// pre-filled card with the day chips left for her to pick.
+let roomTemplates = [];
+function canManageTemplates() {
+  return !!(currentIdentity && (currentIdentity.isAdmin || currentIdentity.isPlanner));
+}
+async function loadRoomTemplates() {
+  try {
+    const res = await fetch(`${API_BASE}/api/rfps/room-templates`, { credentials: "include" });
+    if (!res.ok) return;
+    roomTemplates = await res.json();
+  } catch (e) { console.error("Couldn't load room templates", e); return; }
+  renderRoomTemplateUi();
+}
+function renderRoomTemplateUi() {
+  const sel = document.getElementById("roomTemplateSelect");
+  sel.innerHTML = `<option value="">${roomTemplates.length ? "+ Add from template…" : "No saved templates yet"}</option>` +
+    roomTemplates.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}</option>`).join("");
+  renderTemplateManager();
+}
+function renderTemplateManager() {
+  const box = document.getElementById("templateManager");
+  if (!roomTemplates.length) {
+    box.innerHTML = `<div class="small-note" style="padding:8px 0;">No templates yet. Use "Save as template" on any room setup above.</div>`;
+    return;
+  }
+  const canDelete = canManageTemplates();
+  box.innerHTML = roomTemplates.map(t => {
+    const d = t.data || {};
+    const meta = [
+      d.floorSet,
+      d.maxSeats ? `${d.maxSeats} seats` : "",
+      d.quantityNeeded > 1 ? `\u00D7${d.quantityNeeded}` : "",
+      (d.avNeeds || []).length ? `${d.avNeeds.length} AV item${d.avNeeds.length === 1 ? "" : "s"}` : ""
+    ].filter(Boolean).join(" \u00B7 ");
+    return `<div class="template-manager-row">
+      <div><strong>${escapeHtml(t.name)}</strong><div class="tpl-meta">${escapeHtml(meta)}</div></div>
+      ${canDelete ? `<button type="button" class="btn-danger-ghost" style="font-size:0.8rem;" data-delete-template="${escapeHtml(t.id)}">Delete</button>` : ""}
+    </div>`;
+  }).join("");
+  box.querySelectorAll("[data-delete-template]").forEach(btn => {
+    btn.addEventListener("click", () => deleteRoomTemplate(btn.dataset.deleteTemplate));
+  });
+}
+async function saveRoomAsTemplate(card) {
+  const room = readRoomCard(card);
+  const suggested = [room.roomLabel, room.floorSet].filter(Boolean).join(" \u2014 ");
+  const name = (prompt("Name this template:", suggested) || "").trim();
+  if (!name) return;
+  const existing = roomTemplates.find(t => t.name.toLowerCase() === name.toLowerCase());
+  if (existing && !confirm(`A template named "${existing.name}" already exists. Replace it with this room's current settings?`)) return;
+  const { days, ...data } = room; // days are event-specific, never part of a template
+  try {
+    const res = await fetch(`${API_BASE}/api/rfps/room-templates`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, data })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const saved = await res.json();
+    // Merge locally instead of re-listing — KV's list can lag a moment
+    // behind a write, which would make a just-saved template look missing.
+    roomTemplates = roomTemplates.filter(t => t.id !== saved.id).concat(saved)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    renderRoomTemplateUi();
+    alert(`Saved "${saved.name}". You'll find it under "Add from template…".`);
+  } catch (err) {
+    alert("Couldn't save that template.");
+    console.error(err);
+  }
+}
+async function deleteRoomTemplate(id) {
+  const tpl = roomTemplates.find(t => t.id === id);
+  if (!tpl || !confirm(`Delete the template "${tpl.name}"? Rooms already added to RFPs from it are not affected.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/rfps/room-templates/${encodeURIComponent(id)}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok && res.status !== 404) throw new Error(await res.text());
+    roomTemplates = roomTemplates.filter(t => t.id !== id);
+    renderRoomTemplateUi();
+  } catch (err) {
+    alert("Couldn't delete that template.");
+    console.error(err);
+  }
+}
+document.getElementById("roomTemplateSelect").addEventListener("change", (e) => {
+  const tpl = roomTemplates.find(t => t.id === e.target.value);
+  e.target.value = ""; // snap back to the placeholder so the same template can be added again
+  if (!tpl) return;
+  addMeetingRoom({ ...tpl.data, days: [] });
+  const cards = document.querySelectorAll("#meetingSpaceRows .room-card");
+  cards[cards.length - 1].scrollIntoView({ behavior: "smooth", block: "nearest" });
+});
+document.getElementById("manageTemplatesBtn").addEventListener("click", () => {
+  const box = document.getElementById("templateManager");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+});
 
 // ---------- Concessions ----------
 // NOTE: placeholder list — update once the event planner provides the actual concession list.
@@ -1153,6 +1270,10 @@ function applyEditLock() {
   document.getElementById("saveBtn").style.display = locked ? "none" : "inline-block";
   document.querySelectorAll("#intakeForm input, #intakeForm select, #intakeForm textarea, #intakeForm button").forEach(el => {
     if (el.id === "saveBtn" || el.id === "duplicateRfpBtn" || el.id === "deleteRfpBtn") return;
+    // Saving a room as a template, and managing the template library, don't
+    // modify this RFP — so they stay usable even when the RFP is locked.
+    // (Adding a room FROM a template does edit the RFP, so it locks.)
+    if (el.id === "manageTemplatesBtn" || el.classList.contains("save-template-btn") || el.closest("#templateManager")) return;
     el.disabled = locked;
   });
 }
@@ -1517,7 +1638,10 @@ function switchTab(tab) {
   renderPriorityTable();
   const ok = await checkAuth();
   populateGroupSelect();
-  if (ok) await loadRfpList();
+  if (ok) {
+    loadRoomTemplates();
+    await loadRfpList();
+  }
 })();
 </script>
 </body>
