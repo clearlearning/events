@@ -162,6 +162,16 @@
   .concession-row { display: flex; gap: 10px; align-items: flex-end; border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: #FCFCFB; flex-wrap: wrap; }
   .concession-row > div { flex: 1; min-width: 150px; }
   .concession-row label { font-size: 0.72rem; margin: 0 0 3px; }
+  .concession-row.held { background: #FFF9EC; border-color: #E7CE8D; }
+  .concession-row label.holdback { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; margin: 0 0 6px; font-size: 0.78rem; font-weight: 600; color: var(--charcoal); cursor: pointer; white-space: nowrap; }
+  .concession-row label.holdback input { width: 16px; height: 16px; accent-color: var(--burgundy); }
+  .held-badge { display: none; align-self: center; font-size: 0.7rem; font-weight: 700; color: #8A5A00; background: #FBEBC4; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .concession-row.held .held-badge { display: inline-block; }
+  .day-dates { flex: 2 1 220px; min-width: 200px; align-self: center; font-size: 0.78rem; color: var(--charcoal-soft); line-height: 1.4; }
+  .room-dates { font-size: 0.78rem; color: var(--charcoal-soft); line-height: 1.4; padding: 4px 8px; white-space: nowrap; }
+  .localgov-row { display: flex; align-items: center; gap: 8px; margin: 16px 0 6px; }
+  .localgov-row input { width: 18px; height: 18px; accent-color: var(--burgundy); }
+  .localgov-row label { margin: 0; font-weight: 600; cursor: pointer; }
 
   .logo-preview-wrap { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
   .logo-preview-wrap img { max-height: 56px; border-radius: 4px; border: 1px solid var(--border-soft); background: #fff; padding: 4px; }
@@ -308,7 +318,7 @@
           <details class="section">
             <summary>Attendance <span class="chev">&#9656;</span></summary>
             <div class="section-body">
-              <div class="section-hint">Days below are based on Date Option 1 automatically.</div>
+              <div class="section-hint">Days below are based on Date Option 1 automatically. The dates beside each day show where it falls in every date option.</div>
               <label>Expected attendance by day</label>
               <div id="attendanceDayRows"></div>
             </div>
@@ -319,11 +329,13 @@
             <div class="section-body">
               <div class="section-hint">Auto-fill nights from Date Option 1, then adjust as needed.</div>
               <button type="button" class="btn-outline" id="autoGenRooms">Auto-generate nights from Date Option 1</button>
-              <label style="margin-top:14px;">Max Nightly Room Rate (before tax)</label>
+              <div class="localgov-row"><input type="checkbox" id="localGovRate"><label for="localGovRate">We qualify for the local government rate</label></div>
+              <div class="section-hint" id="localGovHint" style="display:none; margin-top:6px;">No maximum rate is needed. Venues will see that this group qualifies and will be asked to propose their local government rate.</div>
+              <label style="margin-top:14px;" id="maxRateLabel">Max Nightly Room Rate (before tax)</label>
               <input type="number" id="maxNightlyRoomRate" min="0" style="max-width:160px;">
               <div class="table-wrap" style="margin-top:12px;">
                 <table class="clean">
-                  <thead><tr><th style="width:40%;">Night</th><th>Timing</th><th>Rooms Needed</th><th></th></tr></thead>
+                  <thead><tr><th style="width:26%;">Night</th><th>Timing</th><th>Night of (by date option)</th><th>Rooms Needed</th><th></th></tr></thead>
                   <tbody id="roomRows"></tbody>
                 </table>
               </div>
@@ -356,6 +368,7 @@
           <details class="section">
             <summary>Must-Have Concessions <span class="chev">&#9656;</span></summary>
             <div class="section-body">
+              <div class="section-hint">Tick <strong>Hold back from venues</strong> on any concession you want to keep in your back pocket for negotiation. It stays on your list here, but it is not shown on the public RFP.</div>
               <div id="concessionRows"></div>
               <button type="button" class="btn-ghost" id="addConcessionRow">+ Add concession</button>
             </div>
@@ -477,7 +490,7 @@ async function checkAuth() {
 function initials(name) { return name.split(" ").map(p => p[0]).join("").slice(0,2).toUpperCase(); }
 
 // ---------- Date helpers ----------
-function addDaysISO(iso, delta) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + delta); return d.toISOString().slice(0,10); }
+function addDaysISO(iso, delta) { return isoAddDays(iso, delta); }   // UTC arithmetic: never off by a day in any time zone
 function daysDiff(a, b) { return Math.round((new Date(b+"T00:00:00") - new Date(a+"T00:00:00")) / 86400000); }
 function fmtDate(iso) { if (!iso) return ""; return new Date(iso+"T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
 
@@ -668,7 +681,9 @@ function addDateRow(d) {
     row.querySelector(".date-start-input").addEventListener("change", (e) => {
       const dur = firstOptionDuration();
       if (dur !== null && e.target.value) row.querySelector(".date-end-input").value = addDaysISO(e.target.value, dur);
+      refreshDateLabels();   // the calendar dates beside each day/night depend on every option, not just the first
     });
+    row.querySelector(".date-end-input").addEventListener("change", () => refreshDateLabels());
   } else {
     // Date Option 1 drives the live day span used by Meeting Space Needs
     // and Attendance — recompute whenever either date changes.
@@ -694,6 +709,55 @@ function getDateRows() {
 document.getElementById("addDateRow").onclick = () => addDateRow();
 function firstDateOption() { const rows = getDateRows(); return rows.length ? rows[0] : null; }
 
+// ---------- Calendar dates behind each day / night ----------
+// "Day 3" and "Event Night 2" are positions in the program. For every date
+// option these helpers work out the real calendar date they land on, so you
+// can see at a glance that Day 1 is Mon Oct 18 in option 1 and Mon Oct 25 in
+// option 2. Arithmetic is done in UTC so a time zone can never shift a date.
+// Nights are labelled by the date of the night: the night before an event
+// starting Oct 18 is Oct 17, and the night after an event ending Oct 22 is
+// Oct 22 itself (the last day's night).
+function isoAddDays(iso, n) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+function fmtWeekdayDate(iso, withYear) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US",
+    { weekday: "short", month: "short", day: "numeric", year: withYear ? "numeric" : undefined, timeZone: "UTC" });
+}
+// Date options that have a usable start and end, numbered by on-screen row.
+function labelOptions() {
+  return getDateRows().map((r, i) => ({ n: i + 1, start: r.start, end: r.end })).filter(o => o.start && o.end && o.end >= o.start);
+}
+function dayDate(opt, day) { const iso = isoAddDays(opt.start, day - 1); return iso <= opt.end ? iso : null; }
+function nightDate(opt, timing, ordinal) {
+  if (timing === "before") return isoAddDays(opt.start, -ordinal);
+  if (timing === "after") return isoAddDays(opt.end, ordinal - 1);
+  const iso = isoAddDays(opt.start, ordinal - 1);          // an event night that this option is too short to have
+  return iso < opt.end ? iso : null;                       // is left blank rather than guessed
+}
+function datesHtml(opts, pick) {
+  const found = opts.map(o => ({ o, iso: pick(o) })).filter(x => x.iso);
+  if (!found.length) return "";
+  const multiYear = new Set(opts.flatMap(o => [o.start.slice(0, 4), o.end.slice(0, 4)])).size > 1;
+  return found.map(x => (opts.length > 1 ? `Opt ${x.o.n}: ` : "") + fmtWeekdayDate(x.iso, multiYear)).join("<br>");
+}
+function refreshDateLabels() {
+  const opts = labelOptions();
+  document.querySelectorAll(".attendance-day-row").forEach(row => {
+    row.querySelector(".day-dates").innerHTML = datesHtml(opts, o => dayDate(o, Number(row.dataset.day)));
+  });
+  // A manually added extra night is dated by its place among the nights with
+  // the same timing: the 2nd "before" night is two nights before the start.
+  const seen = {};
+  document.querySelectorAll("#roomRows tr").forEach(tr => {
+    const timing = tr.querySelector(".room-timing").value;
+    seen[timing] = (seen[timing] || 0) + 1;
+    tr.querySelector(".room-dates").innerHTML = datesHtml(opts, o => nightDate(o, timing, seen[timing]));
+  });
+}
+
 // ---------- Guest rooms ----------
 function makeRoomRows(rooms) { const tbody = document.getElementById("roomRows"); tbody.innerHTML = ""; (rooms || []).forEach(r => addRoomRow(r)); }
 function addRoomRow(r) {
@@ -701,18 +765,21 @@ function addRoomRow(r) {
   const tbody = document.getElementById("roomRows");
   const tr = document.createElement("tr");
   tr.innerHTML = `
-    <td><input type="text" class="room-label" value="${r.label||''}" placeholder="e.g. Event Night 1"></td>
+    <td><input type="text" class="room-label" value="${escapeHtml(r.label||'')}" placeholder="e.g. Event Night 1"></td>
     <td><select class="room-timing">
       <option value="before" ${r.timing==='before'?'selected':''}>Before event</option>
       <option value="during" ${r.timing==='during'||!r.timing?'selected':''}>During event</option>
       <option value="after" ${r.timing==='after'?'selected':''}>After event</option>
     </select></td>
+    <td class="room-dates"></td>
     <td><input type="number" class="room-count" value="${r.rooms||''}"></td>
     <td><button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button></td>
   `;
-  tr.querySelector(".remove-row").onclick = () => tr.remove();
+  tr.querySelector(".remove-row").onclick = () => { tr.remove(); refreshDateLabels(); };
+  tr.querySelector(".room-timing").addEventListener("change", refreshDateLabels);
   tbody.appendChild(tr);
   attachRoomAutoLabel(tr);
+  refreshDateLabels();
 }
 function attachRoomAutoLabel(tr) {
   const select = tr.querySelector(".room-timing");
@@ -734,6 +801,17 @@ function getRoomRows() {
   }));
 }
 document.getElementById("addRoomRow").onclick = () => addRoomRow();
+
+// "We qualify for the local government rate": no maximum rate to enter. The
+// typed value is kept (just greyed out) so unticking brings it back.
+function syncLocalGovRate() {
+  const on = document.getElementById("localGovRate").checked;
+  const locked = !!(currentRecord && currentRecord.status !== "draft");
+  document.getElementById("maxNightlyRoomRate").disabled = on || locked;
+  document.getElementById("localGovHint").style.display = on ? "block" : "none";
+  document.getElementById("maxRateLabel").style.opacity = on ? "0.5" : "1";
+}
+document.getElementById("localGovRate").addEventListener("change", syncLocalGovRate);
 document.getElementById("autoGenRooms").onclick = () => {
   const d = firstDateOption();
   if (!d || !d.start || !d.end) { alert("Fill in Date Option 1's start and end date first."); return; }
@@ -759,6 +837,7 @@ function liveEventDaySpan() {
 function refreshDerivedDaySpan() {
   updateAllDayChipVisibility();
   updateAttendanceDayVisibility();
+  refreshDateLabels();
 }
 
 // Attendance day rows are pre-rendered up to MAX_EVENT_DAYS (same pattern
@@ -775,10 +854,12 @@ function renderAttendanceDayRows(byDay) {
     html += `<div class="row attendance-day-row" data-day="${day}" style="margin-top:6px;">
       <div style="flex:0 0 90px;"><label style="font-size:0.78rem; margin:0;">Day ${day}</label></div>
       <div><input type="number" min="0" class="attendance-day-input" placeholder="Expected attendees" value="${existing ? existing.count : ''}"></div>
+      <div class="day-dates"></div>
     </div>`;
   }
   wrap.innerHTML = html;
   updateAttendanceDayVisibility();
+  refreshDateLabels();
 }
 function updateAttendanceDayVisibility() {
   const count = liveEventDaySpan();
@@ -1016,10 +1097,16 @@ function addConcessionRow(r) {
     <div><label>Concession</label>
       <select class="concession-select">${CONCESSION_OPTIONS.map(c=>`<option ${c===r.concession?"selected":""}>${c}</option>`).join("")}</select>
     </div>
-    <div class="concession-other" style="${r.concession==='Other'?'':'display:none;'}"><label>Other — specify</label><input type="text" class="concession-other-input" value="${r.otherText||''}"></div>
-    <div><label>Details</label><input type="text" class="concession-details-input" value="${r.details||''}" placeholder="e.g. 1:40 ratio, specific terms..."></div>
+    <div class="concession-other" style="${r.concession==='Other'?'':'display:none;'}"><label>Other — specify</label><input type="text" class="concession-other-input" value="${escapeHtml(r.otherText||'')}"></div>
+    <div><label>Details</label><input type="text" class="concession-details-input" value="${escapeHtml(r.details||'')}" placeholder="e.g. 1:40 ratio, specific terms..."></div>
+    <label class="holdback" title="Keep this concession on your list but don't show it on the public RFP, so you can hold it for negotiation."><input type="checkbox" class="concession-hold" ${r.hidden ? "checked" : ""}> Hold back from venues</label>
+    <span class="held-badge">Not shown to venues</span>
     <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
   `;
+  const hold = row.querySelector(".concession-hold");
+  const syncHeld = () => row.classList.toggle("held", hold.checked);
+  hold.addEventListener("change", syncHeld);
+  syncHeld();
   const select = row.querySelector(".concession-select");
   const otherWrap = row.querySelector(".concession-other");
   select.addEventListener("change", () => { otherWrap.style.display = select.value === "Other" ? "block" : "none"; });
@@ -1030,7 +1117,8 @@ function getConcessionRows() {
   return [...document.querySelectorAll("#concessionRows .concession-row")].map(row => ({
     concession: row.querySelector(".concession-select").value,
     otherText: row.querySelector(".concession-other-input").value,
-    details: row.querySelector(".concession-details-input").value
+    details: row.querySelector(".concession-details-input").value,
+    hidden: row.querySelector(".concession-hold").checked
   }));
 }
 document.getElementById("addConcessionRow").onclick = () => addConcessionRow();
@@ -1146,7 +1234,9 @@ function loadFormFromData(data) {
 
   renderAttendanceDayRows(data.attendanceByDay);
 
+  document.getElementById("localGovRate").checked = !!data.localGovRate;
   document.getElementById("maxNightlyRoomRate").value = data.maxNightlyRoomRate ?? "";
+  syncLocalGovRate();
   makeRoomRows(data.guestRooms);
   document.getElementById("colocation").value = data.colocation || "";
   makeMeetingSpaceRows(data.meetingSpace);
@@ -1180,7 +1270,8 @@ function collectFormData() {
     patternNotes: document.getElementById("patternNotes").value,
     guestRooms: getRoomRows(),
     attendanceByDay: getAttendanceByDay(),
-    maxNightlyRoomRate: document.getElementById("maxNightlyRoomRate").value,
+    localGovRate: document.getElementById("localGovRate").checked,
+    maxNightlyRoomRate: document.getElementById("localGovRate").checked ? "" : document.getElementById("maxNightlyRoomRate").value,
     colocation: document.getElementById("colocation").value,
     meetingSpace: getMeetingSpaceRows(),
     concessions: getConcessionRows(),
@@ -1276,6 +1367,7 @@ function applyEditLock() {
     if (el.id === "manageTemplatesBtn" || el.classList.contains("save-template-btn") || el.closest("#templateManager")) return;
     el.disabled = locked;
   });
+  syncLocalGovRate();   // re-apply: the lock pass above re-enables the rate box
 }
 
 // ---------- Due date floor (45 days out) ----------
@@ -1443,7 +1535,7 @@ async function renderResponses() {
           <tr>
             <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", ")) || "—"}</td>
             <td>${escapeHtml(p.propertyName)}</td>
-            <td>${escapeHtml(p.guestRoomRate) || "—"}</td>
+            <td>${escapeHtml(p.guestRoomRate) || "—"}${p.localGovRate ? ' <span style="font-size:0.7rem; color:var(--charcoal-soft);">(local gov. rate)</span>' : ""}</td>
             <td>${escapeHtml(p.fnbMinimum) || "—"}</td>
             <td>${p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "—"}</td>
             <td>${new Date(p.submittedAt).toLocaleDateString()}</td>
@@ -1516,6 +1608,7 @@ function proposalDetailHtml(p) {
     ${rowLink("Website", p.website)}
     ${row("Contact", [p.contactName, p.contactPhone, p.contactEmail].filter(Boolean).join(" · "))}
     ${row("Dates proposed", dateLabels)}
+    ${row("Rate type", p.localGovRate ? "Local government rate" : "")}
     ${row("Commissionable", p.commissionable === "yes" ? "Yes" + (p.commissionPercent ? ` (${escapeHtml(p.commissionPercent)})` : "") : p.commissionable === "no" ? "No" : "")}
     ${row("Rate fees included", fees.join(", ") || "—")}
     ${row("Meeting Room Rental Fee", p.meetingRoomRentalFee)}
@@ -1542,7 +1635,7 @@ function proposalDetailHtml(p) {
 }
 function proposalsToCsv(proposals) {
   const cols = ["propertyName","streetAddress","city","stateProvince","zipCode","phone","website",
-    "contactName","contactPhone","contactEmail","guestRoomRate","commissionable","commissionPercent",
+    "contactName","contactPhone","contactEmail","guestRoomRate","localGovRate","commissionable","commissionPercent",
     "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
     "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
     "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
@@ -1558,7 +1651,7 @@ function proposalsToCsv(proposals) {
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.map(headerFor).join(",")];
   proposals.forEach(p => {
-    const flat = { ...p, roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
+    const flat = { ...p, localGovRate: p.localGovRate ? "Yes" : "", roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
     lines.push(cols.map(c => escCsv(flat[c])).join(","));
   });
   return lines.join("\r\n");
