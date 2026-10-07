@@ -73,6 +73,18 @@
   .proposal-card-header .pname { font-weight: 700; }
   .proposal-card-body { padding: 16px 18px; display: none; }
   .proposal-card-body.open { display: block; }
+  .proposal-card-header .ploc { flex: 1; text-align: right; font-size: 0.8rem; color: var(--charcoal-soft); margin-left: 16px; }
+  .include-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: var(--charcoal); cursor: pointer; margin-left: 12px; padding: 4px 8px; border-radius: 6px; }
+  .include-toggle:hover { background: #fff; }
+  .include-toggle input { width: 16px; height: 16px; accent-color: var(--burgundy); cursor: pointer; }
+  .proposal-card.excluded { border-style: dashed; }
+  .proposal-card.excluded .proposal-card-header { background: #F1EEE9; }
+  .proposal-card.excluded .pname { color: var(--charcoal-soft); text-decoration: line-through; }
+  .excl-badge { display: inline-block; margin-left: 8px; padding: 1px 9px; border-radius: 999px; background: #E4E0DA; color: var(--charcoal-soft); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .excl-note { font-size: 0.85rem; color: var(--charcoal-soft); margin-bottom: 10px; }
+  .excl-reason { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.88rem; }
+  .include-count { font-size: 0.85rem; color: var(--charcoal-soft); margin: 0 0 12px; }
+  .stale-note { display: none; margin: 0 0 12px; padding: 10px 14px; border-left: 4px solid var(--gold); background: #FFFBF0; border-radius: 6px; font-size: 0.85rem; }
   .manual-crit { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
   .manual-crit:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
   .manual-crit .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -215,9 +227,11 @@
         <div class="eval-tab-panel" id="eval-tab-score">
           <div class="section">
             <h2>Score Each Proposal</h2>
-            <div class="sub">Numeric and yes/no criteria are scored automatically. For the criteria below, read the venue's actual submitted text and set a score yourself.</div>
+            <div class="sub">Numeric and yes/no criteria are scored automatically. For the criteria below, read the venue's actual submitted text and set a score yourself. Untick <strong>Include</strong> on a proposal to leave it out of the rankings and the report, for example a duplicate or a withdrawn submission.</div>
           </div>
+          <div class="include-count" id="includeCount"></div>
           <div id="proposalCards"></div>
+          <div class="stale-note no-print" id="staleNote">Which proposals are included has changed. Run the evaluation again to update the rankings and the report.</div>
           <button type="button" class="btn-primary no-print" id="runEvalBtn">Run Evaluation &amp; See Rankings</button>
           <div id="rankingsWrap" style="margin-top:20px; display:none;">
             <div class="section">
@@ -568,6 +582,9 @@ document.getElementById("rfpSelect").addEventListener("change", async (e) => {
   renderOptionPointsEditor();
   document.getElementById("evalWorkArea").style.display = "block";
   document.getElementById("rankingsWrap").style.display = "none";
+  document.getElementById("staleNote").style.display = "none";
+  scoredResults = [];   // never carry one RFP's rankings into another RFP's report
+  openCards = new Set();
   renderProposalCards();
 });
 
@@ -697,17 +714,54 @@ function setManualScore(proposalId, critId, val) {
   saveManualScores();
 }
 
+// ---------- Excluded proposals (persisted per-browser, per proposal) ----------
+// An excluded proposal is left out of scoring altogether, not just hidden.
+// Relative scoring compares every venue with the others, so a leftover
+// outlier (say, a duplicate at a much lower rate) would still skew
+// everyone else's numbers even if it never showed in the report.
+let excludedProposals = {};
+let openCards = new Set();
+function loadExcluded() {
+  try { excludedProposals = JSON.parse(localStorage.getItem("clear_evaluate_excluded_v1") || "{}"); } catch (e) { excludedProposals = {}; }
+}
+function saveExcluded() {
+  try { localStorage.setItem("clear_evaluate_excluded_v1", JSON.stringify(excludedProposals)); } catch (e) { /* still applies this session */ }
+}
+const isExcluded = id => Object.prototype.hasOwnProperty.call(excludedProposals, id);
+function includedProposals() { return rfpProposals.filter(p => !isExcluded(p.id)); }
+function toggleInclude(id, include) {
+  if (include) { delete excludedProposals[id]; }
+  else { excludedProposals[id] = excludedProposals[id] || { reason: "" }; openCards.add(id); }
+  saveExcluded();
+  // Rankings and the report were built from the old set, so drop them
+  // rather than let a left-out venue linger in a report.
+  const hadResults = scoredResults.length > 0;
+  scoredResults = [];
+  document.getElementById("rankingsWrap").style.display = "none";
+  document.getElementById("staleNote").style.display = hadResults ? "block" : "none";
+  renderProposalCards();
+}
+
 // ---------- Score Proposals tab ----------
 function renderProposalCards() {
   const manualCriteria = CRITERIA.filter(c => c.mode === "manual");
-  document.getElementById("proposalCards").innerHTML = rfpProposals.map((p, i) => `
-    <div class="proposal-card">
+  const total = rfpProposals.length, inCount = includedProposals().length;
+  document.getElementById("includeCount").textContent = `${inCount} of ${total} proposal${total === 1 ? "" : "s"} included in the evaluation`;
+  const box = document.getElementById("proposalCards");
+  box.innerHTML = rfpProposals.map((p, i) => {
+    const out = isExcluded(p.id);
+    return `
+    <div class="proposal-card${out ? " excluded" : ""}">
       <div class="proposal-card-header" onclick="toggleProposalCard(${i})">
-        <span class="pname">${escapeHtml(p.propertyName)}</span>
-        <span style="font-size:0.8rem; color:var(--charcoal-soft);">${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", "))}</span>
+        <span class="pname">${escapeHtml(p.propertyName)}${out ? '<span class="excl-badge">Excluded</span>' : ""}</span>
+        <span class="ploc">${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", "))}</span>
+        <label class="include-toggle"><input type="checkbox" class="include-cb" data-id="${escapeHtml(p.id)}" ${out ? "" : "checked"}> Include</label>
       </div>
-      <div class="proposal-card-body" id="propBody${i}">
-        ${manualCriteria.map(c => `
+      <div class="proposal-card-body${openCards.has(p.id) ? " open" : ""}" id="propBody${i}">
+        ${out ? `
+          <div class="excl-note">This proposal is left out of the rankings and the report. Tick Include to bring it back.</div>
+          <input type="text" class="excl-reason" data-id="${escapeHtml(p.id)}" maxlength="200" placeholder="Reason, for your own reference (for example: duplicate, withdrawn, test submission)" value="${escapeHtml((excludedProposals[p.id] || {}).reason || "")}">
+        ` : manualCriteria.map(c => `
           <div class="manual-crit">
             <div class="label-row">
               <span class="name">${escapeHtml(c.name)}</span>
@@ -719,23 +773,34 @@ function renderProposalCards() {
           </div>
         `).join("")}
       </div>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
+  box.querySelectorAll(".include-toggle").forEach(l => l.addEventListener("click", e => e.stopPropagation()));
+  box.querySelectorAll(".include-cb").forEach(cb => cb.addEventListener("change", () => toggleInclude(cb.dataset.id, cb.checked)));
+  box.querySelectorAll(".excl-reason").forEach(inp => inp.addEventListener("input", () => {
+    if (isExcluded(inp.dataset.id)) { excludedProposals[inp.dataset.id].reason = inp.value; saveExcluded(); }
+  }));
 }
 function toggleProposalCard(i) {
-  document.getElementById("propBody" + i).classList.toggle("open");
+  const el = document.getElementById("propBody" + i);
+  el.classList.toggle("open");
+  const id = rfpProposals[i].id;
+  if (el.classList.contains("open")) openCards.add(id); else openCards.delete(id);
 }
 
 // ---------- Scoring ----------
 function runEvaluation() {
+  const pool = includedProposals();
+  if (!pool.length) { alert("Include at least one proposal to run the evaluation."); return; }
+  document.getElementById("staleNote").style.display = "none";
   const numericCriteria = CRITERIA.filter(c => c.mode === "numeric");
   const ranges = {};
   numericCriteria.forEach(c => {
-    const values = rfpProposals.map(p => c.getValue(p)).filter(v => v != null && !isNaN(v));
+    const values = pool.map(p => c.getValue(p)).filter(v => v != null && !isNaN(v));
     ranges[c.id] = values.length ? { min: Math.min(...values), max: Math.max(...values) } : null;
   });
 
-  scoredResults = rfpProposals.map(p => {
+  scoredResults = pool.map(p => {
     const scores = {};
     let totalWeighted = 0;
     let totalMaxWeighted = 0;
@@ -1017,6 +1082,7 @@ document.getElementById("printReportBtn").addEventListener("click", printReport)
 document.getElementById("exportHtmlBtn").addEventListener("click", exportReportHtml);
 
 loadManualScores();
+loadExcluded();
 init();
 </script>
 </body>
