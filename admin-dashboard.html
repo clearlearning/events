@@ -323,7 +323,7 @@ function render() {
       <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", ")) || "—"}</td>
       <td>${escapeHtml(p.propertyName)}</td>
       <td>${escapeHtml(p.eventName)}<div style="color:var(--charcoal-soft); font-size:0.75rem;">${escapeHtml(p.groupName)}</div></td>
-      <td>${escapeHtml(p.guestRoomRate) || "—"}</td>
+      <td>${escapeHtml(p.guestRoomRate) || "—"}${p.localGovRate ? ' <span style="font-size:0.7rem; color:var(--charcoal-soft);">(local gov. rate)</span>' : ""}</td>
       <td>${escapeHtml(p.fnbMinimum) || "—"}</td>
       <td>${p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "—"}</td>
       <td>${fmtDate(p.submittedAt.slice(0,10))}</td>
@@ -379,6 +379,7 @@ function detailHtml(p) {
     ${rowLink("Website", p.website)}
     ${row("Contact", [p.contactName, p.contactPhone, p.contactEmail].filter(Boolean).join(" · "))}
     ${row("Dates proposed", dateLabels)}
+    ${row("Rate type", p.localGovRate ? "Local government rate" : "")}
     ${row("Commissionable", p.commissionable === "yes" ? "Yes" + (p.commissionPercent ? ` (${escapeHtml(p.commissionPercent)})` : "") : p.commissionable === "no" ? "No" : "")}
     ${row("Rate fees included", fees.join(", "))}
     ${row("Meeting Room Rental Fee", p.meetingRoomRentalFee)}
@@ -429,7 +430,7 @@ function avMatchText(p, sep = ", ") {
 }
 function proposalsToCsv(proposals) {
   const cols = ["propertyName","streetAddress","city","stateProvince","zipCode","phone","website",
-    "contactName","contactPhone","contactEmail","guestRoomRate","commissionable","commissionPercent",
+    "contactName","contactPhone","contactEmail","guestRoomRate","localGovRate","commissionable","commissionPercent",
     "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
     "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
     "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
@@ -445,7 +446,7 @@ function proposalsToCsv(proposals) {
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.map(headerFor).join(",")];
   proposals.forEach(p => {
-    const flat = { ...p, roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
+    const flat = { ...p, localGovRate: p.localGovRate ? "Yes" : "", roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
     lines.push(cols.map(c => escCsv(flat[c])).join(","));
   });
   return lines.join("\r\n");
