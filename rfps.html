@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="format-detection" content="telephone=no">
 <title>Open RFPs — CLEAR Events</title>
 <link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
 <style>
@@ -37,12 +38,46 @@
   .rfp-section-header { font-size: 0.7rem; font-weight: 700; color: var(--charcoal-soft); text-transform: uppercase; letter-spacing: 0.02em; margin-top: 4px; }
   .rfp-dates, .rfp-cities, .rfp-attendance { font-size: 0.8rem; color: var(--charcoal-soft); }
   .rfp-due { font-size: 0.82rem; color: var(--blue); font-weight: 600; margin-top: auto; padding-top: 6px; }
+
+  /* ---------- FAQ ---------- */
+  header .faq-jump { display: inline-block; margin-top: 10px; font-size: 0.82rem; font-weight: 600; color: var(--gold); text-decoration: none; }
+  header .faq-jump:hover { text-decoration: underline; }
+  .faq { margin-top: 48px; padding-top: 8px; scroll-margin-top: 16px; }
+  .faq-head { border-bottom: 2px solid var(--gold); padding-bottom: 12px; margin-bottom: 18px; }
+  .faq-head h2 { margin: 0; font-size: 1.4rem; color: var(--burgundy); }
+  .faq-head p { margin: 4px 0 0; font-size: 0.9rem; color: var(--charcoal-soft); }
+  .faq-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .faq-tools input[type=search] { flex: 1 1 260px; max-width: 420px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; background: #fff; }
+  .faq-tools input[type=search]:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .faq-tools button { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--charcoal); }
+  .faq-tools button:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .faq-count { font-size: 0.82rem; color: var(--charcoal-soft); margin-left: auto; }
+  .faq-group { margin: 26px 0 8px; }
+  .faq-group h3 { margin: 0 0 8px; padding-left: 12px; border-left: 4px solid var(--gold); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--charcoal-soft); }
+  .faq-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; box-shadow: var(--shadow); overflow: hidden; }
+  .faq-item summary { list-style: none; cursor: pointer; padding: 14px 44px 14px 18px; font-weight: 600; font-size: 0.95rem; line-height: 1.4; position: relative; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: "+"; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 1.3rem; font-weight: 400; color: var(--gold); line-height: 1; }
+  .faq-item[open] summary::after { content: "\2212"; }
+  .faq-item[open] summary { color: var(--burgundy); border-bottom: 1px solid var(--border-soft); }
+  .faq-item summary:hover { background: #FBFAF8; }
+  .faq-item summary:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+  .faq-a { padding: 14px 18px 16px; font-size: 0.92rem; line-height: 1.65; color: var(--charcoal); }
+  .faq-a p { margin: 0 0 10px; } .faq-a p:last-child { margin-bottom: 0; }
+  .faq-a ul { margin: 0 0 10px; padding-left: 22px; } .faq-a li { margin: 6px 0; }
+  .faq-a li::marker { color: var(--gold); }
+  .faq-a .lead { font-weight: 600; }
+  .iata { white-space: nowrap; font-weight: 700; background: #FBF1D5; color: #5A4308; padding: 1px 7px; border-radius: 4px; user-select: all; }
+  .faq-none { display: none; background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 22px 20px; text-align: center; color: var(--charcoal-soft); margin-top: 14px; }
+  .faq-contact { margin-top: 26px; background: #FFFBF0; border-left: 4px solid var(--gold); border-radius: 8px; padding: 16px 20px; font-size: 0.92rem; line-height: 1.6; }
+  .faq-contact a, .faq-none a { color: var(--blue); font-weight: 600; }
 </style>
 </head>
 <body>
 <header>
   <h1>Open Requests for Proposals</h1>
   <p>Current CLEAR events open for venue and hotel proposals</p>
+  <a class="faq-jump" href="#faq">Questions? Read the FAQ &darr;</a>
 </header>
 <main>
   <div class="filters-bar">
@@ -62,6 +97,21 @@
   <div class="result-count" id="resultCount"></div>
   <div id="emptyState" style="display:none;">No RFPs are currently open. Check back soon.</div>
   <div class="grid" id="rfpGrid"></div>
+
+  <section class="faq" id="faq" aria-labelledby="faqTitle">
+    <div class="faq-head">
+      <h2 id="faqTitle">Frequently Asked Questions</h2>
+      <p>Quick answers for venues preparing a proposal.</p>
+    </div>
+    <div class="faq-tools">
+      <input type="search" id="faqSearch" placeholder="Search the FAQ (for example: rate, dates, IATA)" aria-label="Search the FAQ">
+      <button type="button" id="faqToggleAll">Expand all</button>
+      <span class="faq-count" id="faqCount" aria-live="polite"></span>
+    </div>
+    <div id="faqList"></div>
+    <div class="faq-none" id="faqNone">No questions match your search. If your question is not answered here or in the RFP, please email <a href="mailto:clearevents@clearhq.org">clearevents@clearhq.org</a>.</div>
+    <div class="faq-contact">If your question is not answered here or in the RFP, please email <a href="mailto:clearevents@clearhq.org">clearevents@clearhq.org</a>. We typically respond within 2 business days, except when we are at an event.</div>
+  </section>
 </main>
 
 <script>
@@ -159,6 +209,91 @@ document.getElementById("clearFiltersBtn").addEventListener("click", () => {
 });
 
 loadOpenRfps();
+</script>
+<script>
+// ---------------- FAQ ----------------
+// To change the FAQ, edit this list. Answers are plain text; {{iata}} is replaced by the
+// IATA number below (kept in one place, character for character). `html` is for the few
+// answers that need paragraphs or bullets.
+const IATA = "18-5 3781 6";
+const FAQ = [
+  { group: "Getting started", items: [
+    { q: "Do I need an account?", a: "No, an account is not needed. You can view RFPs and submit your proposal using the public page and form." },
+    { q: "Where do I find open RFPs?", a: "Open RFPs are listed on this page, and you may also have been sent a direct link." },
+    { q: "Can I respond to more than one RFP?", a: "Yes, you are welcome to respond to more than one RFP. Each RFP has its own form, and after you submit you can use Submit a Proposal for Another RFP to continue." },
+    { q: "Can I submit proposals for more than one property?", a: "Yes, we welcome proposals for more than one property, provided that each property meets our requirements." },
+    { q: "Can I attach my proposal document?", a: "Files cannot be attached to the form. Please paste a link to your document in the Proposal Document & Links section." },
+    { q: "Can I save my progress and finish the form later?", a: "No, the form cannot be saved partway. Please have your information ready before you begin." }
+  ]},
+  { group: "Dates and deadlines", items: [
+    { q: "Are other dates being considered?", a: "No. Only the dates specified in the RFP are being considered, so please base your proposal on those dates." },
+    { q: "Can I propose more than one set of dates?", a: "Yes. Please tick every date option your property can host in a single submission. If your rate differs by dates, please submit a separate proposal for each set of dates." },
+    { q: "What if my property can only host some of the date options?", a: "Please submit your proposal for the date options that your property can cover." },
+    { q: "Are late proposals accepted?", a: "No, we are unable to accept late proposals. Please submit your proposal by the proposal due date shown on the RFP." },
+    { q: "How long must my pricing be valid?", a: "We require all proposals to acknowledge that the proposal, including dates and rates, will be available for up to 30 days after the decision deadline provided on the RFP. You will confirm this with a checkbox on the form." },
+    { q: "When will I hear back?", a: "Proposals are not reviewed until after the proposal due date. If your property is selected for further consideration, the event planner will follow up with you, and shortlist notices go out within 30 days of the proposal due date." },
+    { q: "Will you give feedback if we are not selected?", a: "Thank you for taking the time to respond. Feedback is provided to our shortlisted venues only." }
+  ]},
+  { group: "Rates and terms", items: [
+    { q: "Can I offer different rates for different dates?", a: "Yes. Please submit one proposal for each set of dates, along with the rate that applies to those dates." },
+    { q: "Should my rate include taxes and fees?", a: "The form lets you indicate which taxes and fees are included in your rate. You may also submit a rate without them." },
+    { q: "Are you looking for a commissionable rate?", a: "Yes. We prefer a commission of at least 10%, paid to CLEAR's IATA number ({{iata}})." },
+    { q: "What is CLEAR's IATA number?", a: "CLEAR's IATA number is {{iata}}." },
+    { q: "Is CLEAR tax-exempt?", a: "Yes, we typically apply for tax-exempt status." },
+    { q: "Do you need documentation for the local government rate, and what if we don't offer one?", a: "No documentation is required. Please enter the best rate your property has that would apply." },
+    { q: "What attrition rate do you want to see?", a: "Our preference is 70%, with the ability to adjust room nights within the calendar year of the event date at no penalty. Both terms are flexible." },
+    { q: "Where is the contract signed?", a: "All contracts are signed out of Kentucky." }
+  ]},
+  { group: "Rooms, meeting space and food & beverage", items: [
+    { q: "Are the room counts per night firm?", a: "Room counts are flexible. We will discuss them in greater detail with the properties selected for the shortlist." },
+    { q: "Do attendees book their own rooms?", a: "Yes, attendees book their own rooms through a booking link. We will provide a VIP and staff room list, which will be billed to the final master account." },
+    { q: "Will you consider rooms-only or meeting-space-only proposals?", a: "Yes, provided the property is tied to a convention center or event space that is applying for the meeting space portion." },
+    { q: "Can I propose a different room setup or layout than the one requested?", a: "We ask that you follow the room setups described in the RFP, unless a room setup description in the RFP indicates options." },
+    { q: "What does the F&B guarantee ask me to price?", html:
+      "<p class=\"lead\">Please price the F&amp;B selections as listed per day in the RFP, for the peak number of attendees each day. From the Food &amp; Beverage section of the RFP:</p>" +
+      "<p>Our group has had success working with venues to establish a customized food and beverage (F&amp;B) guarantee. For this RFP, an F&amp;B guarantee means an agreed-upon price for the meal and beverage services listed in this section, based on the attendee count provided earlier in the form. The venue determines the specific menu offerings it can provide at its proposed price, and the group reviews and approves those menus before they are finalized.</p>" +
+      "<p>If willing to include an F&amp;B guarantee in your proposal, please submit one that includes:</p>" +
+      "<ul><li>A total price for the meal and beverage services listed below at the stated attendee count, with taxes, service charges, and other fees clearly identified.</li>" +
+      "<li>An additional per-attendee price if attendance exceeds the stated count, with applicable taxes, service charges, and other fees clearly identified.</li>" +
+      "<li>Initial customized menu options within 60 days of contract signing, or a proposed alternative timeline.</li>" +
+      "<li>Accommodation of dietary restrictions, such as nut allergies, vegetarian diets, and gluten-free diets, at no additional cost\u2014or a clear description of any exceptions.</li></ul>" +
+      "<p>If a reception or bar service is requested, that cost will be priced separately and not included in the F&amp;B guarantee.</p>" },
+    { q: "Can I offer concessions beyond the ones listed?", a: "Yes, absolutely. We welcome any additional concessions you would like to include." },
+    { q: "Will there be a site visit?", a: "That depends on the RFP. If a site visit is requested, the RFP page will say so, and the form will ask how your property can support it." }
+  ]},
+  { group: "After you submit", items: [
+    { q: "How will I know you received my proposal?", a: "After you submit, a confirmation screen will appear." },
+    { q: "How do I view my proposal after I submit it?", a: "After you submit, you will have the option to download a PDF of your proposal." },
+    { q: "Can I see other venues' proposals?", a: "No, each venue can view only its own proposal." },
+    { q: "Can I call to check on the status of my proposal?", a: "We kindly ask that you do not call to check on the status of your proposal. We will contact you." }
+  ]}
+];
+(function () {
+  const esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const list = document.getElementById("faqList"), search = document.getElementById("faqSearch");
+  const toggle = document.getElementById("faqToggleAll"), count = document.getElementById("faqCount"), none = document.getElementById("faqNone");
+  const bodyHtml = it => it.html || "<p>" + esc(it.a).replace(/\{\{iata\}\}/g, '<span class="iata">' + esc(IATA) + "</span>") + "</p>";
+  list.innerHTML = FAQ.map(g => `<div class="faq-group"><h3>${esc(g.group)}</h3>${g.items.map(it =>
+    `<details class="faq-item"><summary>${esc(it.q)}</summary><div class="faq-a">${bodyHtml(it)}</div></details>`).join("")}</div>`).join("");
+  const items = [...list.querySelectorAll(".faq-item")], total = items.length;
+  const textOf = d => d.textContent.toLowerCase();
+  function apply() {
+    const q = search.value.trim().toLowerCase(); let shown = 0;
+    items.forEach(d => { const hit = !q || textOf(d).includes(q); d.style.display = hit ? "" : "none"; if (hit) { shown++; if (q) d.open = true; } });
+    if (!q) items.forEach(d => { d.open = false; });
+    list.querySelectorAll(".faq-group").forEach(g => { g.style.display = [...g.querySelectorAll(".faq-item")].some(d => d.style.display !== "none") ? "" : "none"; });
+    none.style.display = shown ? "none" : "block";
+    count.textContent = q ? `${shown} of ${total} questions` : `${total} questions`;
+    toggle.textContent = "Expand all";
+  }
+  search.addEventListener("input", apply);
+  toggle.addEventListener("click", () => {
+    const open = toggle.textContent === "Expand all";
+    items.forEach(d => { if (d.style.display !== "none") d.open = open; });
+    toggle.textContent = open ? "Collapse all" : "Expand all";
+  });
+  apply();
+})();
 </script>
 </body>
 </html>
