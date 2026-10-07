@@ -204,6 +204,17 @@ function computePeakAttendance(attendanceByDay) {
 // Explicit allow-list of fields shown on public pages. New internal-only
 // fields (like the budget numbers) are private by default unless added
 // here on purpose.
+// Venues see WHICH cities are under consideration, never how we rank them.
+// Sent as names only (so the ranking never reaches a visitor's browser) and
+// sorted alphabetically (so the order can't hint at a preference either).
+function publicCities(cities) {
+  return (cities || [])
+    .map(c => String((c && c.name) || "").trim())
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }))
+    .map(name => ({ name }));
+}
+
 function publicRfpDetail(record) {
   const d = record.data || {};
   return {
@@ -216,7 +227,7 @@ function publicRfpDetail(record) {
     proposalDueDate: computeProposalDueDate(d.rfpDueDate),
     // sectionPriorities is deliberately NOT sent: it's the internal ranking
     // of what matters most to us, and no public page uses it.
-    cities: d.cities || [],
+    cities: publicCities(d.cities),
     dates: d.dates || [],
     patternFlexible: !!d.patternFlexible,
     noFriday: !!d.noFriday,
@@ -251,7 +262,7 @@ function publicRfpSummary(record) {
     eventLogoUrl: d.eventLogoDataUrl || "",
     proposalDueDate: computeProposalDueDate(d.rfpDueDate),
     dates: d.dates || [],
-    cities: d.cities || [],
+    cities: publicCities(d.cities),
     peakAttendance: computePeakAttendance(d.attendanceByDay),
     peakNights: computePeakNights(d.guestRooms)
   };
