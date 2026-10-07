@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Events RFP System: Event Planner's Manual | CLEAR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
+<style>
+:root { --burgundy:#64092C;--burgundy-dark:#4A0620;--gold:#DDA838;--gold-soft:#F0CB74;--charcoal:#484848;--blue:#084D78;
+--bg:#F7F6F3;--surface:#FFFFFF;--text:#484848;--strong:#2B2B2B;--muted:#6B6660;--head:#64092C;--h3:#084D78;--link:#084D78;
+--border:#E3DFD8;--soft:#F3EFEA;--zebra:#FAF8F5;--code-bg:#FBF1D5;--code-text:#5A4308;
+--note-bg:#E8F1F7;--note-bar:#084D78;--warn-bg:#FFF6DC;--warn-bar:#DDA838;--pill-yes-bg:#DCEBF5;--pill-yes-text:#084D78;--pill-no-bg:#EEEBE6;--pill-no-text:#6B6660;
+--shadow:0 1px 2px rgba(30,20,10,.05),0 10px 28px rgba(30,20,10,.07);--svg-edge:#8E877F; box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#161214;--surface:#211B1E;--text:#DDD6D2;--strong:#F2EDEA;--muted:#B0A6A1;--head:#EDBB4C;--h3:#86BBDF;--link:#86BBDF;
+--border:#3A3236;--soft:#2A2326;--zebra:#1C1618;--code-bg:#3B3015;--code-text:#F2D88F;
+--note-bg:#14283A;--note-bar:#86BBDF;--warn-bg:#352C12;--warn-bar:#DDA838;--pill-yes-bg:#17344B;--pill-yes-text:#9CC9E8;--pill-no-bg:#2E2629;--pill-no-text:#B0A6A1;
+--shadow:none;--svg-edge:#8E877F; } }
+:root[data-theme="dark"] { --bg:#161214;--surface:#211B1E;--text:#DDD6D2;--strong:#F2EDEA;--muted:#B0A6A1;--head:#EDBB4C;--h3:#86BBDF;--link:#86BBDF;
+--border:#3A3236;--soft:#2A2326;--zebra:#1C1618;--code-bg:#3B3015;--code-text:#F2D88F;
+--note-bg:#14283A;--note-bar:#86BBDF;--warn-bg:#352C12;--warn-bar:#DDA838;--pill-yes-bg:#17344B;--pill-yes-text:#9CC9E8;--pill-no-bg:#2E2629;--pill-no-text:#B0A6A1;
+--shadow:none;--svg-edge:#8E877F; }
+html { scroll-behavior:smooth; scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px); }
+*,*::before,*::after { box-sizing:inherit; }
+body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.68 'Open Sans','Trebuchet MS',system-ui,sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+a { color:var(--link); text-underline-offset:2px; } a:hover { color:var(--head); }
+.skip { position:absolute; left:-999px; top:8px; background:var(--gold); color:#2B2B2B; padding:8px 14px; border-radius:6px; z-index:100; font-weight:700; } .skip:focus { left:12px; }
+
+.topbar { position:sticky; top:env(safe-area-inset-top,0px); z-index:50; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px max(20px,env(safe-area-inset-left,0px)) 10px max(20px,env(safe-area-inset-right,0px)); background:rgba(74,6,32,.96); color:#fff; backdrop-filter:blur(8px); border-bottom:2px solid var(--gold); }
+.topbar .brand { font-weight:700; font-size:.82rem; letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .topbar .brand b { color:var(--gold); }
+.btn { font:700 .8rem 'Open Sans',sans-serif; border:0; border-radius:8px; padding:8px 14px; cursor:pointer; }
+.btn-gold { background:var(--gold); color:#2B2B2B; } .btn-gold:hover { background:var(--gold-soft); }
+
+.hero { position:relative; overflow:hidden; color:#fff; background:linear-gradient(135deg,var(--burgundy) 0%,var(--burgundy-dark) 100%); padding:72px max(28px,env(safe-area-inset-left,0px)) 80px; }
+.hero::before { content:""; position:absolute; right:-130px; top:-150px; width:480px; height:480px; border-radius:50%; border:60px solid rgba(221,168,56,.17); }
+.hero::after { content:""; position:absolute; right:150px; bottom:-220px; width:380px; height:380px; border-radius:50%; background:rgba(221,168,56,.09); }
+.hero-in { position:relative; z-index:1; max-width:1180px; margin:0 auto; }
+.eyebrow { font-weight:700; font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); }
+.hero h1 { margin:10px 0 4px; font-size:clamp(2.2rem,5.4vw,3.6rem); line-height:1.08; font-weight:800; letter-spacing:-.01em; }
+.hero .sub { font-size:clamp(1.15rem,2.4vw,1.55rem); font-weight:600; color:var(--gold-soft); }
+.hero .lede { max-width:640px; margin:18px 0 0; font-size:1.02rem; color:rgba(255,255,255,.88); }
+.chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
+.chip { border:1px solid rgba(221,168,56,.55); color:#fff; border-radius:999px; padding:5px 14px; font-size:.78rem; font-weight:600; background:rgba(255,255,255,.06); }
+.hero-bar { position:absolute; left:0; right:0; bottom:0; height:7px; background:linear-gradient(90deg,var(--gold),var(--gold-soft) 55%,var(--gold)); }
+
+.quick { max-width:1180px; margin:-34px auto 0; padding:0 24px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; position:relative; z-index:2; }
+.q-card { display:flex; flex-direction:column; gap:4px; text-decoration:none; background:var(--surface); border:1px solid var(--border); border-top:4px solid var(--gold); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow); transition:transform .15s ease, box-shadow .15s ease; }
+.q-card:hover { transform:translateY(-3px); } .q-n { font-weight:800; color:var(--head); font-size:1.02rem; } .q-d { color:var(--muted); font-size:.85rem; line-height:1.4; }
+
+.wrap { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:250px minmax(0,1fr); gap:44px; padding:44px 24px 80px; }
+.side { position:relative; }
+.toc { position:sticky; top:calc(env(safe-area-inset-top,0px) + 78px); max-height:calc(100vh - 110px); overflow:auto; padding-right:6px; }
+.toc-title { font-weight:800; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+.toc-sub { font-weight:800; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px; }
+.toc-list { list-style:none; margin:0; padding:0; } .toc-list li { margin:2px 0; }
+.toc-list a { display:flex; gap:10px; align-items:flex-start; text-decoration:none; color:var(--text); font-size:.86rem; line-height:1.35; padding:6px 10px; border-radius:8px; border-left:3px solid transparent; }
+.toc-list a:hover { background:var(--soft); }
+.toc-list a.active { background:var(--soft); border-left-color:var(--gold); color:var(--head); font-weight:700; }
+.toc-list .n { flex:0 0 22px; font-weight:800; color:var(--head); }
+.toc-mobile { display:none; }
+
+main { min-width:0; }
+.chapter { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:34px 40px 30px; margin:0 0 28px; box-shadow:var(--shadow); }
+.chapter-head { display:flex; align-items:center; gap:18px; padding-bottom:18px; margin-bottom:20px; border-bottom:2px solid var(--gold); }
+.badge { flex:0 0 auto; display:flex; align-items:center; justify-content:center; width:54px; height:54px; border-radius:50%; background:var(--burgundy); color:#fff; font-weight:800; font-size:1.4rem; box-shadow:0 0 0 4px var(--surface),0 0 0 7px var(--gold); }
+.kicker { font-size:.72rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+.chapter h2 { margin:2px 0 0; font-size:1.55rem; line-height:1.2; font-weight:800; color:var(--head); }
+.chapter h3 { position:relative; margin:30px 0 10px; padding-left:16px; font-size:1.1rem; font-weight:700; color:var(--h3); }
+.chapter h3::before { content:""; position:absolute; left:0; top:.28em; width:6px; height:1.05em; border-radius:2px; background:var(--gold); }
+.chapter-head + p { font-size:1.06rem; color:var(--strong); }
+p { margin:0 0 14px; } strong { color:var(--strong); font-weight:700; }
+ul { margin:0 0 16px; padding-left:22px; } li { margin:6px 0; } li::marker { color:var(--gold); font-weight:700; }
+li > strong:first-child { color:var(--head); }
+ol.steps { list-style:none; counter-reset:step; padding:0; margin:0 0 18px; }
+ol.steps > li { counter-increment:step; position:relative; padding:2px 0 2px 46px; margin:12px 0; min-height:32px; }
+ol.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; background:var(--burgundy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--gold); }
+ul.checklist { list-style:none; padding:0; } ul.checklist li { margin:4px 0; }
+ul.checklist label { display:flex; gap:12px; align-items:flex-start; padding:7px 12px; border-radius:8px; cursor:pointer; } ul.checklist label:hover { background:var(--soft); }
+ul.checklist input { flex:0 0 auto; width:18px; height:18px; margin-top:4px; accent-color:var(--burgundy); }
+code { background:var(--code-bg); color:var(--code-text); padding:.12em .42em; border-radius:5px; font:600 .86em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; word-break:break-word; }
+
+.table-wrap { overflow-x:auto; margin:14px 0 22px; border:1px solid var(--border); border-radius:12px; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; line-height:1.5; }
+th,td { text-align:left; padding:10px 14px; vertical-align:top; border-bottom:1px solid var(--border); }
+thead th { background:var(--burgundy); color:#fff; font-weight:700; font-size:.78rem; letter-spacing:.04em; border-bottom:0; }
+tbody tr:nth-child(even) td { background:var(--zebra); } tbody tr:last-child td { border-bottom:0; }
+tbody td:first-child { font-weight:600; color:var(--strong); }
+td.c-center { text-align:center; } thead th:not(:first-child) { }
+.pill { display:inline-block; min-width:44px; text-align:center; padding:2px 12px; border-radius:999px; font-size:.78rem; font-weight:700; }
+.pill.yes { background:var(--pill-yes-bg); color:var(--pill-yes-text); } .pill.no { background:var(--pill-no-bg); color:var(--pill-no-text); }
+
+.callout { display:flex; gap:14px; align-items:flex-start; margin:18px 0; padding:14px 18px; border-radius:12px; border-left:5px solid var(--note-bar); background:var(--note-bg); }
+.callout.warn { border-left-color:var(--warn-bar); background:var(--warn-bg); }
+.callout-icon { flex:0 0 28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.95rem; color:#fff; background:var(--note-bar); }
+.callout.warn .callout-icon { background:var(--warn-bar); color:#2B2B2B; }
+.callout-body p { margin:2px 0 0; } .callout-label { display:block; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+
+figure { margin:0; }
+.diagram { margin:18px 0 20px; padding:18px 18px 12px; border:1px solid var(--border); border-radius:14px; background:var(--zebra); }
+.diagram svg { width:100%; height:auto; display:block; font-family:'Open Sans','Trebuchet MS',sans-serif; }
+.diagram figcaption { margin-top:6px; text-align:center; font-size:.86rem; color:var(--muted); }
+.dg-box { fill:#fff; fill:var(--surface); stroke:#8E877F; stroke:var(--svg-edge); stroke-width:1.4; } .dg-box.main { fill:#FBEFD0; fill:rgba(221,168,56,.18); stroke:#DDA838; stroke:var(--gold); stroke-width:2.4; }
+.dg-name { fill:#2B2B2B; fill:var(--strong); font-weight:700; font-size:15px; } .dg-line { fill:#6B6660; fill:var(--muted); font-size:12px; } .dg-edge { fill:#6B6660; fill:var(--muted); font-size:12px; font-weight:600; }
+.dg-lines path { fill:none; stroke:#8E877F; stroke:var(--svg-edge); stroke-width:1.5; } .dg-arrowhead { fill:#8E877F; fill:var(--svg-edge); }
+
+.email-card { margin:14px 0 18px; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--surface); }
+.email-bar { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; background:var(--burgundy); color:#fff; }
+.email-label { font-size:.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+.copy-btn { font:700 .74rem 'Open Sans',sans-serif; border:1px solid rgba(255,255,255,.55); background:transparent; color:#fff; border-radius:6px; padding:4px 12px; cursor:pointer; } .copy-btn:hover { background:rgba(255,255,255,.14); }
+.email-subject { padding:10px 16px; border-bottom:1px solid var(--border); background:var(--soft); font-weight:600; color:var(--strong); }
+.email-subject span { display:inline-block; margin-right:10px; font-size:.7rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.email-body { margin:0; padding:16px; white-space:pre-wrap; font:400 .93rem/1.6 'Open Sans','Trebuchet MS',sans-serif; color:var(--text); }
+
+.site-foot { border-top:4px solid var(--gold); background:var(--burgundy-dark); color:rgba(255,255,255,.82); padding:28px 24px calc(28px + env(safe-area-inset-bottom,0px)); text-align:center; font-size:.82rem; }
+.site-foot b { color:var(--gold); }
+.toc-print { display:none; }
+
+@media (max-width: 1000px) {
+  .wrap { grid-template-columns:minmax(0,1fr); gap:0; padding-top:28px; } .side { display:none; }
+  .toc-mobile { display:block; margin:0 0 20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px 14px; }
+  .toc-mobile summary { cursor:pointer; font-weight:700; padding:10px 0; color:var(--head); }
+  .quick { grid-template-columns:repeat(2,1fr); } .chapter { padding:26px 22px; }
+}
+@media (max-width: 560px) { .quick { grid-template-columns:1fr; } .topbar .brand span { display:none; } .badge { width:46px; height:46px; font-size:1.2rem; } .chapter h2 { font-size:1.3rem; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } .q-card { transition:none; } }
+
+/* ---------------- print: cover, contents, running footer ---------------- */
+@page { size:Letter; margin:0.75in 0.75in 0.85in; @bottom-left { content:"CLEAR Events RFP System \00B7  Event Planner's Manual"; font:600 8pt 'Open Sans','Trebuchet MS',sans-serif; color:#6B6660; } @bottom-right { content:counter(page); font:700 8pt 'Open Sans','Trebuchet MS',sans-serif; color:#64092C; } }
+@page :first { margin:0; @bottom-left { content:none; } @bottom-right { content:none; } }
+@media print {
+  :root { --burgundy:#64092C;--burgundy-dark:#4A0620;--gold:#DDA838;--gold-soft:#F0CB74;--charcoal:#484848;--blue:#084D78;
+--bg:#F7F6F3;--surface:#FFFFFF;--text:#484848;--strong:#2B2B2B;--muted:#6B6660;--head:#64092C;--h3:#084D78;--link:#084D78;
+--border:#E3DFD8;--soft:#F3EFEA;--zebra:#FAF8F5;--code-bg:#FBF1D5;--code-text:#5A4308;
+--note-bg:#E8F1F7;--note-bar:#084D78;--warn-bg:#FFF6DC;--warn-bar:#DDA838;--pill-yes-bg:#DCEBF5;--pill-yes-text:#084D78;--pill-no-bg:#EEEBE6;--pill-no-text:#6B6660;
+--shadow:0 1px 2px rgba(30,20,10,.05),0 10px 28px rgba(30,20,10,.07);--svg-edge:#8E877F; }
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html { scroll-behavior:auto; } body { background:#fff; font-size:10pt; line-height:1.55; }
+  .topbar, .quick, .side, .toc-mobile, .skip, .site-foot, .copy-btn { display:none !important; }
+  .hero { height:11in; display:flex; align-items:center; padding:0 0.9in; break-after:page; } .hero-in { width:100%; }
+  .hero h1 { font-size:46pt; } .hero .sub { font-size:20pt; } .hero .lede { font-size:12pt; max-width:5.6in; }
+  .toc-print { display:block; break-after:page; } .toc-print h2 { margin:0 0 14pt; font-size:20pt; color:#64092C; border-bottom:2pt solid #DDA838; padding-bottom:8pt; }
+  .toc-print ol { list-style:none; margin:0; padding:0; columns:1; } .toc-print li { display:flex; gap:12pt; padding:6pt 0; border-bottom:.5pt solid #E3DFD8; font-size:11pt; color:#2B2B2B; }
+  .toc-print .n { flex:0 0 22pt; font-weight:800; color:#64092C; }
+  .wrap { display:block; padding:0; max-width:none; } main { display:block; }
+  .chapter { border:0; box-shadow:none; border-radius:0; padding:0; margin:0 0 18pt; background:#fff; }
+  .chapter-head { break-after:avoid; margin-bottom:12pt; padding-bottom:10pt; } .chapter h3, h3 { break-after:avoid; }
+  .badge { width:40pt; height:40pt; font-size:17pt; box-shadow:0 0 0 2pt #fff,0 0 0 3.5pt #DDA838; } .chapter h2 { font-size:19pt; }
+  tr, .callout, .email-card, .diagram, li, .q-card { break-inside:avoid; }
+  .table-wrap { overflow:visible; border-radius:6pt; } table { font-size:8.5pt; } th, td { padding:5pt 8pt; } thead { display:table-header-group; }
+  .callout { padding:9pt 12pt; } .email-body { font-size:9pt; }
+  a { color:inherit; text-decoration:none; }
+  .dg-box { fill:#fff; stroke:#8E877F; } .dg-box.main { fill:#FBEFD0; stroke:#DDA838; } .dg-name { fill:#2B2B2B; } .dg-line, .dg-edge { fill:#6B6660; } .dg-lines path { stroke:#8E877F; } .dg-arrowhead { fill:#8E877F; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the manual</a>
+<div class="topbar"><div class="brand"><b>CLEAR</b> <span>Events RFP System &middot; Event Planner's Manual</span></div><button class="btn btn-gold" id="printBtn" type="button">Print / Save as PDF</button></div>
+
+<div class="hero"><div class="hero-in">
+<div class="eyebrow">CLEAR &middot; Council on Licensure, Enforcement and Regulation</div>
+<h1>Events RFP System</h1>
+<div class="sub">Event Planner's Manual</div>
+<p class="lede">From a staff-built draft to a public page venues respond to, then to a scored recommendation for the board.</p>
+<div class="chips"><span class="chip">events.clearhq.org</span><span class="chip">11 sections &middot; 4 appendices</span><span class="chip">Updated October 2026</span></div>
+</div><div class="hero-bar"></div></div>
+
+<nav class="quick" aria-label="Quick start"><a class="q-card" href="#s3"><span class="q-n">Create an RFP</span><span class="q-d">Intake form, field by field</span></a><a class="q-card" href="#s4"><span class="q-n">Publish it</span><span class="q-d">Draft to Open, and what locking means</span></a><a class="q-card" href="#s7"><span class="q-n">Manage responses</span><span class="q-d">Read, search and export proposals</span></a><a class="q-card" href="#s8"><span class="q-n">Evaluate and report</span><span class="q-d">Score proposals and build the board report</span></a></nav>
+<div class="toc-print"><h2>Contents</h2><ol><li><span class=n>1</span>How the whole process fits together</li><li><span class=n>2</span>Getting started</li><li><span class=n>3</span>Creating an RFP</li><li><span class=n>4</span>Publishing an RFP</li><li><span class=n>5</span>What venues see and do</li><li><span class=n>6</span>What to tell venues and colleagues</li><li><span class=n>7</span>Managing responses</li><li><span class=n>8</span>Evaluating proposals and reporting to the board</li><li><span class=n>9</span>Closing out an RFP</li><li><span class=n>10</span>Things the system does not do automatically</li><li><span class=n>11</span>Troubleshooting</li><li><span class=n>A</span>Who sees what</li><li><span class=n>B</span>Glossary</li><li><span class=n>C</span>Checklists</li><li><span class=n>D</span>Administrator notes</li></ol></div>
+
+<div class="wrap">
+<aside class="side"><nav class="toc" aria-label="Contents"><div class="toc-title">Contents</div><ol class="toc-list"><li><a href="#s1"><span class="n">1</span><span class="t">How the whole process fits together</span></a></li>
+<li><a href="#s2"><span class="n">2</span><span class="t">Getting started</span></a></li>
+<li><a href="#s3"><span class="n">3</span><span class="t">Creating an RFP</span></a></li>
+<li><a href="#s4"><span class="n">4</span><span class="t">Publishing an RFP</span></a></li>
+<li><a href="#s5"><span class="n">5</span><span class="t">What venues see and do</span></a></li>
+<li><a href="#s6"><span class="n">6</span><span class="t">What to tell venues and colleagues</span></a></li>
+<li><a href="#s7"><span class="n">7</span><span class="t">Managing responses</span></a></li>
+<li><a href="#s8"><span class="n">8</span><span class="t">Evaluating proposals and reporting to the board</span></a></li>
+<li><a href="#s9"><span class="n">9</span><span class="t">Closing out an RFP</span></a></li>
+<li><a href="#s10"><span class="n">10</span><span class="t">Things the system does not do automatically</span></a></li>
+<li><a href="#s11"><span class="n">11</span><span class="t">Troubleshooting</span></a></li></ol><div class="toc-sub">Appendices</div><ol class="toc-list"><li><a href="#sA"><span class="n">A</span><span class="t">Who sees what</span></a></li>
+<li><a href="#sB"><span class="n">B</span><span class="t">Glossary</span></a></li>
+<li><a href="#sC"><span class="n">C</span><span class="t">Checklists</span></a></li>
+<li><a href="#sD"><span class="n">D</span><span class="t">Administrator notes</span></a></li></ol></nav></aside>
+<main id="main">
+<details class="toc-mobile"><summary>Contents</summary><ol class="toc-list"><li><a href="#s1"><span class="n">1</span><span class="t">How the whole process fits together</span></a></li>
+<li><a href="#s2"><span class="n">2</span><span class="t">Getting started</span></a></li>
+<li><a href="#s3"><span class="n">3</span><span class="t">Creating an RFP</span></a></li>
+<li><a href="#s4"><span class="n">4</span><span class="t">Publishing an RFP</span></a></li>
+<li><a href="#s5"><span class="n">5</span><span class="t">What venues see and do</span></a></li>
+<li><a href="#s6"><span class="n">6</span><span class="t">What to tell venues and colleagues</span></a></li>
+<li><a href="#s7"><span class="n">7</span><span class="t">Managing responses</span></a></li>
+<li><a href="#s8"><span class="n">8</span><span class="t">Evaluating proposals and reporting to the board</span></a></li>
+<li><a href="#s9"><span class="n">9</span><span class="t">Closing out an RFP</span></a></li>
+<li><a href="#s10"><span class="n">10</span><span class="t">Things the system does not do automatically</span></a></li>
+<li><a href="#s11"><span class="n">11</span><span class="t">Troubleshooting</span></a></li></ol><div class="toc-sub">Appendices</div><ol class="toc-list"><li><a href="#sA"><span class="n">A</span><span class="t">Who sees what</span></a></li>
+<li><a href="#sB"><span class="n">B</span><span class="t">Glossary</span></a></li>
+<li><a href="#sC"><span class="n">C</span><span class="t">Checklists</span></a></li>
+<li><a href="#sD"><span class="n">D</span><span class="t">Administrator notes</span></a></li></ol></details>
+<section class="chapter" id="s1">
+<div class="chapter-head"><span class="badge" aria-hidden="true">1</span><div><div class="kicker">Section 1</div><h2>How the whole process fits together</h2></div></div>
+<p>An RFP goes from a staff-built draft to a public page venues respond to, then to a scored recommendation for the board. Everything lives at <strong>events.clearhq.org</strong>. Staff log in; venues never do.</p>
+<h3 id="s1-the-five-pieces">The five pieces</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Address (after events.clearhq.org)</th>
+<th>Who uses it</th>
+<th>What it is for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Staff RFP form</td>
+<td>/RFP-form</td>
+<td>CLEAR staff (login)</td>
+<td>Build, edit and publish RFPs; keep internal notes; read responses</td>
+</tr>
+<tr>
+<td>Public RFP list</td>
+<td>/rfps</td>
+<td>Venues, CVBs, anyone</td>
+<td>Browse open RFPs; filter by city and dates</td>
+</tr>
+<tr>
+<td>RFP page</td>
+<td>/rfps/short-name</td>
+<td>Venues</td>
+<td>Read the full requirements, share the link, save a PDF, start a proposal</td>
+</tr>
+<tr>
+<td>Proposal form</td>
+<td>/rfps/short-name/respond</td>
+<td>Venues</td>
+<td>Submit one proposal for one RFP</td>
+</tr>
+<tr>
+<td>Admin Dashboard</td>
+<td>/admin-dashboard</td>
+<td>Planner and administrator (login)</td>
+<td>Search every proposal, score them, produce the board report</td>
+</tr>
+</tbody>
+</table></div>
+<p>The short-name is created automatically the first time an RFP is set to Open. For example: nrwc-2027-nrwc-annual-conference.</p>
+<h3 id="s1-who-can-do-what">Who can do what</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Build and edit drafts</th>
+<th>Change status</th>
+<th>Read responses and use the Admin Dashboard</th>
+<th>Delete an RFP</th>
+<th>Pick a report due date under 45 days out</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event planner</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Administrator</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Other CLEAR staff</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+<tr>
+<td>Staff with a @thenrwc.org address (not the planner)</td>
+<td>NRWC RFPs only</td>
+<td class="c-center"><span class="pill no">No</span></td>
+<td>NRWC proposals only</td>
+<td class="c-center"><span class="pill no">No</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+</tbody>
+</table></div>
+<p>Staff who cannot change status still see it as a colored label at the top of the RFP.</p>
+<h3 id="s1-the-life-of-an-rfp">The life of an RFP</h3>
+<p>An RFP is always in one of four statuses: Draft, Open, Closed or Awarded.</p>
+<figure class="diagram"><svg aria-label="RFP status lifecycle: Draft, Open, Closed, Awarded, with a loop from Open back to Draft to edit" class="lifecycle" role="img" viewbox="0 0 760 192">
+<defs><marker id="lc-arrow" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="9" refy="5" viewbox="0 0 10 10"><path class="dg-arrowhead" d="M0 0L10 5L0 10z" fill="#8E877F"></path></marker></defs>
+<g class="dg-lines" fill="none" stroke="#8E877F" stroke-width="1.5"><path d="M164 78H208" marker-end="url(#lc-arrow)"></path><path d="M348 78H392" marker-end="url(#lc-arrow)"></path><path d="M532 78H576" marker-end="url(#lc-arrow)"></path><path d="M278 122V150H94V122" marker-end="url(#lc-arrow)"></path></g>
+<g><rect class="dg-box" fill="#ffffff" height="88" rx="10" stroke="#8E877F" stroke-width="1.4" width="140" x="24" y="34"></rect><text class="dg-name" fill="#2B2B2B" font-size="15" font-weight="700" text-anchor="middle" x="94" y="58">Draft</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="94" y="74">Staff build it</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="94" y="90">Anyone can edit</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="94" y="106">Not public</text></g>
+<g><rect class="dg-box main" fill="#FBEFD0" height="88" rx="10" stroke="#DDA838" stroke-width="2.4" width="140" x="208" y="34"></rect><text class="dg-name" fill="#2B2B2B" font-size="15" font-weight="700" text-anchor="middle" x="278" y="58">Open</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="278" y="74">Public at /rfps</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="278" y="90">Venues can submit</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="278" y="106">Locked for edits</text></g>
+<g><rect class="dg-box" fill="#ffffff" height="88" rx="10" stroke="#8E877F" stroke-width="1.4" width="140" x="392" y="34"></rect><text class="dg-name" fill="#2B2B2B" font-size="15" font-weight="700" text-anchor="middle" x="462" y="58">Closed</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="462" y="74">Off public list</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="462" y="90">No new proposals</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="462" y="106">Locked for edits</text></g>
+<g><rect class="dg-box" fill="#ffffff" height="88" rx="10" stroke="#8E877F" stroke-width="1.4" width="140" x="576" y="34"></rect><text class="dg-name" fill="#2B2B2B" font-size="15" font-weight="700" text-anchor="middle" x="646" y="58">Awarded</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="646" y="74">Venue chosen</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="646" y="90">Off public list</text><text class="dg-line" fill="#6B6660" font-size="12" text-anchor="middle" x="646" y="106">Locked for edits</text></g>
+<text class="dg-edge" fill="#6B6660" font-size="12" font-weight="600" text-anchor="middle" x="186" y="24">publish</text><text class="dg-edge" fill="#6B6660" font-size="12" font-weight="600" text-anchor="middle" x="370" y="24">close</text><text class="dg-edge" fill="#6B6660" font-size="12" font-weight="600" text-anchor="middle" x="554" y="24">award</text>
+<text class="dg-edge" fill="#6B6660" font-size="12" font-weight="600" text-anchor="middle" x="186" y="172">back to Draft to edit</text>
+</svg><figcaption>The normal path runs left to right. The loop back to Draft is how you change a published RFP.</figcaption></figure>
+<ul>
+<li><strong>Draft:</strong> staff build it. Anyone with access can edit. The public cannot see it.</li>
+<li><strong>Open:</strong> published on /rfps. Venues can submit proposals. Nobody can edit it, including the planner and administrator.</li>
+<li><strong>Closed:</strong> off the public list. Venues can no longer submit. Locked.</li>
+<li><strong>Awarded:</strong> a venue has been chosen. Off the public list. Locked.</li>
+</ul>
+<p>The planner or administrator changes status from a dropdown at the top of the RFP. The dropdown allows any status at any time; the normal path is Draft, Open, Closed, Awarded. To change an Open RFP, set it back to Draft, edit it, save, then set it to Open again. While it is in Draft it is off the public list.</p>
+<h3 id="s1-a-typical-timeline">A typical timeline</h3>
+<ol class="steps">
+<li>A staff member or the planner creates the RFP and saves it. Each save emails the planner.</li>
+<li>Finish and check the draft against the launch checklist (Appendix C).</li>
+<li>Set the status to Open. The public RFP page and proposal form go live.</li>
+<li>Tell venues and CVBs (section 6).</li>
+<li>Venues respond by the proposal due date, which is 14 days before the report due date you entered.</li>
+<li>After the proposal due date, read the responses and score them in the Admin Dashboard (sections 7 and 8).</li>
+<li>Set the status to Closed. The system does not do this on its own.</li>
+<li>Deliver the board report from the Admin Dashboard by the report due date.</li>
+<li>Set the status to Awarded once a venue is chosen.</li>
+</ol>
+</section>
+<section class="chapter" id="s2">
+<div class="chapter-head"><span class="badge" aria-hidden="true">2</span><div><div class="kicker">Section 2</div><h2>Getting started</h2></div></div>
+<p>Go to <strong><a href="https://events.clearhq.org/RFP-form" rel="noopener" target="_blank">events.clearhq.org/RFP-form</a></strong> and sign in with your CLEAR work email. Your RFP list loads on the left.</p>
+<h3 id="s2-logging-in">Logging in</h3>
+<ol class="steps">
+<li>Open <a href="https://events.clearhq.org/RFP-form" rel="noopener" target="_blank">events.clearhq.org/RFP-form</a> in your browser.</li>
+<li>Enter your work email. A one-time code is emailed to you.</li>
+<li>Type the code. You stay signed in for 24 hours, then you are asked again.</li>
+</ol>
+<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>If you are told access is denied, your email is not on the approved staff list. Ask the administrator to add it (Appendix D).</p></div></aside>
+<h3 id="s2-the-rfp-list">The RFP list</h3>
+<p>The list on the left shows each RFP's group, event name and status.</p>
+<ul>
+<li>It is sorted by report due date, soonest first. RFPs with no due date appear last.</li>
+<li>Draft and Open RFPs show by default. Click the Closed or Awarded buttons above the list to include them.</li>
+<li>Click an RFP to open it. Click <strong>+ New RFP</strong> to start a blank one.</li>
+<li>Starting a new RFP folds the list away to give you room. Click <strong>RFP list</strong> at the top of the page to bring it back.</li>
+</ul>
+<h3 id="s2-what-is-on-an-rfp">What is on an RFP</h3>
+<p>At the top of an RFP you see its status. The planner and administrator get a dropdown; everyone else sees a colored label. Below that are four tabs.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>What it holds</th>
+<th>Who sees it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Intake Form</td>
+<td>Every field of the RFP, plus the Save, Duplicate as New RFP and Delete RFP buttons (Delete is for the administrator only)</td>
+<td>Everyone with access</td>
+</tr>
+<tr>
+<td>Notes</td>
+<td>Internal, time-stamped comments. They cannot be edited or deleted. Venues never see them.</td>
+<td>Everyone with access</td>
+</tr>
+<tr>
+<td>Version History</td>
+<td>One entry per save: who saved it, when, and what changed from the previous version</td>
+<td>Everyone with access</td>
+</tr>
+<tr>
+<td>Responses</td>
+<td>Proposals venues submitted for this RFP (section 7)</td>
+<td>Planner, administrator, and NRWC staff for NRWC RFPs</td>
+</tr>
+</tbody>
+</table></div>
+<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Notes can be added at any time, even after an RFP is locked.</p></div></aside>
+</section>
+<section class="chapter" id="s3">
+<div class="chapter-head"><span class="badge" aria-hidden="true">3</span><div><div class="kicker">Section 3</div><h2>Creating an RFP</h2></div></div>
+<p>Click <strong>+ New RFP</strong>, fill in the Intake Form, and click <strong>Save</strong>. Only three fields are required, but every field you fill in is one less question from venues.</p>
+<h3 id="s3-two-ways-to-start">Two ways to start</h3>
+<ol class="steps">
+<li><strong>Start blank.</strong> Click <strong>+ New RFP</strong>. Pick the Group first so the acronym, website and logo fill in for you.</li>
+<li><strong>Copy an earlier RFP.</strong> Open it and click <strong>Duplicate as New RFP</strong> (next to Save). You get a new draft with everything copied except the report due date and event logo, which you must set again. This works on any RFP, even a locked one. Use it for recurring events.</li>
+</ol>
+<p>The three required fields are <strong>Group</strong>, <strong>Official Event Name</strong> and <strong>RFP Response Report Due Date</strong>. The form will not save without them. The Intake Form is a set of collapsible panels; only Group Info is open at first, so click a heading to open the others.</p>
+<h3 id="s3-group-info">Group Info</h3>
+<ul>
+<li><strong>Group:</strong> pick from the list (CLEAR, AASCB, CCC, CPE, NASASPS, NRWC). It fills the acronym, website and group logo. NRWC staff see only NRWC.</li>
+<li><strong>Official Event Name:</strong> the name venues see on cards, the RFP page and the proposal form. Use the final name, for example 2028 CLEAR Annual Educational Conference.</li>
+<li><strong>Group Logo:</strong> filled in automatically from the acronym. If the preview says no logo was found, upload one with the file picker. <strong>Reset to default logo</strong> undoes an upload.</li>
+<li><strong>Event Logo:</strong> optional upload for this event only. It becomes the main image on the card and RFP page. Without it, the group logo is used. When both exist, the page also shows Presented by, with the group logo.</li>
+<li><strong>Section Priority:</strong> rank the sections that matter most for this RFP (1 is most important). Venues never see this. It sets the starting weights when you score proposals (section 8).</li>
+</ul>
+<h3 id="s3-report-due-date-and-proposal-due-date">Report due date and proposal due date</h3>
+<ul>
+<li>The <strong>RFP Response Report Due Date</strong> is your internal deadline for having responses compiled into a report. Venues never see it.</li>
+<li>Venues see a <strong>proposal due date that the system sets 14 days earlier</strong>. That gives you two weeks to compile.</li>
+<li>Staff cannot choose a report due date less than 45 days from today (or from the day the RFP was first saved). The planner and administrator can choose any date. This floor is deliberate: because the proposal due date is 14 days earlier, it guarantees venues at least 30 days to respond.</li>
+</ul>
+<h3 id="s3-preferred-cities-and-preferred-dates">Preferred Cities and Preferred Dates</h3>
+<ul>
+<li><strong>Preferred Cities:</strong> up to 5 city options. Enter a city and a rank (1 is the first choice). They appear ranked on the card and RFP page.</li>
+<li><strong>Preferred Dates:</strong> up to 3 date options, each with a start date, end date and rank. When you enter a start date for option 2 or 3, its end date fills in to match option 1's length.</li>
+<li>If you leave the ranks alone, the public pages list the options as Option 1, Option 2 and so on, in date order.</li>
+<li>Two checkboxes describe flexibility: the group is open to a different weekday pattern, and the group will not meet on specific days. Use the notes box for specifics, such as must be Mon/Tue.</li>
+<li><strong>Date Option 1 is the top row, whatever its rank, so enter it first.</strong> Its length sets the number of days used by Attendance, Guest Room Needs and Meeting Space Needs.</li>
+</ul>
+<h3 id="s3-attendance">Attendance</h3>
+<p>Enter expected attendees for each day. Day rows appear automatically from Date Option 1 (up to 14 days). <strong>Peak Attendance</strong> is the highest number you enter. The system calculates it and shows it on the card and RFP page. Venues also see the day-by-day table.</p>
+<h3 id="s3-guest-room-needs">Guest Room Needs</h3>
+<ol class="steps">
+<li>Click <strong>Auto-generate nights from Date Option 1</strong>. It creates one night before, one row per event night, and one night after.</li>
+<li>Enter <strong>Rooms Needed</strong> for each night. Rename a night or change its timing (before, during, after) if needed. <strong>+ Add night manually</strong> adds more.</li>
+<li>Enter <strong>Max Nightly Room Rate (before tax)</strong>. This is one ceiling for the whole program, not a rate per night.</li>
+</ol>
+<p><strong>Peak Nights</strong> is the highest rooms-needed number across all nights. The system calculates it and shows it to venues on the card and RFP page.</p>
+<h3 id="s3-meeting-space-needs">Meeting Space Needs</h3>
+<p>Each room setup is a card. The day buttons on each card come from Date Option 1.</p>
+<ul>
+<li><strong>Room label, Floor Set, Est. Max Seats:</strong> Floor Set options are Classroom, Theater, Banquet Rounds, Crescent Rounds, U-Shape, Reception, Conference / Boardroom and Other.</li>
+<li><strong>Quantity Needed:</strong> if you need 3 of the same room, enter 3 on one card. Do not make three cards.</li>
+<li><strong>AV Needs:</strong> click <strong>+ Add AV need</strong> and pick an item. Quantity starts at 1. AV is counted per room and multiplied by the room quantity. Choose Other to describe anything not listed.</li>
+<li><strong>Notes</strong> and <strong>day buttons</strong> (Day 1, Day 2, and so on): tick the days the room is needed.</li>
+<li><strong>Open to colocating:</strong> an internal planning question. Venues never see it.</li>
+</ul>
+<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>These entries matter beyond the RFP page. Venues are asked to match them in the proposal form, and the Admin Dashboard scores that match.</p></div></aside>
+<h3 id="s3-room-templates">Room templates</h3>
+<p>Rooms you use again and again can be saved once and reused.</p>
+<ol class="steps">
+<li>On any room card, click <strong>Save as template</strong> and name it. It saves the room label, setup, seats, quantity, AV needs and notes. It does not save days.</li>
+<li>Next time, use <strong>+ Add from template…</strong> beside <strong>+ Add room setup</strong>. A filled-in card appears. Change the numbers and pick the days.</li>
+<li>Saving under an existing name asks before replacing it. <strong>Manage templates</strong> lists them; the planner and administrator can delete.</li>
+</ol>
+<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Templates are shared by all staff. They are copies: editing or deleting a template does not change RFPs that already used it.</p></div></aside>
+<h3 id="s3-concessions-food-beverage-site-inspection-exhibi">Concessions, Food &amp; Beverage, Site Inspection, Exhibits and Budget</h3>
+<ul>
+<li><strong>Must-Have Concessions:</strong> add rows and pick from the list (Comp Room Ratio, Staff Room Rate, Comp Suites, Room Upgrades at Group Rate, Airport Transfers, Welcome Amenity, Room Rebate, Comp Staff/Office F&amp;B, Comp Meeting WiFi, Other). Add details in the text box.</li>
+<li><strong>Food &amp; Beverage:</strong> click <strong>+ Add day</strong> for each day (click the day name to rename it). For Breakfast, Lunch and Dinner, tick the service styles you want and mark each Must-have or Nice-to-have. Beverages has its own options, timing (All day, AM only, PM only) and Must-have or Nice-to-have toggle. Add dietary notes at the bottom.</li>
+<li><strong>Site Inspection:</strong> choose Required before contract signing, Desired prior to event (not required before signing), or No site visit needed. Venues are asked how they can support a visit only if one is wanted.</li>
+<li><strong>Exhibitor &amp; Sponsor Space:</strong> tick Exhibits needed, then enter Tables, Booths (10x10 preferred) and the desired placement. Venues are asked where exhibits would go only if this is ticked.</li>
+<li><strong>Budget:</strong> F&amp;B Budget and AV Budget. These are internal only and never shown to venues.</li>
+</ul>
+<h3 id="s3-saving-notes-and-email-alerts">Saving, notes and email alerts</h3>
+<ul>
+<li>Click <strong>Save</strong> at the bottom. Every save creates a new version you can review in Version History.</li>
+<li>The form does not save automatically. If you leave the page, unsaved changes are lost.</li>
+<li>Every save of a draft emails the planner: The proposal for [event name] for [group] has been created or edited and is ready for your review. Many saves means many emails.</li>
+<li>Duplicating an RFP also sends that email, because it creates a new RFP.</li>
+</ul>
+</section>
+<section class="chapter" id="s4">
+<div class="chapter-head"><span class="badge" aria-hidden="true">4</span><div><div class="kicker">Section 4</div><h2>Publishing an RFP</h2></div></div>
+<p>Publishing means setting the status to Open. The planner or administrator does it from the status dropdown, and the public page goes live at once.</p>
+<h3 id="s4-before-you-publish">Before you publish</h3>
+<aside class="callout warn"><div aria-hidden="true" class="callout-icon">!</div><div class="callout-body"><strong class="callout-label">Heads up</strong><p>Once an RFP is Open, nobody can edit it, so check each item first.</p></div></aside>
+<ul class="checklist">
+<li><label><input type="checkbox"/><span>The Official Event Name is final. The public link is built from the acronym and event name the first time you publish, and it never changes afterward.</span></label></li>
+<li><label><input type="checkbox"/><span>The group, acronym and logo look right in the preview.</span></label></li>
+<li><label><input type="checkbox"/><span>The report due date is right, and the proposal due date it implies (14 days earlier) works for venues.</span></label></li>
+<li><label><input type="checkbox"/><span>Cities and Date Option 1 are entered, and the day-based sections (Attendance, Guest Rooms, Meeting Space) show the right number of days.</span></label></li>
+<li><label><input type="checkbox"/><span>Rooms Needed and Max Nightly Room Rate are entered.</span></label></li>
+<li><label><input type="checkbox"/><span>Every Meeting Space room has its quantity, seats, AV needs and days.</span></label></li>
+<li><label><input type="checkbox"/><span>Concessions, Food &amp; Beverage, Site Inspection and Exhibits are filled in or intentionally blank.</span></label></li>
+<li><label><input type="checkbox"/><span>Section Priority is ranked, so scoring starts from the right weights later.</span></label></li>
+<li><label><input type="checkbox"/><span>You have saved the latest changes.</span></label></li>
+</ul>
+<aside class="callout warn"><div aria-hidden="true" class="callout-icon">!</div><div class="callout-body"><strong class="callout-label">Heads up</strong><p>The system does not check that these are done. It will let you publish an incomplete RFP.</p></div></aside>
+<h3 id="s4-publishing">Publishing</h3>
+<ol class="steps">
+<li>Open the RFP and click the status dropdown at the top.</li>
+<li>Choose <strong>Open</strong>. The change saves immediately.</li>
+<li>Open <a href="https://events.clearhq.org/rfps" rel="noopener" target="_blank">events.clearhq.org/rfps</a> and confirm the RFP appears. Click it to check the RFP page.</li>
+<li>Click <strong>Share this RFP</strong> on the RFP page to copy its link, or copy it from the address bar. Send it to venues (section 6).</li>
+</ol>
+<h3 id="s4-what-locking-means">What locking means</h3>
+<p>When the status is anything other than Draft, nobody can edit the form, including the planner and administrator. The fields are greyed out and a banner says so. You can still add Notes, read Version History and Responses, and duplicate the RFP.</p>
+<p>To make a change:</p>
+<ol class="steps">
+<li>Set the status back to <strong>Draft</strong>. The RFP leaves the public list at once, and venues who open the old link are told the RFP is not available.</li>
+<li>Edit it and click <strong>Save</strong>. The planner gets a notification email.</li>
+<li>Set the status to <strong>Open</strong> again. The link is the same as before.</li>
+</ol>
+<aside class="callout warn"><div aria-hidden="true" class="callout-icon">!</div><div class="callout-body"><strong class="callout-label">Heads up</strong><p>Avoid editing an RFP after venues have started responding. A venue that already submitted answered the old requirements, and the submission keeps the dates and room counts they saw. If you must change something, tell the venues who have already responded.</p></div></aside>
+<aside class="callout warn"><div aria-hidden="true" class="callout-icon">!</div><div class="callout-body"><strong class="callout-label">Heads up</strong><p>A venue who is partway through the proposal form when you set the RFP to Draft will get an error when they click Submit, and their answers are not saved. Do this only when you must.</p></div></aside>
+</section>
+<section class="chapter" id="s5">
+<div class="chapter-head"><span class="badge" aria-hidden="true">5</span><div><div class="kicker">Section 5</div><h2>What venues see and do</h2></div></div>
+<p>Venues need no account. They find an Open RFP on the public list or through a link you send, read it, and submit one proposal through a form. This section describes what they experience, so you can answer their questions.</p>
+<h3 id="s5-the-public-rfp-list">The public RFP list</h3>
+<p>Venues see it at <a href="https://events.clearhq.org/rfps" rel="noopener" target="_blank">events.clearhq.org/rfps</a>. Each Open RFP is a card, with the soonest deadline first.</p>
+<ul>
+<li><strong>On each card:</strong> the logo (the event logo if there is one, otherwise the group logo), group, event name, ranked Preferred Cities, all Preferred Dates, Peak Numbers (Peak Attendance and Peak Nights) and the proposal due date.</li>
+<li><strong>Filters:</strong> venues can filter by city and by a date range. A date range matches an RFP if any of its date options overlaps the range. <strong>Clear filters</strong> resets them.</li>
+<li>Draft, Closed and Awarded RFPs never appear here.</li>
+</ul>
+<h3 id="s5-the-rfp-page">The RFP page</h3>
+<p>Clicking a card opens the full RFP. Venues see these sections, in this order, and any section left empty is hidden: Preferred Cities, Preferred Dates, Attendance, Guest Room Needs, Meeting Space Needs, Must-Have Concessions, Food &amp; Beverage, Site Inspection, and Exhibitor &amp; Sponsor Space.</p>
+<p>Three buttons sit on the page:</p>
+<ul>
+<li><strong>Submit a Proposal</strong> (at the top and the bottom) opens the proposal form.</li>
+<li><strong>Share this RFP</strong> copies the page link.</li>
+<li><strong>Download PDF</strong> opens the browser's print window. Choosing Save as PDF makes the file.</li>
+</ul>
+<p>Guest Room Needs shows Peak Nights, the max nightly room rate before tax, and a night-by-night table. Meeting Space Needs shows each room with its setup, seats, how many rooms are needed, days and AV needs. AV is listed per room, with a note when a setup is needed in more than one room. The Food &amp; Beverage section includes standard wording that explains the F&amp;B guarantee venues are asked to price: a total price at the stated attendee count, a per-attendee price above it, menu options within 60 days of signing, dietary accommodations, and a note that reception or bar service is priced separately.</p>
+<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Venues never see the internal report due date, Section Priority, colocation, the F&amp;B and AV budgets, notes or version history.</p></div></aside>
+<p>If a venue opens the link for an RFP that is not Open, they see: This RFP isn't currently open, or the link is incorrect.</p>
+<h3 id="s5-the-proposal-form">The proposal form</h3>
+<p>Venues reach it from <strong>Submit a Proposal</strong>, or at events.clearhq.org/rfps/short-name/respond. A <strong>View Full RFP</strong> link opens the RFP in a new tab so they can check requirements while they answer. If they try to leave with answers entered, the browser warns them.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What the venue enters</th>
+<th>Required?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Property Contact Information</td>
+<td>Property name, street address, city, state or province, zip or postal code, phone, website, and the sales contact's name, phone and email</td>
+<td>All required</td>
+</tr>
+<tr>
+<td>Dates</td>
+<td>Which of the RFP's date options the property can host</td>
+<td>Asked, but not enforced (see below)</td>
+</tr>
+<tr>
+<td>Guest Room Rate</td>
+<td>Proposed rate; which charges the rate includes (taxes, resort fee, destination fee, other); whether the rate is commissionable and at what percent</td>
+<td>Rate required; commission optional</td>
+</tr>
+<tr>
+<td>Financial Terms</td>
+<td>Food &amp; Beverage Minimum, Meeting Room Rental Fee (enter 0 if it is replaced by the F&amp;B minimum), Cumulative Attrition %</td>
+<td>All required</td>
+</tr>
+<tr>
+<td>Food &amp; Beverage Guarantee</td>
+<td>Yes or no. If yes: attendee count, number of days, total proposed amount, and whether that amount includes taxes and service charges. If it does not, the tax rates, service charge rates and other mandatory fees</td>
+<td>Yes or no required</td>
+</tr>
+<tr>
+<td>Concessions</td>
+<td>The concessions the property can offer, in free text</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>Meeting Room Capacity</td>
+<td>A table of the RFP's rooms (name, setup, max seating, quantity needed). The venue enters Qty Available for each row, plus an optional details box</td>
+<td>Every Qty Available required</td>
+</tr>
+<tr>
+<td>AV Equipment</td>
+<td>A table of AV items totaled across all rooms (each room's AV times its quantity). The venue enters Qty Available for each item, plus an optional details box</td>
+<td>Every Qty Available required</td>
+</tr>
+<tr>
+<td>Meeting Space</td>
+<td>Whether the meeting space is all on one floor, and an explanation if not</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>Exhibit Space</td>
+<td>Where exhibits would go. Appears only if the RFP asked for exhibits</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>Property Type &amp; Area</td>
+<td>Property type (Hotel, Resort, Conference center with guest rooms, Conference center without guest rooms, or Other), area characteristics, and a walkability description</td>
+<td>Property type required</td>
+</tr>
+<tr>
+<td>Site Inspection</td>
+<td>How the property can support a site visit. Appears only if the RFP asked for one</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>Proposal Document &amp; Links</td>
+<td>A link to a proposal document, links to floor plans and F&amp;B or AV information, and CVB promotions</td>
+<td>Optional</td>
+</tr>
+<tr>
+<td>Anything Else?</td>
+<td>Additional notes, and a checkbox confirming that terms and pricing stay valid through 30 days after the proposal response deadline</td>
+<td>Checkbox required</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s5-things-to-know-about-submissions">Things to know about submissions</h3>
+<ul>
+<li><strong>No edits or withdrawals.</strong> A venue cannot change a submission. If they submit again, you see two proposals from the same property. Treat the latest as current.</li>
+<li><strong>Dates are not enforced.</strong> A proposal can arrive with no dates ticked. Check the Dates proposed line in each response.</li>
+<li><strong>The due date is not enforced.</strong> Venues can submit any time the RFP is Open, even after the proposal due date.</li>
+<li><strong>No alerts.</strong> The venue gets no confirmation email, and you get no email when a proposal arrives. Check the Responses tab or the Admin Dashboard.</li>
+</ul>
+<h3 id="s5-after-they-submit">After they submit</h3>
+<p>The venue sees: Thank you! Your proposal has been submitted. The event planner will follow up if your property is selected for further consideration. Proposals will not be reviewed until after the proposal due date, followed by that date.</p>
+<p>They can click <strong>Download PDF of Your Proposal</strong> (a summary of their answers, saved through the browser's print window) or <strong>Submit a Proposal for Another RFP</strong>, which returns them to the list.</p>
+</section>
+<section class="chapter" id="s6">
+<div class="chapter-head"><span class="badge" aria-hidden="true">6</span><div><div class="kicker">Section 6</div><h2>What to tell venues and colleagues</h2></div></div>
+<p>Send venues one link and a few lines of instruction. This section gives you copy to paste. Anything in [square brackets] is a blank to fill in before you send.</p>
+<h3 id="s6-instructions-to-give-venues">Instructions to give venues</h3>
+<ol class="steps">
+<li>Open the RFP at [RFP link] and read it in full. No account is needed.</li>
+<li>Click <strong>Submit a Proposal</strong> and complete the form. Fields marked required must be filled in.</li>
+<li>For meeting rooms and AV equipment, enter how many of each you can provide in the Qty Available column.</li>
+<li>Tick the box confirming your pricing and terms stay valid through 30 days after the proposal due date.</li>
+<li>Submit once. A proposal cannot be edited after it is submitted. [Suggested: if you need to correct something, submit again and email clearevents@clearhq.org so we know which one to use.]</li>
+<li>Save the PDF of your proposal from the confirmation page for your records.</li>
+</ol>
+<h3 id="s6-invitation-email-venues-and-cvbs">Invitation email (venues and CVBs)</h3>
+<figure class="email-card"><div class="email-bar"><span class="email-label">Email template</span><button class="copy-btn" data-copy="Subject: Request for proposals: [event name], [group], due [proposal due date]
+
+Hello [name],
+
+[Group name] is seeking proposals for [event name], planned for [date options] in [cities]. We would like to hear from properties that can host us.
+
+The full RFP, including room, meeting space, AV and food and beverage requirements, is here: [RFP link]
+
+You can respond with the online form linked from that page. No account is needed. Please submit by [proposal due date]. Proposals are reviewed after that date, so every property is considered together.
+
+If you represent a destination, please share this with properties that fit the requirements.
+
+Thank you,
+[planner name]
+[phone and email]" type="button">Copy</button></div><div class="email-subject"><span>Subject</span>Request for proposals: [event name], [group], due [proposal due date]</div><pre class="email-body">Hello [name],
+
+[Group name] is seeking proposals for [event name], planned for [date options] in [cities]. We would like to hear from properties that can host us.
+
+The full RFP, including room, meeting space, AV and food and beverage requirements, is here: [RFP link]
+
+You can respond with the online form linked from that page. No account is needed. Please submit by [proposal due date]. Proposals are reviewed after that date, so every property is considered together.
+
+If you represent a destination, please share this with properties that fit the requirements.
+
+Thank you,
+[planner name]
+[phone and email]</pre></figure>
+<p>The proposal due date is shown on the RFP page and the public list. It is 14 days before the report due date you entered.</p>
+<h3 id="s6-reminder-email">Reminder email</h3>
+<figure class="email-card"><div class="email-bar"><span class="email-label">Email template</span><button class="copy-btn" data-copy="Subject: Reminder: proposals for [event name] are due [proposal due date]
+
+Hello [name],
+
+This is a reminder that proposals for [event name] are due [proposal due date]. The RFP and the proposal form are here: [RFP link]
+
+Thank you,
+[planner name]" type="button">Copy</button></div><div class="email-subject"><span>Subject</span>Reminder: proposals for [event name] are due [proposal due date]</div><pre class="email-body">Hello [name],
+
+This is a reminder that proposals for [event name] are due [proposal due date]. The RFP and the proposal form are here: [RFP link]
+
+Thank you,
+[planner name]</pre></figure>
+<h3 id="s6-answers-to-common-venue-questions">Answers to common venue questions</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Do I need an account?</td>
+<td>No. Venues use the public page and form only.</td>
+</tr>
+<tr>
+<td>Where do I find open RFPs?</td>
+<td>At <a href="https://events.clearhq.org/rfps" rel="noopener" target="_blank">events.clearhq.org/rfps</a>, or through the link you were sent.</td>
+</tr>
+<tr>
+<td>Can I propose more than one set of dates?</td>
+<td>Yes. Tick every date option your property can host in one submission.</td>
+</tr>
+<tr>
+<td>Can I respond to more than one RFP?</td>
+<td>Yes. Each RFP has its own form. After submitting, use Submit a Proposal for Another RFP.</td>
+</tr>
+<tr>
+<td>Can I attach my proposal document?</td>
+<td>Not as a file. Paste a link to it in the Proposal Document &amp; Links section.</td>
+</tr>
+<tr>
+<td>How long must my pricing be valid?</td>
+<td>Through 30 days after the proposal due date. You confirm this with a checkbox.</td>
+</tr>
+<tr>
+<td>When will I hear back?</td>
+<td>Proposals are not reviewed until after the proposal due date. If your property is selected for further consideration, the event planner follows up. [Add your usual timeline for shortlist notices.]</td>
+</tr>
+<tr>
+<td>Can I correct a proposal after I submit it?</td>
+<td>Not in the form. [Suggested: submit again and email the planner, who will use your latest.]</td>
+</tr>
+<tr>
+<td>Where is the contract signed?</td>
+<td>Contracts are signed out of Kentucky. [Add more only once you have confirmed it.]</td>
+</tr>
+<tr>
+<td>What is CLEAR's IATA number?</td>
+<td>[Enter CLEAR's IATA number.]</td>
+</tr>
+<tr>
+<td>Will there be a site visit?</td>
+<td>It depends on the RFP. If one is wanted, the RFP page says so and the form asks how you can support it.</td>
+</tr>
+<tr>
+<td>Who do I contact with questions?</td>
+<td>[Planner name and email.]</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s6-what-to-tell-colleagues-who-build-rfps">What to tell colleagues who build RFPs</h3>
+<ul>
+<li>Create the draft and click Save. The planner is emailed on every save, so there is no need to message her separately.</li>
+<li>Only the planner or administrator can publish. Ask them to set the RFP to Open when it is ready.</li>
+<li>Do not ask for edits after publishing unless they are essential. The planner has to set the RFP back to Draft, which takes it off the public list.</li>
+<li>Rooms you reuse can be saved as templates, so ask the planner what is already saved before building from scratch.</li>
+<li>Staff with a @thenrwc.org address see only NRWC RFPs.</li>
+</ul>
+</section>
+<section class="chapter" id="s7">
+<div class="chapter-head"><span class="badge" aria-hidden="true">7</span><div><div class="kicker">Section 7</div><h2>Managing responses</h2></div></div>
+<p>Proposals appear the moment a venue submits. You can read them in two places: the Responses tab on each RFP, and the Admin Dashboard, which spans every RFP. Nothing alerts you when one arrives, so check regularly while an RFP is Open.</p>
+<h3 id="s7-the-responses-tab-inside-an-rfp">The Responses tab (inside an RFP)</h3>
+<p>The planner, administrator and NRWC staff (for NRWC RFPs) see this tab. Open an RFP and click <strong>Responses</strong>.</p>
+<ul>
+<li>One row per proposal: City/State, Property, Room Rate, F&amp;B Minimum, F&amp;B Guarantee (Yes or No) and when it was Submitted.</li>
+<li>Click a row to expand every answer the venue gave. Links they entered are clickable.</li>
+<li><strong>Export CSV</strong> downloads that RFP's proposals as a spreadsheet. The room and AV answers are included, written as available over needed.</li>
+</ul>
+<h3 id="s7-the-admin-dashboard">The Admin Dashboard</h3>
+<p>Open <a href="https://events.clearhq.org/admin-dashboard" rel="noopener" target="_blank">events.clearhq.org/admin-dashboard</a> and stay on <strong>Browse Proposals</strong> to see proposals from every RFP in one table.</p>
+<ul>
+<li><strong>Search</strong> by property name, city or event name. The <strong>Event</strong> dropdown narrows the table to one event.</li>
+<li>Click a column heading to sort by it. Click again to reverse the order.</li>
+<li>Click a row to expand it. The expanded view includes the room and AV quantities the venue said it can provide, written as available over needed. For example, Breakout Room (2/3) means two available out of three needed. It also shows the details notes the venue wrote under each table.</li>
+<li><strong>Export CSV</strong> downloads the rows the table currently shows, including the room and AV answers.</li>
+</ul>
+<h3 id="s7-what-to-check-when-you-read-a-proposal">What to check when you read a proposal</h3>
+<ul>
+<li><strong>Dates proposed.</strong> Venues can leave this blank, so confirm each proposal covers dates you can use.</li>
+<li><strong>Rate and what it includes.</strong> Compare the Rate fees included line. A rate that excludes the resort fee is not comparable to one that includes it.</li>
+<li><strong>F&amp;B guarantee.</strong> If the amount is marked exclusive, add the tax and service charge rates the venue listed before comparing it with other proposals.</li>
+<li><strong>Room and AV match.</strong> Look for shortfalls such as 1/3 rooms or 2/6 microphones, and read the details box for the venue's explanation.</li>
+<li><strong>Cumulative Attrition %.</strong> The scoring tool treats a higher percentage as better, on the basis that it is the share of the room block you can release without penalty. Confirm that matches how you read it.</li>
+<li><strong>Duplicates.</strong> The same property twice means it resubmitted. Use the latest.</li>
+</ul>
+<h3 id="s7-known-gaps-and-what-to-do-instead">Known gaps, and what to do instead</h3>
+<ul>
+<li>Proposals cannot be edited or deleted from the screen, including test submissions. Ask the administrator to remove them (Appendix D).</li>
+</ul>
+</section>
+<section class="chapter" id="s8">
+<div class="chapter-head"><span class="badge" aria-hidden="true">8</span><div><div class="kicker">Section 8</div><h2>Evaluating proposals and reporting to the board</h2></div></div>
+<p>The Admin Dashboard scores every proposal for an RFP against 12 weighted criteria, ranks them, and produces a board-ready report. The weights start from the Section Priority you ranked when you built the RFP, and you can change them. The score is a decision aid, not the decision.</p>
+<h3 id="s8-step-by-step">Step by step</h3>
+<ol class="steps">
+<li>After the proposal due date, open <a href="https://events.clearhq.org/admin-dashboard" rel="noopener" target="_blank">events.clearhq.org/admin-dashboard</a> and click <strong>Evaluate an RFP</strong>.</li>
+<li>Choose the RFP from the dropdown. Only RFPs with at least one proposal are listed, with the proposal count.</li>
+<li>On the <strong>Weights</strong> tab, review the starting weights and move any slider (1 is low, 10 is high). Changes save automatically in this browser.</li>
+<li>Still on Weights, scroll to <strong>Location &amp; Area Fit: Option Values</strong>. Set 0 to 10 points for each property type and each area characteristic, based on what matters for this event.</li>
+<li>Open the <strong>Score Proposals</strong> tab. Click each proposal to expand it. For Concessions Quality and CVB Promotions / Incentives, read the venue's text shown above each slider and set a score from 1 to 10.</li>
+<li>Click <strong>Run Evaluation &amp; See Rankings</strong>. The ranking table appears, with the top three highlighted. Click it again after any change to weights or scores.</li>
+<li>Open the <strong>Report</strong> tab. Click <strong>Download PDF</strong> (in the print window, set the destination to Save as PDF and switch off Headers and footers) or <strong>Export as HTML file</strong>.</li>
+</ol>
+<p>The report is a finished two-page document: a title block with the event logo, summary figures, an executive summary you can edit, the complete rankings, and a side-by-side scoring comparison of the top three proposals. The weights and scoring method are not shown. Click the summary text to rewrite it. Your edits appear in the PDF and are saved in this browser for that RFP, and Reset to suggested text brings back the generated wording.</p>
+<h3 id="s8-the-12-criteria-and-their-starting-weights">The 12 criteria and their starting weights</h3>
+<p>When an RFP ranks the linked section, the weight is 11 minus the rank, so rank 1 gives 10, rank 2 gives 9, and rank 10 gives 1. When the section is not ranked, or there is no linked section, the default weight applies.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>How it is scored</th>
+<th>Linked Section Priority</th>
+<th>Default weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Guest Room Rate</td>
+<td>Relative, lower is better</td>
+<td>Guest Room Needs</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Cumulative Attrition Allowance</td>
+<td>Relative, higher is better</td>
+<td>Guest Room Needs</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Meeting Room Rental Fee</td>
+<td>Relative, lower is better</td>
+<td>Meeting Space Needs</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Room Capacity Match</td>
+<td>Fulfillment %</td>
+<td>Meeting Space Needs</td>
+<td>8</td>
+</tr>
+<tr>
+<td>AV Equipment Match</td>
+<td>Fulfillment %</td>
+<td>Meeting Space Needs</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Meeting Space on One Floor</td>
+<td>Yes/No</td>
+<td>Meeting Space Needs</td>
+<td>2</td>
+</tr>
+<tr>
+<td>F&amp;B Minimum</td>
+<td>Relative, lower is better</td>
+<td>Food &amp; Beverage</td>
+<td>7</td>
+</tr>
+<tr>
+<td>F&amp;B Guarantee Offered</td>
+<td>Yes/No</td>
+<td>Food &amp; Beverage</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Commissionable Rate</td>
+<td>Yes/No</td>
+<td>None</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Concessions Quality</td>
+<td>Manual</td>
+<td>Must-Have Concessions</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Location &amp; Area Fit</td>
+<td>Option-based</td>
+<td>Preferred Cities</td>
+<td>6</td>
+</tr>
+<tr>
+<td>CVB Promotions / Incentives</td>
+<td>Manual</td>
+<td>None</td>
+<td>3</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s8-how-each-method-scores">How each method scores</h3>
+<ul>
+<li><strong>Relative.</strong> Each venue is scored from 1 to 10 against the other proposals for the same RFP. The best figure gets 10, the worst gets 1, and the rest fall in proportion. With rates of $120, $180 and $280, the scores are 10, 6.6 and 1. The tool reads the first number a venue typed, so $189/night counts as 189. If a venue left it blank, or every venue has the same figure, the score is a neutral 5.5.</li>
+<li><strong>Yes/No.</strong> Yes scores 10. No, or blank, scores 4.</li>
+<li><strong>Fulfillment %.</strong> Quantity provided divided by quantity needed, across all rooms (or all AV items). Each line is capped at 100%, so a surplus of one item cannot hide a shortfall in another. The score is 1 plus the percentage times 9. If the RFP had no requirements, or the proposal was submitted before those questions existed, the score is a neutral 5.5.</li>
+<li><strong>Option-based.</strong> A venue's score is the average of the points you set for its property type and the average points for the area characteristics it ticked. Anything unset counts as 5.</li>
+<li><strong>Manual.</strong> You enter the score yourself. It starts at 5.</li>
+</ul>
+<p>The total is the sum of each score times its weight, divided by the most it could be, shown as a percentage. Proposals are ranked by that total.</p>
+<h3 id="s8-limits-to-know-before-you-rely-on-it">Limits to know before you rely on it</h3>
+<ul>
+<li><strong>Your adjustments live in your browser, not on the server.</strong> The starting weights come from the RFP's Section Priority, which is saved with the RFP, so everyone sees the same starting point. Slider changes, Location &amp; Area Fit option values, manual scores and your edited executive summary are saved only in the browser you used. On another computer, or for another person, they start over: weights at the Section Priority starting point, option values and manual scores at 5, and the suggested summary. Clearing browser data erases them. Do the whole evaluation in one browser and export the report when you finish.</li>
+<li><strong>Rankings are not stored.</strong> If you reload the page, run the evaluation again. Export the report to keep a copy.</li>
+<li><strong>Relative scoring needs at least two proposals.</strong> With one proposal, the numeric criteria all come out neutral.</li>
+<li><strong>Changing Section Priority later does not update saved weights.</strong> If you re-rank sections after you have already evaluated an RFP in a browser, click <strong>Reset this RFP's weights to Section Priority defaults</strong>.</li>
+<li><strong>Resubmissions count separately.</strong> If a venue submitted twice, both proposals are scored. Disregard the older one when you present.</li>
+<li><strong>Test the result.</strong> Move a few weights and run it again. If the top venue changes, say so in your recommendation.</li>
+</ul>
+</section>
+<section class="chapter" id="s9">
+<div class="chapter-head"><span class="badge" aria-hidden="true">9</span><div><div class="kicker">Section 9</div><h2>Closing out an RFP</h2></div></div>
+<p>Close the RFP once the proposal window ends, and mark it Awarded when a venue is chosen. Both are manual steps for the planner or administrator.</p>
+<h3 id="s9-closing">Closing</h3>
+<ol class="steps">
+<li>After the proposal due date, set the status to <strong>Closed</strong>. The RFP leaves the public list, and the proposal form stops accepting submissions.</li>
+<li>Responses, Notes and Version History stay available. The Admin Dashboard still lists the proposals and lets you evaluate them.</li>
+<li>To take more proposals later, set the status back to <strong>Open</strong>. The link stays the same. To change the RFP itself, set it to <strong>Draft</strong> first.</li>
+</ol>
+<h3 id="s9-awarding">Awarding</h3>
+<ol class="steps">
+<li>When a venue is selected, set the status to <strong>Awarded</strong>.</li>
+<li>Add a Note naming the venue and the date. The system does not record which venue won, and Notes cannot be edited or deleted, so this becomes your permanent record.</li>
+<li>Export the board report, and the proposals CSV if you want it, and file them.</li>
+</ol>
+<h3 id="s9-housekeeping">Housekeeping</h3>
+<ul>
+<li>Closed and Awarded RFPs are hidden from the RFP list until you click those filter buttons.</li>
+<li>To start the next edition of a recurring event, open the old RFP and click <strong>Duplicate as New RFP</strong>. Set the report due date and event logo again.</li>
+<li>Do not delete an RFP that has proposals. Deleting (administrator only) removes the RFP with its notes and version history, and its public link stops working. The proposals stay in the Admin Dashboard, but the Section Priority is gone, so scoring starts from default weights. Use Closed or Awarded instead.</li>
+<li>Test proposals cannot be removed from the screen, even if you delete their test RFP. Ask the administrator (Appendix D).</li>
+</ul>
+</section>
+<section class="chapter" id="s10">
+<div class="chapter-head"><span class="badge" aria-hidden="true">10</span><div><div class="kicker">Section 10</div><h2>Things the system does not do automatically</h2></div></div>
+<p>Several steps depend on a person remembering. This table lists each one and what to do instead.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>The system does not...</th>
+<th>What to do instead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Close an RFP when the proposal due date passes</td>
+<td>Set the status to Closed yourself. Until then, venues can still submit.</td>
+</tr>
+<tr>
+<td>Alert you when a venue submits a proposal</td>
+<td>Check the Responses tab or Admin Dashboard. Put a reminder on your calendar for the proposal due date.</td>
+</tr>
+<tr>
+<td>Email venues a confirmation, reminder or decision</td>
+<td>Send these yourself (section 6).</td>
+</tr>
+<tr>
+<td>Email anyone when a status changes</td>
+<td>Tell colleagues directly. Email goes only to the planner, when an RFP is saved or created.</td>
+</tr>
+<tr>
+<td>Check that an RFP is complete before it is published</td>
+<td>Use the launch checklist (Appendix C).</td>
+</tr>
+<tr>
+<td>Require venues to pick dates</td>
+<td>Check the Dates proposed line in each response.</td>
+</tr>
+<tr>
+<td>Let venues edit or withdraw a proposal</td>
+<td>Ask them to submit again, and use their latest.</td>
+</tr>
+<tr>
+<td>Warn you about duplicate submissions from one property</td>
+<td>Look for repeated property names.</td>
+</tr>
+<tr>
+<td>Record which venue was chosen</td>
+<td>Add a Note when you set the RFP to Awarded.</td>
+</tr>
+<tr>
+<td>Save the intake form automatically</td>
+<td>Click Save before you leave the page.</td>
+</tr>
+<tr>
+<td>Share your scoring adjustments and manual scores between browsers or people</td>
+<td>Evaluate in one browser and export the report (section 8).</td>
+</tr>
+<tr>
+<td>Remove test proposals</td>
+<td>Ask the administrator (Appendix D).</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="chapter" id="s11">
+<div class="chapter-head"><span class="badge" aria-hidden="true">11</span><div><div class="kicker">Section 11</div><h2>Troubleshooting</h2></div></div>
+<p>Most problems come from the RFP's status, who is logged in, or a stale browser page. Find the symptom, then try the fix.</p>
+<h3 id="s11-staff">Staff</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>Likely cause</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Access denied at login</td>
+<td>Your email is not on the approved staff list, or the one-time code expired</td>
+<td>Request a new code. If it still fails, ask the administrator to add your email (Appendix D).</td>
+</tr>
+<tr>
+<td>Fields are greyed out, with a banner about status</td>
+<td>The RFP is not in Draft</td>
+<td>The planner or administrator sets it back to Draft (section 4).</td>
+</tr>
+<tr>
+<td>Save fails with a message that the RFP is locked</td>
+<td>Same cause</td>
+<td>Same fix.</td>
+</tr>
+<tr>
+<td>Save will not go through</td>
+<td>Group, Official Event Name or Report Due Date is empty</td>
+<td>Fill in the three required fields.</td>
+</tr>
+<tr>
+<td>You cannot pick an earlier report due date</td>
+<td>Staff are held to 45 days out</td>
+<td>Ask the planner or administrator to set it.</td>
+</tr>
+<tr>
+<td>No status dropdown, only a colored label</td>
+<td>Only the planner and administrator can change status</td>
+<td>Ask the planner.</td>
+</tr>
+<tr>
+<td>No Responses tab</td>
+<td>It is limited to the planner, administrator and NRWC staff for NRWC RFPs</td>
+<td>Ask the planner.</td>
+</tr>
+<tr>
+<td>An RFP is missing from the list</td>
+<td>Closed and Awarded are hidden by default, or you are an NRWC user and the RFP is for another group</td>
+<td>Click the Closed and Awarded buttons above the list.</td>
+</tr>
+<tr>
+<td>The group logo is blank or says no logo found</td>
+<td>No logo file exists for that acronym</td>
+<td>Upload the logo in Group Info, or ask the administrator to add a file named ACRONYM-logo.png to the site.</td>
+</tr>
+<tr>
+<td>A page still looks like the old version after an update</td>
+<td>Your browser kept a saved copy</td>
+<td>Hard refresh (Ctrl+Shift+R on Windows, Cmd+Shift+R on Mac), or open a private window.</td>
+</tr>
+<tr>
+<td>No notification email after a save</td>
+<td>The notification flow is paused or the email went to junk</td>
+<td>Check junk mail, then tell the administrator (Appendix D).</td>
+</tr>
+<tr>
+<td>The template dropdown says No saved templates yet</td>
+<td>None are saved, or the list did not load</td>
+<td>Reload the page. Save a room with Save as template to start the library.</td>
+</tr>
+<tr>
+<td>The Admin Dashboard says you do not have access</td>
+<td>The page is limited to the planner, administrator and NRWC staff</td>
+<td>Ask the planner.</td>
+</tr>
+<tr>
+<td>An RFP is missing from the Evaluate dropdown</td>
+<td>Only RFPs with at least one proposal are listed</td>
+<td>Wait for the first proposal.</td>
+</tr>
+<tr>
+<td>Scores look flat or identical</td>
+<td>Only one proposal, or venues left the numbers blank</td>
+<td>Relative scoring needs at least two proposals with different figures (section 8).</td>
+</tr>
+<tr>
+<td>Your weight changes or scores are gone</td>
+<td>You are in a different browser, or browser data was cleared</td>
+<td>Re-enter them. Evaluate in one browser from now on.</td>
+</tr>
+<tr>
+<td>Room or AV match says No requirement</td>
+<td>The RFP had no meeting space needs, or the proposal predates those questions</td>
+<td>Expected. The criterion scores a neutral 5.5.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s11-venues">Venues</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>What the venue says</th>
+<th>Likely cause</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This RFP isn't currently open, or the link is incorrect</td>
+<td>The RFP is not Open, or the link was mistyped</td>
+<td>Check the status. Send the link again from the RFP page.</td>
+</tr>
+<tr>
+<td>I cannot find the RFP on the list</td>
+<td>It is not Open, or a city or date filter is hiding it</td>
+<td>Confirm the status. Ask them to click Clear filters.</td>
+</tr>
+<tr>
+<td>I got an error when I clicked Submit</td>
+<td>The RFP was closed or set to Draft meanwhile, a required field is empty, or the connection dropped</td>
+<td>Check the status. Ask them to fix highlighted fields and try again.</td>
+</tr>
+<tr>
+<td>I submitted the wrong information</td>
+<td>Proposals cannot be edited</td>
+<td>Ask them to submit again, and use their latest (section 5).</td>
+</tr>
+<tr>
+<td>The PDF will not download</td>
+<td>It opens a print window, not a file</td>
+<td>Choose Save as PDF as the printer in that window.</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="chapter appendix" id="sA">
+<div class="chapter-head"><span class="badge" aria-hidden="true">A</span><div><div class="kicker">Appendix A</div><h2>Who sees what</h2></div></div>
+<p>Venues see what they need to price the event. Budgets, priorities, internal dates and notes stay internal.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Information</th>
+<th>CLEAR staff</th>
+<th>Venues and the public</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Group, event name, logos</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Proposal due date (report due date minus 14 days)</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>RFP Response Report Due Date</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+<tr>
+<td>Section Priority</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+<tr>
+<td>Preferred Cities and Preferred Dates, with flexibility notes</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Attendance by day and Peak Attendance</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Guest rooms by night, Peak Nights, Max Nightly Room Rate</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Meeting rooms: label, setup, seats, days, AV per room, notes</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Quantity needed for each room</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Open to colocating</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+<tr>
+<td>Must-Have Concessions</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Food &amp; Beverage</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>Site Inspection, Exhibitor &amp; Sponsor Space</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+</tr>
+<tr>
+<td>F&amp;B Budget and AV Budget</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+<tr>
+<td>Notes and Version History</td>
+<td class="c-center"><span class="pill yes">Yes</span></td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+<tr>
+<td>Submitted proposals</td>
+<td>Planner, administrator, and NRWC staff for NRWC RFPs only</td>
+<td>A venue sees only its own confirmation summary, never other venues' proposals</td>
+</tr>
+<tr>
+<td>Scores, weights and the board report</td>
+<td>Planner, administrator, and NRWC staff for NRWC RFPs only</td>
+<td class="c-center"><span class="pill no">No</span></td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="chapter appendix" id="sB">
+<div class="chapter-head"><span class="badge" aria-hidden="true">B</span><div><div class="kicker">Appendix B</div><h2>Glossary</h2></div></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RFP</td>
+<td>The published list of what CLEAR needs from a venue for an event</td>
+</tr>
+<tr>
+<td>Proposal</td>
+<td>One venue's answers to an RFP, submitted through the proposal form</td>
+</tr>
+<tr>
+<td>Draft, Open, Closed, Awarded</td>
+<td>The four statuses (section 1)</td>
+</tr>
+<tr>
+<td>Locked</td>
+<td>Any status other than Draft. Nobody can edit the form.</td>
+</tr>
+<tr>
+<td>Short-name</td>
+<td>The name in an RFP's public link. It is created the first time the RFP is set to Open and never changes afterward.</td>
+</tr>
+<tr>
+<td>Report due date</td>
+<td>The internal deadline you enter, called RFP Response Report Due Date. Venues never see it.</td>
+</tr>
+<tr>
+<td>Proposal due date</td>
+<td>The deadline venues see. It is the report due date minus 14 days.</td>
+</tr>
+<tr>
+<td>Section Priority</td>
+<td>Your ranking of which RFP sections matter most. It sets the starting scoring weights.</td>
+</tr>
+<tr>
+<td>Date Option 1</td>
+<td>The top row in Preferred Dates, whatever its rank. Its length sets the day count for Attendance, Guest Room Needs and Meeting Space Needs.</td>
+</tr>
+<tr>
+<td>Peak Attendance</td>
+<td>The highest number in the day-by-day attendance. Calculated, not typed.</td>
+</tr>
+<tr>
+<td>Peak Nights</td>
+<td>The highest rooms-needed number across all nights. Calculated, not typed.</td>
+</tr>
+<tr>
+<td>Quantity Needed</td>
+<td>How many of one room setup you need. AV is counted per room and multiplied by this.</td>
+</tr>
+<tr>
+<td>Room template</td>
+<td>A saved room setup you can reuse in any RFP</td>
+</tr>
+<tr>
+<td>Qty Available</td>
+<td>What a venue enters against each requested room or AV item</td>
+</tr>
+<tr>
+<td>Relative scoring</td>
+<td>Scoring a venue against the other proposals for the same RFP</td>
+</tr>
+<tr>
+<td>Fulfillment %</td>
+<td>Quantity a venue can provide divided by quantity needed</td>
+</tr>
+<tr>
+<td>CVB</td>
+<td>Convention and visitors bureau, a destination marketing organization</td>
+</tr>
+<tr>
+<td>Attrition</td>
+<td>Typically the share of the room block a group can release without penalty. The form asks for Cumulative Attrition %, and the scoring tool treats a higher figure as better.</td>
+</tr>
+<tr>
+<td>F&amp;B minimum</td>
+<td>The least a group must spend on food and beverage at the venue</td>
+</tr>
+<tr>
+<td>F&amp;B guarantee</td>
+<td>An agreed price for the meal and beverage services listed in the RFP, at the stated attendee count</td>
+</tr>
+<tr>
+<td>Commissionable</td>
+<td>Whether a commission is paid on the room rate</td>
+</tr>
+<tr>
+<td>Colocation</td>
+<td>Whether the group is open to holding its event at the same property as another group's event. Internal only.</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="chapter appendix" id="sC">
+<div class="chapter-head"><span class="badge" aria-hidden="true">C</span><div><div class="kicker">Appendix C</div><h2>Checklists</h2></div></div>
+<h3 id="sC-launch-an-rfp">Launch an RFP</h3>
+<p>Before you publish:</p>
+<ul class="checklist">
+<li><label><input type="checkbox"/><span>Group chosen; acronym and logo preview look right</span></label></li>
+<li><label><input type="checkbox"/><span>Official Event Name is final</span></label></li>
+<li><label><input type="checkbox"/><span>Report due date set; the proposal due date 14 days earlier works for venues</span></label></li>
+<li><label><input type="checkbox"/><span>Section Priority ranked</span></label></li>
+<li><label><input type="checkbox"/><span>Preferred Cities entered and ranked</span></label></li>
+<li><label><input type="checkbox"/><span>Date Option 1 entered in the top row; other options and flexibility notes added if needed</span></label></li>
+<li><label><input type="checkbox"/><span>Attendance entered for each day</span></label></li>
+<li><label><input type="checkbox"/><span>Guest room nights generated, Rooms Needed filled in, Max Nightly Room Rate entered</span></label></li>
+<li><label><input type="checkbox"/><span>Each meeting room has a label, setup, seats, quantity, AV needs and days</span></label></li>
+<li><label><input type="checkbox"/><span>Concessions, Food &amp; Beverage, Site Inspection and Exhibits filled in or intentionally blank</span></label></li>
+<li><label><input type="checkbox"/><span>Budgets entered if you want them on record (they stay private)</span></label></li>
+<li><label><input type="checkbox"/><span>Saved, and read through once</span></label></li>
+</ul>
+<p>Publishing:</p>
+<ul class="checklist">
+<li><label><input type="checkbox"/><span>Status set to Open</span></label></li>
+<li><label><input type="checkbox"/><span>RFP appears at <a href="https://events.clearhq.org/rfps" rel="noopener" target="_blank">events.clearhq.org/rfps</a>, and the RFP page reads correctly</span></label></li>
+<li><label><input type="checkbox"/><span>Link copied and invitations sent to venues and CVBs (section 6)</span></label></li>
+<li><label><input type="checkbox"/><span>Reminder email scheduled for about a week before the proposal due date</span></label></li>
+<li><label><input type="checkbox"/><span>Calendar reminder set for the proposal due date</span></label></li>
+</ul>
+<aside class="callout warn"><div aria-hidden="true" class="callout-icon">!</div><div class="callout-body"><strong class="callout-label">Heads up</strong><p>Do not submit a test proposal on a live RFP. Test proposals cannot be deleted from the screen.</p></div></aside>
+<h3 id="sC-close-out-an-rfp">Close out an RFP</h3>
+<ul class="checklist">
+<li><label><input type="checkbox"/><span>Proposal due date has passed</span></label></li>
+<li><label><input type="checkbox"/><span>Status set to Closed</span></label></li>
+<li><label><input type="checkbox"/><span>Every response read; duplicates noted</span></label></li>
+<li><label><input type="checkbox"/><span>Evaluation done in one browser: weights, Location &amp; Area Fit option values, manual scores</span></label></li>
+<li><label><input type="checkbox"/><span>Ranking run, and a few weights changed to see whether the top venue holds</span></label></li>
+<li><label><input type="checkbox"/><span>Board report exported as PDF or HTML before the report due date</span></label></li>
+<li><label><input type="checkbox"/><span>Report delivered to the board</span></label></li>
+<li><label><input type="checkbox"/><span>Status set to Awarded, with a Note naming the venue and date</span></label></li>
+<li><label><input type="checkbox"/><span>Report and proposals CSV filed</span></label></li>
+<li><label><input type="checkbox"/><span>Administrator asked to remove any test proposals</span></label></li>
+</ul>
+</section>
+<section class="chapter appendix" id="sD">
+<div class="chapter-head"><span class="badge" aria-hidden="true">D</span><div><div class="kicker">Appendix D</div><h2>Administrator notes</h2></div></div>
+<p>This appendix is for the person who maintains the system. The planner does not need it day to day.</p>
+<h3 id="sD-where-things-live">Where things live</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Live address</td>
+<td>events.clearhq.org, also reachable at events-site-68h.pages.dev</td>
+</tr>
+<tr>
+<td>Hosting</td>
+<td>Cloudflare Pages project events-site, built from the GitHub repository clearlearning/events</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>Cloudflare KV namespace RFP_DATA. Key prefixes: rfp: (RFPs), proposal: (proposals), slug: (public link names), roomtemplate: (room templates)</td>
+</tr>
+<tr>
+<td>Login</td>
+<td>Cloudflare Zero Trust Access, team clearhq, policy CLEAR Staff Access</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="sD-files-and-where-they-deploy">Files and where they deploy</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Source file</th>
+<th>Deploy as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>events-int-rfpform-final.html</td>
+<td><code>RFP-form.html</code></td>
+</tr>
+<tr>
+<td>rfps.html</td>
+<td><code>rfps.html</code></td>
+</tr>
+<tr>
+<td>proposals.html</td>
+<td><code>admin-dashboard.html</code></td>
+</tr>
+<tr>
+<td>pages-function-api.js</td>
+<td><code>functions/api/[[path]].js</code> (the only backend file)</td>
+</tr>
+<tr>
+<td>rfps-slug-function.js</td>
+<td><code>functions/rfps/[slug].js</code> (the public RFP page)</td>
+</tr>
+<tr>
+<td>rfps-slug-respond-function.js</td>
+<td><code>functions/rfps/[slug]/respond.js</code> (the proposal form)</td>
+</tr>
+<tr>
+<td>a logo named ACRONYM-logo.png</td>
+<td>Site root, for example <code>CLEAR-logo.png</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><code>rfp-public.html</code> and <code>rfp-respond.html</code> are the readable sources for the two function files and are not served directly. After editing either one, regenerate its function file.</p>
+<h3 id="sD-access-rules">Access rules</h3>
+<p>On both hostnames, these paths require login: <code>RFP-form*</code>, <code>api/whoami</code>, <code>api/rfps*</code>, <code>admin-dashboard*</code> and <code>api/proposals*</code>. These are public: <code>/rfps</code>, <code>/rfps/*</code> and <code>/api/public/*</code>.</p>
+<ul>
+<li>Keep the Access destination in step with the file name. If it still says <code>proposals*</code> instead of <code>admin-dashboard*</code>, the dashboard page itself is public, although its data stays protected.</li>
+<li>Room templates live under <code>api/rfps/</code>, so <code>api/rfps*</code> already covers them.</li>
+</ul>
+<h3 id="sD-adding-or-changing-people">Adding or changing people</h3>
+<ol class="steps">
+<li>Add the person to the Access policy (Zero Trust, Access, Applications) so they can log in.</li>
+<li>Add their email to <code>STAFF_DIRECTORY</code> in the API file so their name appears in notes and version history.</li>
+<li>Roles are set in the same file: <code>ADMIN_EMAILS</code> (administrator), <code>PLANNER_EMAILS</code> (the planner's three addresses) and <code>DOMAIN_ORG_RESTRICTIONS</code> (thenrwc.org is limited to NRWC). Redeploy after any change.</li>
+<li>A new group for the Group dropdown is added to <code>GROUP_PRESETS</code> in the RFP form file. Add its logo to the site root, named ACRONYM-logo.png.</li>
+</ol>
+<h3 id="sD-notification-emails">Notification emails</h3>
+<ul>
+<li>Every create or save of an RFP posts the event name and group name to a Power Automate flow named RFP Notification to Candela, which sends the email.</li>
+<li>The flow's address is the Pages environment variable <code>POWER_AUTOMATE_WEBHOOK_URL</code> (a secret). Changing it needs a redeploy to take effect.</li>
+<li>The flow's trigger must allow Any caller. The Tenant setting caused 401 errors.</li>
+<li>Who receives the email, and from which mailbox, is set inside the flow, not in code.</li>
+<li>A failed notification never blocks a save. If emails stop, check the flow's run history.</li>
+</ul>
+<h3 id="sD-removing-test-data">Removing test data</h3>
+<p>Deleting an RFP in the app removes only the RFP record. Its proposals (keys beginning <code>proposal:</code>) and its public link name (<code>slug:</code>) stay until you remove them in the Cloudflare dashboard, under the RFP_DATA namespace.</p>
+<h3 id="sD-known-gaps-worth-fixing">Known gaps worth fixing</h3>
+<ul>
+<li>Date selection and the proposal due date are not enforced on the proposal form.</li>
+<li>RFPs do not close automatically at the proposal due date.</li>
+<li>There is no alert to the planner when a proposal arrives, and no confirmation email to the venue.</li>
+<li>Scoring adjustments (slider changes, Location &amp; Area Fit option values, manual scores) and the edited executive summary are stored per browser, not on the server. Starting weights do come from the RFP's Section Priority.</li>
+<li>Proposals cannot be edited, withdrawn or deleted in the app.</li>
+</ul>
+</section>
+</main>
+</div>
+
+<div class="site-foot"><b>CLEAR</b> Events RFP System &middot; Event Planner's Manual</div>
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var byId = {}; links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = byId[e.target.id]; if (a) a.classList.add('active');
+      });
+    }, { rootMargin: '-18% 0px -72% 0px' });
+    document.querySelectorAll('section.chapter').forEach(function (s) { io.observe(s); });
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); return ok;
+  }
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      var done = function (ok) { btn.textContent = ok ? 'Copied' : 'Select and copy'; setTimeout(function () { btn.textContent = 'Copy'; }, 1800); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(fallbackCopy(text)); });
+      else done(fallbackCopy(text));
+    });
+  });
+  var pb = document.getElementById('printBtn'); if (pb) pb.addEventListener('click', function () { window.print(); });
+})();
+</script>
+</body>
+</html>
