@@ -214,7 +214,8 @@ function publicRfpDetail(record) {
     logoUrl: d.logoDataUrl || d.logoUrl || "",
     eventLogoUrl: d.eventLogoDataUrl || "",
     proposalDueDate: computeProposalDueDate(d.rfpDueDate),
-    sectionPriorities: d.sectionPriorities || [],
+    // sectionPriorities is deliberately NOT sent: it's the internal ranking
+    // of what matters most to us, and no public page uses it.
     cities: d.cities || [],
     dates: d.dates || [],
     patternFlexible: !!d.patternFlexible,
@@ -223,10 +224,16 @@ function publicRfpDetail(record) {
     attendanceByDay: d.attendanceByDay || [],
     peakAttendance: computePeakAttendance(d.attendanceByDay),
     guestRooms: d.guestRooms || [],
-    maxNightlyRoomRate: d.maxNightlyRoomRate || "",
+    // When the group qualifies for the local government rate there is no
+    // maximum rate; venues are told so and asked for their government rate.
+    localGovRate: !!d.localGovRate,
+    maxNightlyRoomRate: d.localGovRate ? "" : (d.maxNightlyRoomRate || ""),
     peakNights: computePeakNights(d.guestRooms),
     meetingSpace: d.meetingSpace || [],
-    concessions: d.concessions || [],
+    // Concessions staff have held back for negotiation are removed HERE, on
+    // the server, so they never reach a venue's browser at all. (The flag
+    // itself is stripped too, so nothing hints that something was held back.)
+    concessions: (d.concessions || []).filter(c => !c.hidden).map(({ hidden, ...rest }) => rest),
     fnb: d.fnb || [],
     siteInspection: d.siteInspection || "",
     exhibits: d.exhibits || {}
@@ -367,6 +374,9 @@ export async function onRequest(context) {
         eventName: rfpRecord.data?.eventName || "",
         groupName: rfpRecord.data?.groupName || "",
         acronym: rfpRecord.data?.acronym || "",
+        // From the RFP itself (never the submitted form), so staff reviewing a
+        // response know whether the rate entered is a local government rate.
+        localGovRate: !!rfpRecord.data?.localGovRate,
         submittedAt: new Date().toISOString(),
 
         propertyName: (body.propertyName || "").trim(),
