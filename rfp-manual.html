@@ -410,14 +410,14 @@ figure { margin:0; }
 <li><strong>Date Option 1 is the top row, whatever its rank, so enter it first.</strong> Its length sets the number of days used by Attendance, Guest Room Needs and Meeting Space Needs.</li>
 </ul>
 <h3 id="s3-attendance">Attendance</h3>
-<p>Enter expected attendees for each day. Day rows appear automatically from Date Option 1 (up to 14 days). <strong>Peak Attendance</strong> is the highest number you enter. The system calculates it and shows it on the card and RFP page. Venues also see the day-by-day table.</p>
+<p>Enter expected attendees for each day. Day rows appear automatically from Date Option 1 (up to 14 days). <strong>Peak Attendance</strong> is the highest number you enter. The system calculates it and shows it on the card and RFP page. Venues also see the day-by-day table. Beside each day you see the calendar date it falls on in every date option, for example Opt 1: Mon, Oct 18 and Opt 2: Mon, Oct 25. Venues see the same dates in their table. The public page numbers the options by rank, so the numbers match the form when you enter your options in ranked order.</p>
 <h3 id="s3-guest-room-needs">Guest Room Needs</h3>
 <ol class="steps">
 <li>Click <strong>Auto-generate nights from Date Option 1</strong>. It creates one night before, one row per event night, and one night after.</li>
 <li>Enter <strong>Rooms Needed</strong> for each night. Rename a night or change its timing (before, during, after) if needed. <strong>+ Add night manually</strong> adds more.</li>
-<li>Enter <strong>Max Nightly Room Rate (before tax)</strong>. This is one ceiling for the whole program, not a rate per night.</li>
+<li>Enter <strong>Max Nightly Room Rate (before tax)</strong>. This is one ceiling for the whole program, not a rate per night. If the group qualifies for the local government rate, tick We qualify for the local government rate instead. You do not enter a rate, venues are told the group qualifies, and they are asked to propose their local government rate.</li>
 </ol>
-<p><strong>Peak Nights</strong> is the highest rooms-needed number across all nights. The system calculates it and shows it to venues on the card and RFP page.</p>
+<p><strong>Peak Nights</strong> is the highest rooms-needed number across all nights. The system calculates it and shows it to venues on the card and RFP page. The Night of column shows the date of each night in every date option. A night you add by hand is dated from its position, so the second night before the event is two nights before it starts.</p>
 <h3 id="s3-meeting-space-needs">Meeting Space Needs</h3>
 <p>Each room setup is a card. The day buttons on each card come from Date Option 1.</p>
 <ul>
@@ -438,7 +438,7 @@ figure { margin:0; }
 <aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Templates are shared by all staff. They are copies: editing or deleting a template does not change RFPs that already used it.</p></div></aside>
 <h3 id="s3-concessions-food-beverage-site-inspection-exhibi">Concessions, Food &amp; Beverage, Site Inspection, Exhibits and Budget</h3>
 <ul>
-<li><strong>Must-Have Concessions:</strong> add rows and pick from the list (Comp Room Ratio, Staff Room Rate, Comp Suites, Room Upgrades at Group Rate, Airport Transfers, Welcome Amenity, Room Rebate, Comp Staff/Office F&amp;B, Comp Meeting WiFi, Other). Add details in the text box.</li>
+<li><strong>Must-Have Concessions:</strong> add rows and pick from the list (Comp Room Ratio, Staff Room Rate, Comp Suites, Room Upgrades at Group Rate, Airport Transfers, Welcome Amenity, Room Rebate, Comp Staff/Office F&amp;B, Comp Meeting WiFi, Other). Add details in the text box. Tick Hold back from venues on any concession you want to keep in your back pocket for negotiation. It stays on your list but is not shown on the public RFP.</li>
 <li><strong>Food &amp; Beverage:</strong> click <strong>+ Add day</strong> for each day (click the day name to rename it). For Breakfast, Lunch and Dinner, tick the service styles you want and mark each Must-have or Nice-to-have. Beverages has its own options, timing (All day, AM only, PM only) and Must-have or Nice-to-have toggle. Add dietary notes at the bottom.</li>
 <li><strong>Site Inspection:</strong> choose Required before contract signing, Desired prior to event (not required before signing), or No site visit needed. Venues are asked how they can support a visit only if one is wanted.</li>
 <li><strong>Exhibitor &amp; Sponsor Space:</strong> tick Exhibits needed, then enter Tables, Booths (10x10 preferred) and the desired placement. Venues are asked where exhibits would go only if this is ticked.</li>
@@ -462,7 +462,7 @@ figure { margin:0; }
 <li><label><input type="checkbox"/><span>The group, acronym and logo look right in the preview.</span></label></li>
 <li><label><input type="checkbox"/><span>The report due date is right, and the proposal due date it implies (14 days earlier) works for venues.</span></label></li>
 <li><label><input type="checkbox"/><span>Cities and Date Option 1 are entered, and the day-based sections (Attendance, Guest Rooms, Meeting Space) show the right number of days.</span></label></li>
-<li><label><input type="checkbox"/><span>Rooms Needed and Max Nightly Room Rate are entered.</span></label></li>
+<li><label><input type="checkbox"/><span>Rooms Needed and Max Nightly Room Rate (or the local government rate box) are set.</span></label></li>
 <li><label><input type="checkbox"/><span>Every Meeting Space room has its quantity, seats, AV needs and days.</span></label></li>
 <li><label><input type="checkbox"/><span>Concessions, Food &amp; Beverage, Site Inspection and Exhibits are filled in or intentionally blank.</span></label></li>
 <li><label><input type="checkbox"/><span>Section Priority is ranked, so scoring starts from the right weights later.</span></label></li>
@@ -505,8 +505,8 @@ figure { margin:0; }
 <li><strong>Share this RFP</strong> copies the page link.</li>
 <li><strong>Download PDF</strong> opens the browser's print window. Choosing Save as PDF makes the file.</li>
 </ul>
-<p>Guest Room Needs shows Peak Nights, the max nightly room rate before tax, and a night-by-night table. Meeting Space Needs shows each room with its setup, seats, how many rooms are needed, days and AV needs. AV is listed per room, with a note when a setup is needed in more than one room. The Food &amp; Beverage section includes standard wording that explains the F&amp;B guarantee venues are asked to price: a total price at the stated attendee count, a per-attendee price above it, menu options within 60 days of signing, dietary accommodations, and a note that reception or bar service is priced separately.</p>
-<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Venues never see the internal report due date, Section Priority, colocation, the F&amp;B and AV budgets, notes or version history.</p></div></aside>
+<p>Guest Room Needs shows Peak Nights, the max nightly room rate before tax (or, for a group that qualifies, a note asking for the local government rate), and a night-by-night table with the date of each night in every date option. Meeting Space Needs shows each room with its setup, seats, how many rooms are needed, days and AV needs. AV is listed per room, with a note when a setup is needed in more than one room. The Food &amp; Beverage section includes standard wording that explains the F&amp;B guarantee venues are asked to price: a total price at the stated attendee count, a per-attendee price above it, menu options within 60 days of signing, dietary accommodations, and a note that reception or bar service is priced separately.</p>
+<aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Venues never see the internal report due date, Section Priority, colocation, concessions you held back, the F&amp;B and AV budgets, notes or version history.</p></div></aside>
 <p>If a venue opens the link for an RFP that is not Open, they see: This RFP isn't currently open, or the link is incorrect.</p>
 <h3 id="s5-the-proposal-form">The proposal form</h3>
 <p>Venues reach it from <strong>Submit a Proposal</strong>, or at events.clearhq.org/rfps/short-name/respond. A <strong>View Full RFP</strong> link opens the RFP in a new tab so they can check requirements while they answer. If they try to leave with answers entered, the browser warns them.</p>
@@ -531,7 +531,7 @@ figure { margin:0; }
 </tr>
 <tr>
 <td>Guest Room Rate</td>
-<td>Proposed rate; which charges the rate includes (taxes, resort fee, destination fee, other); whether the rate is commissionable and at what percent</td>
+<td>Proposed rate (the local government rate, if the RFP says the group qualifies); which charges the rate includes (taxes, resort fee, destination fee, other); whether the rate is commissionable and at what percent</td>
 <td>Rate required; commission optional</td>
 </tr>
 <tr>
@@ -746,7 +746,7 @@ Thank you,
 <h3 id="s7-what-to-check-when-you-read-a-proposal">What to check when you read a proposal</h3>
 <ul>
 <li><strong>Dates proposed.</strong> Venues can leave this blank, so confirm each proposal covers dates you can use.</li>
-<li><strong>Rate and what it includes.</strong> Compare the Rate fees included line. A rate that excludes the resort fee is not comparable to one that includes it.</li>
+<li><strong>Rate and what it includes.</strong> Compare the Rate fees included line. A rate that excludes the resort fee is not comparable to one that includes it. When the RFP asked for the local government rate, the rate is tagged (local gov. rate) in the tables and listed as Rate type in the details.</li>
 <li><strong>F&amp;B guarantee.</strong> If the amount is marked exclusive, add the tax and service charge rates the venue listed before comparing it with other proposals.</li>
 <li><strong>Room and AV match.</strong> Look for shortfalls such as 1/3 rooms or 2/6 microphones, and read the details box for the venue's explanation.</li>
 <li><strong>Cumulative Attrition %.</strong> The scoring tool treats a higher percentage as better, on the basis that it is the share of the room block you can release without penalty. Confirm that matches how you read it.</li>
@@ -1101,7 +1101,7 @@ Thank you,
 </section>
 <section class="chapter appendix" id="sA">
 <div class="chapter-head"><span class="badge" aria-hidden="true">A</span><div><div class="kicker">Appendix A</div><h2>Who sees what</h2></div></div>
-<p>Venues see what they need to price the event. Budgets, priorities, internal dates and notes stay internal.</p>
+<p>Venues see what they need to price the event. Budgets, priorities, internal dates, notes and any concessions you hold back stay internal.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1312,7 +1312,7 @@ Thank you,
 <li><label><input type="checkbox"/><span>Preferred Cities entered and ranked</span></label></li>
 <li><label><input type="checkbox"/><span>Date Option 1 entered in the top row; other options and flexibility notes added if needed</span></label></li>
 <li><label><input type="checkbox"/><span>Attendance entered for each day</span></label></li>
-<li><label><input type="checkbox"/><span>Guest room nights generated, Rooms Needed filled in, Max Nightly Room Rate entered</span></label></li>
+<li><label><input type="checkbox"/><span>Guest room nights generated, Rooms Needed filled in, Max Nightly Room Rate entered, or the local government rate ticked</span></label></li>
 <li><label><input type="checkbox"/><span>Each meeting room has a label, setup, seats, quantity, AV needs and days</span></label></li>
 <li><label><input type="checkbox"/><span>Concessions, Food &amp; Beverage, Site Inspection and Exhibits filled in or intentionally blank</span></label></li>
 <li><label><input type="checkbox"/><span>Budgets entered if you want them on record (they stay private)</span></label></li>
