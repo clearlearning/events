@@ -170,7 +170,7 @@ function render() {
         <div class="rfp-event">${r.eventName || "(untitled event)"}</div>
         ${r.cities && r.cities.length ? `
           <div class="rfp-section-header">Preferred Cities</div>
-          <div class="rfp-cities">${[...r.cities].sort((a,b) => a.rank - b.rank).map(c => c.name).join(", ")}</div>
+          <div class="rfp-cities">${r.cities.map(c => String(c.name || "").trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" })).map(escHtml).join(", ")}</div>
         ` : ""}
         ${r.dates && r.dates.length ? `
           <div class="rfp-section-header">Preferred Dates</div>
@@ -190,6 +190,7 @@ function render() {
   }).join("");
 }
 
+function escHtml(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 function fmtDate(iso) { if (!iso) return ""; return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
 function fmtDateRange(dateOption) {
   if (!dateOption || !dateOption.start) return "";
