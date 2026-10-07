@@ -1477,6 +1477,14 @@ function linkifyLines(text) {
     return escapeHtml(trimmed);
   }).filter(Boolean).join("<br>");
 }
+// What a venue said it can provide against what the RFP asked for, written
+// "Room name (available/needed)", e.g. "Breakout Room (2/3)".
+function roomMatchText(p, sep = ", ") {
+  return (p.roomMatchProvided || []).map(r => `${r.roomLabel || r.floorSet} (${r.providedQty}/${r.neededQty})`).join(sep);
+}
+function avMatchText(p, sep = ", ") {
+  return (p.avMatchProvided || []).map(a => `${a.label} (${a.providedQty}/${a.neededQty})`).join(sep);
+}
 function proposalDetailHtml(p) {
   // Look up by array position, not by rank — ranks can tie, positions can't.
   const dateLabels = (p.proposedDateIndexes || []).map(idx => {
@@ -1514,6 +1522,10 @@ function proposalDetailHtml(p) {
     ${row("Cumulative Attrition %", p.cumulativeAttritionPercent)}
     ${fnbBlock}
     ${row("Concessions", p.concessions)}
+    ${row("Room match (available/needed)", roomMatchText(p))}
+    ${row("Room match notes", p.roomMatchNotes)}
+    ${row("AV match (available/needed)", avMatchText(p))}
+    ${row("AV match notes", p.avMatchNotes)}
     ${row("Meeting space one floor", p.meetingSpaceOneFloor)}
     ${row("Floors explanation", p.meetingSpaceFloorsExplain)}
     ${row("Exhibits location", [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" — "))}
@@ -1534,13 +1546,21 @@ function proposalsToCsv(proposals) {
     "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
     "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
     "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
-    "concessions","meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
+    "concessions","roomMatchProvided","roomMatchNotes","avMatchProvided","avMatchNotes",
+    "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
     "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
     "proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
     "additionalNotes","termsConfirmed","submittedAt","eventName","groupName"];
+  // The room and AV answers are lists of objects, so they're written out
+  // as text (e.g. "Breakout Room (2/3); General Session (1/1)") rather than
+  // run through the plain-array join below, which would print [object Object].
+  const headerFor = c => ({ roomMatchProvided: "roomMatch (available/needed)", avMatchProvided: "avMatch (available/needed)" }[c] || c);
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
-  const lines = [cols.join(",")];
-  proposals.forEach(p => lines.push(cols.map(c => escCsv(p[c])).join(",")));
+  const lines = [cols.map(headerFor).join(",")];
+  proposals.forEach(p => {
+    const flat = { ...p, roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
+    lines.push(cols.map(c => escCsv(flat[c])).join(","));
+  });
   return lines.join("\r\n");
 }
 document.getElementById("exportResponsesBtn").addEventListener("click", () => {
