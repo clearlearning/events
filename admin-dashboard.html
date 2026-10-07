@@ -89,20 +89,58 @@
   .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--border-soft); font-weight: 700; font-size: 0.78rem; }
   tr.top-rank .rank-badge { background: var(--gold); color: var(--burgundy-dark); }
 
-  .report-only { display: none; }
-  @media print {
-    header, .view-tabs, .eval-tabs, .toolbar, .no-print { display: none !important; }
-    .report-only { display: block !important; }
-    .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
-  }
+  /* ---------- Report: screen preview, PDF (print) and HTML export ---------- */
+  .report-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .report-toolbar .hint { font-size: 0.78rem; color: var(--charcoal-soft); flex: 1 1 280px; line-height: 1.5; }
+  .report-paper { background: #fff; max-width: 8.5in; margin: 0 auto 24px; padding: 0.6in 0.7in; border: 1px solid var(--border); box-shadow: var(--shadow); color: var(--charcoal); font-size: 0.9rem; line-height: 1.55; }
+  .rp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 3px solid var(--burgundy); }
+  .rp-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--burgundy); }
+  .rp-title { font-size: 1.75rem; line-height: 1.2; font-weight: 700; margin: 6px 0 4px; color: var(--charcoal); }
+  .rp-sub { font-size: 0.95rem; color: var(--charcoal-soft); }
+  .rp-date { font-size: 0.8rem; color: var(--charcoal-soft); margin-top: 8px; }
+  .rp-logo { max-height: 70px; max-width: 190px; object-fit: contain; flex-shrink: 0; }
+  .rp-stats { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 12px; }
+  .rp-stat { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .rp-stat .n { font-size: 1.3rem; font-weight: 700; color: var(--burgundy); line-height: 1.25; }
+  .rp-stat .n.name { font-size: 1.05rem; }
+  .rp-stat .l { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--charcoal-soft); margin-top: 3px; }
+  .rp-section { margin-top: 26px; }
+  .rp-section h2 { font-size: 1.05rem; font-weight: 700; color: var(--burgundy); margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .rp-note { font-size: 0.76rem; color: var(--charcoal-soft); margin: -4px 0 8px; }
+  .rp-summary-edit { display: block; width: 100%; box-sizing: border-box; font: inherit; line-height: 1.65; color: inherit; padding: 10px 12px; border: 1px dashed var(--blue); border-radius: 6px; background: #F8FBFD; resize: vertical; min-height: 110px; overflow: hidden; }
+  .rp-summary-edit:focus { outline: none; border-style: solid; box-shadow: 0 0 0 3px rgba(8,77,120,0.12); }
+  .rp-summary-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 6px; font-size: 0.74rem; color: var(--charcoal-soft); }
+  .rp-summary-tools .btn-outline { padding: 5px 10px; font-size: 0.74rem; }
+  .rp-summary-print { display: none; }
+  .rp-summary-print p, .rp-summary-static p { margin: 0 0 10px; }
+  table.rp-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  table.rp-table th, table.rp-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  table.rp-table thead th { background: var(--burgundy); color: #fff; font-weight: 600; font-size: 0.78rem; border-bottom: none; }
+  table.rp-table tbody th { font-weight: 600; color: var(--charcoal); width: 34%; background: #FAF8F5; }
+  table.rp-table tr.rp-total th, table.rp-table tr.rp-total td { font-weight: 700; background: #FFFBF0; border-top: 2px solid var(--gold); }
+  .rp-vname { font-weight: 700; }
+  .rp-vloc { font-weight: 400; font-size: 0.74rem; opacity: 0.85; }
+  .rp-rank { display: inline-flex; width: 24px; height: 24px; border-radius: 50%; align-items: center; justify-content: center; background: var(--border-soft); font-weight: 700; font-size: 0.78rem; }
+  tr.rp-first .rp-rank { background: var(--gold); color: var(--burgundy-dark); }
+  .rp-bar { display: inline-block; vertical-align: middle; width: 110px; height: 8px; border-radius: 4px; background: var(--border-soft); margin-right: 8px; overflow: hidden; }
+  .rp-bar > span { display: block; height: 100%; border-radius: 4px; }
+  .rp-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--charcoal-soft); }
 
-  .top-pick { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; }
-  .top-pick.first { border-left: 4px solid var(--gold); background: #FFFBF0; }
-  .top-pick .pp-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .top-pick .pp-name { font-size: 1.05rem; font-weight: 700; color: var(--burgundy); }
-  .top-pick .pp-score { font-size: 1.2rem; font-weight: 700; }
-  .top-pick .pp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px 16px; font-size: 0.82rem; }
-  .top-pick .pp-grid .k { color: var(--charcoal-soft); }
+  @page { size: Letter; margin: 0.6in; }
+  @media print {
+    html, body { background: #fff !important; }
+    body > header, .view-tabs, .picker-card, .eval-tabs, .toolbar, .no-print { display: none !important; }
+    main { max-width: none; margin: 0; padding: 0; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .report-paper { border: none; box-shadow: none; padding: 0; margin: 0; max-width: none; font-size: 10.5pt; }
+    .rp-summary-edit, .rp-summary-tools { display: none !important; }
+    .rp-summary-print { display: block; }
+    .rp-empty { display: none !important; }
+    .rp-head, .rp-keep, table.rp-table tr { break-inside: avoid; }
+    .rp-section h2 { break-after: avoid; }
+    table.rp-table thead { display: table-header-group; }
+    table.rp-table th, table.rp-table td { padding: 5px 8px; }
+  }
 </style>
 </head>
 <body>
@@ -190,9 +228,10 @@
         </div>
 
         <div class="eval-tab-panel" id="eval-tab-report">
-          <div class="section no-print">
-            <button type="button" class="btn-primary" onclick="window.print()">Print / Save PDF</button>
+          <div class="section no-print report-toolbar">
+            <button type="button" class="btn-primary" id="printReportBtn">Download PDF</button>
             <button type="button" class="btn-outline" id="exportHtmlBtn">Export as HTML file</button>
+            <div class="hint">In the print window, set the destination to <strong>Save as PDF</strong>. For the cleanest result, switch off <strong>Headers and footers</strong>.</div>
           </div>
           <div id="reportContent"></div>
         </div>
@@ -366,19 +405,35 @@ document.querySelectorAll("th[data-sort]").forEach(th => {
   });
 });
 
+// What a venue said it can provide against what the RFP asked for, written
+// "Room name (available/needed)", e.g. "Breakout Room (2/3)".
+function roomMatchText(p, sep = ", ") {
+  return (p.roomMatchProvided || []).map(r => `${r.roomLabel || r.floorSet} (${r.providedQty}/${r.neededQty})`).join(sep);
+}
+function avMatchText(p, sep = ", ") {
+  return (p.avMatchProvided || []).map(a => `${a.label} (${a.providedQty}/${a.neededQty})`).join(sep);
+}
 function proposalsToCsv(proposals) {
   const cols = ["propertyName","streetAddress","city","stateProvince","zipCode","phone","website",
     "contactName","contactPhone","contactEmail","guestRoomRate","commissionable","commissionPercent",
     "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
     "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
     "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
-    "concessions","meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
+    "concessions","roomMatchProvided","roomMatchNotes","avMatchProvided","avMatchNotes",
+    "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
     "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
     "proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
     "additionalNotes","termsConfirmed","submittedAt","eventName","groupName"];
+  // The room and AV answers are lists of objects, so they're written out
+  // as text (e.g. "Breakout Room (2/3); General Session (1/1)") rather than
+  // run through the plain-array join below, which would print [object Object].
+  const headerFor = c => ({ roomMatchProvided: "roomMatch (available/needed)", avMatchProvided: "avMatch (available/needed)" }[c] || c);
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
-  const lines = [cols.join(",")];
-  proposals.forEach(p => lines.push(cols.map(c => escCsv(p[c])).join(",")));
+  const lines = [cols.map(headerFor).join(",")];
+  proposals.forEach(p => {
+    const flat = { ...p, roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
+    lines.push(cols.map(c => escCsv(flat[c])).join(","));
+  });
   return lines.join("\r\n");
 }
 document.getElementById("exportBtn").addEventListener("click", () => {
@@ -754,70 +809,212 @@ function renderRankTable() {
 }
 
 // ---------- Report ----------
+// One builder feeds the on-screen preview, the PDF (browser print) and the
+// exported HTML file, so they can't drift apart. The executive summary is
+// the only editable part: it starts as suggested text from the scores and
+// any edits are remembered per RFP in this browser.
+const SUMMARY_KEY = "clear_evaluate_summary_v1";
+function loadSavedSummary(rfpId) {
+  try {
+    const all = JSON.parse(localStorage.getItem(SUMMARY_KEY) || "{}");
+    return Object.prototype.hasOwnProperty.call(all, rfpId) ? all[rfpId] : null;
+  } catch (e) { return null; }
+}
+function saveSummary(rfpId, text) {
+  try {
+    const all = JSON.parse(localStorage.getItem(SUMMARY_KEY) || "{}");
+    all[rfpId] = text;
+    localStorage.setItem(SUMMARY_KEY, JSON.stringify(all));
+  } catch (e) { /* storage unavailable: the edit still shows on screen */ }
+}
+function clearSavedSummary(rfpId) {
+  try {
+    const all = JSON.parse(localStorage.getItem(SUMMARY_KEY) || "{}");
+    delete all[rfpId];
+    localStorage.setItem(SUMMARY_KEY, JSON.stringify(all));
+  } catch (e) {}
+}
+
+const fmtMoney = n => "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+const CURRENCY_CRITERIA = ["guestRoomRate", "fnbMinimum", "meetingRoomRentalFee"];
+function reportValue(c, r) {
+  const s = r.scores[c.id];
+  if (!s) return "\u2014";
+  const v = s.display;
+  if (CURRENCY_CRITERIA.includes(c.id) && typeof v === "number") return fmtMoney(v);
+  if (c.id === "attrition" && typeof v === "number") return v + "%";
+  if (c.mode === "fulfillment" && v === "No requirement") return "n/a";
+  return v == null || v === "" ? "\u2014" : String(v);
+}
+const proposalLocation = p => [p.city, p.stateProvince].filter(Boolean).join(", ");
+function paragraphsHtml(text) {
+  return String(text || "").split(/\n{2,}/).map(t => t.trim()).filter(Boolean)
+    .map(t => `<p>${escapeHtml(t).replace(/\n/g, "<br>")}</p>`).join("");
+}
+function safeImgUrl(u) { return /^(https?:\/\/|data:image\/)/i.test(u || "") ? u : ""; }
+function reportMeta() {
+  const first = rfpProposals[0] || {};
+  const d = (currentRfpRecord && currentRfpRecord.data) || {};
+  return {
+    eventName: first.eventName || d.eventName || "Venue Evaluation",
+    groupName: first.groupName || d.groupName || "",
+    logo: safeImgUrl(d.eventLogoDataUrl || d.logoDataUrl || d.logoUrl),
+    today: new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+  };
+}
+
+function suggestedSummary() {
+  const meta = reportMeta();
+  const n = scoredResults.length;
+  const nm = r => r.proposal.propertyName;
+  const withLoc = r => proposalLocation(r.proposal) ? `${nm(r)} (${proposalLocation(r.proposal)})` : nm(r);
+  const top = scoredResults[0];
+  if (n === 1) return `One venue proposal was evaluated for ${meta.eventName}: ${withLoc(top)}, which scored ${top.percentScore}%.`;
+
+  const crit = id => CRITERIA.find(c => c.id === id);
+  const bits = [];
+  const rate = reportValue(crit("guestRoomRate"), top), fnb = reportValue(crit("fnbMinimum"), top);
+  if (rate.startsWith("$")) bits.push(`a guest room rate of ${rate}`);
+  if (fnb.startsWith("$")) bits.push(`an F&B minimum of ${fnb}`);
+
+  let text = `${n} venue proposals were evaluated for ${meta.eventName}. ${withLoc(top)} ranked first with a score of ${top.percentScore}%`;
+  text += bits.length ? `, offering ${bits.join(" and ")}.` : ".";
+  const rest = scoredResults.slice(1, 3).map(r => `${nm(r)} (${r.percentScore}%)`);
+  if (rest.length) text += ` ${rest.join(" and ")} followed.`;
+  return text;
+}
+
+function buildReportHtml({ editable, summary }) {
+  const meta = reportMeta();
+  const results = scoredResults;
+  const top = results.slice(0, 3);
+  const best = results[0];
+
+  const summarySection = editable ? `
+    <section class="rp-section rp-keep" id="rpSummary">
+      <h2>Executive Summary</h2>
+      <textarea id="summaryEdit" class="rp-summary-edit" aria-label="Executive summary, editable">${escapeHtml(summary)}</textarea>
+      <div class="rp-summary-tools">
+        <span>Click the text to edit it. Your edits appear in the PDF and are saved in this browser.</span>
+        <button type="button" class="btn-outline" id="resetSummaryBtn">Reset to suggested text</button>
+      </div>
+      <div class="rp-summary-print" id="summaryPrint">${paragraphsHtml(summary)}</div>
+    </section>` : (summary.trim() ? `
+    <section class="rp-section rp-keep">
+      <h2>Executive Summary</h2>
+      <div class="rp-summary-static">${paragraphsHtml(summary)}</div>
+    </section>` : "");
+
+  return `
+  <article class="report-paper" id="reportPaper">
+    <div class="rp-head">
+      <div>
+        <div class="rp-kicker">Venue Selection Report</div>
+        <h1 class="rp-title">${escapeHtml(meta.eventName)}</h1>
+        ${meta.groupName ? `<div class="rp-sub">${escapeHtml(meta.groupName)}</div>` : ""}
+        <div class="rp-date">Prepared ${escapeHtml(meta.today)}</div>
+      </div>
+      ${meta.logo ? `<img class="rp-logo" src="${escapeHtml(meta.logo)}" alt="" onerror="this.style.display='none'">` : ""}
+    </div>
+
+    <div class="rp-stats rp-keep">
+      <div class="rp-stat"><div class="n">${results.length}</div><div class="l">Proposals evaluated</div></div>
+      <div class="rp-stat"><div class="n name">${escapeHtml(best.proposal.propertyName)}</div><div class="l">Highest-scoring proposal</div></div>
+      <div class="rp-stat"><div class="n">${best.percentScore}%</div><div class="l">Highest score</div></div>
+    </div>
+
+    ${summarySection}
+
+    <section class="rp-section">
+      <h2>Complete Rankings</h2>
+      <table class="rp-table">
+        <thead><tr><th style="width:56px;">Rank</th><th>Property</th><th>Location</th><th>Score</th></tr></thead>
+        <tbody>
+          ${results.map(r => `<tr class="${r.rank === 1 ? "rp-first" : ""}">
+            <td><span class="rp-rank">${r.rank}</span></td>
+            <td class="rp-vname">${escapeHtml(r.proposal.propertyName)}</td>
+            <td>${escapeHtml(proposalLocation(r.proposal)) || "\u2014"}</td>
+            <td><span class="rp-bar"><span style="width:${r.percentScore}%; background:${scoreColor(r.percentScore)};"></span></span><strong>${r.percentScore}%</strong></td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="rp-section rp-keep">
+      <h2>Scoring Comparison</h2>
+      ${results.length > top.length ? `<div class="rp-note">The ${top.length} highest-scoring proposals are compared side by side.</div>` : ""}
+      <table class="rp-table">
+        <thead><tr><th>Criterion</th>${top.map(r => `<th><div class="rp-vname">#${r.rank} ${escapeHtml(r.proposal.propertyName)}</div>${proposalLocation(r.proposal) ? `<div class="rp-vloc">${escapeHtml(proposalLocation(r.proposal))}</div>` : ""}</th>`).join("")}</tr></thead>
+        <tbody>
+          <tr class="rp-total"><th>Overall score</th>${top.map(r => `<td>${r.percentScore}%</td>`).join("")}</tr>
+          ${CRITERIA.map(c => `<tr><th>${escapeHtml(c.name)}</th>${top.map(r => `<td>${escapeHtml(reportValue(c, r))}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+    </section>
+
+    <div class="rp-footer"><span>CLEAR Events \u00B7 Venue proposal evaluation</span><span>Prepared ${escapeHtml(meta.today)}</span></div>
+  </article>`;
+}
+
+function currentSummaryText() {
+  const ta = document.getElementById("summaryEdit");
+  if (ta) return ta.value;
+  const saved = loadSavedSummary(currentRfpId);
+  return saved !== null ? saved : suggestedSummary();
+}
 function renderReport() {
+  const box = document.getElementById("reportContent");
   if (!scoredResults.length) {
-    document.getElementById("reportContent").innerHTML = `<div class="section">Run an evaluation on the "Score Proposals" tab first.</div>`;
+    box.innerHTML = `<div class="section">Run an evaluation on the "Score Proposals" tab first.</div>`;
     return;
   }
-  const top3 = scoredResults.slice(0, 3);
-  const today = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
-  const eventLabel = currentRfpLabel || "Venue Evaluation";
+  const suggestion = suggestedSummary();
+  const saved = loadSavedSummary(currentRfpId);
+  box.innerHTML = buildReportHtml({ editable: true, summary: saved !== null ? saved : suggestion });
 
-  document.getElementById("reportContent").innerHTML = `
-    <div class="section report-only" style="display:block;">
-      <h2 style="font-size:1.3rem;">${escapeHtml(eventLabel)}</h2>
-      <div style="color:var(--charcoal-soft); font-size:0.85rem; margin-bottom:16px;">Venue Proposal Evaluation Report — Generated ${today} — ${scoredResults.length} proposal${scoredResults.length === 1 ? "" : "s"} evaluated</div>
-
-      <h3 style="font-size:1rem; color:var(--burgundy);">Executive Summary</h3>
-      <p style="font-size:0.9rem; line-height:1.7;">
-        ${scoredResults.length} venue proposal${scoredResults.length === 1 ? " was" : "s were"} evaluated against ${CRITERIA.length} weighted criteria for ${escapeHtml(eventLabel)}.
-        <strong>${escapeHtml(top3[0].proposal.propertyName)}</strong> ranked first with a composite score of ${top3[0].percentScore}%.
-        ${top3[1] ? `<strong>${escapeHtml(top3[1].proposal.propertyName)}</strong> (${top3[1].percentScore}%)` : ""}
-        ${top3[2] ? ` and <strong>${escapeHtml(top3[2].proposal.propertyName)}</strong> (${top3[2].percentScore}%) ${top3[1] ? "are" : "is"} recommended as ${top3[1] ? "alternates" : "an alternate"}.` : ""}
-      </p>
-
-      <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Scoring Criteria &amp; Weights</h3>
-      <table class="rank-table">
-        <tr><th>Criterion</th><th>Method</th><th>Weight</th></tr>
-        ${CRITERIA.map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${modeLabel(c.mode)}</td><td>${weights[c.id]}</td></tr>`).join("")}
-      </table>
-
-      <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Top Recommendations</h3>
-      ${top3.map((r, i) => `
-        <div class="top-pick ${i === 0 ? "first" : ""}">
-          <div class="pp-head">
-            <span class="pp-name">#${r.rank} ${escapeHtml(r.proposal.propertyName)}${i === 0 ? " \u2605" : ""}</span>
-            <span class="pp-score" style="color:${scoreColor(r.percentScore)};">${r.percentScore}%</span>
-          </div>
-          <div class="pp-grid">
-            ${CRITERIA.map(c => `<div><span class="k">${escapeHtml(c.name)}:</span> ${escapeHtml(String(r.scores[c.id].display))}</div>`).join("")}
-          </div>
-        </div>
-      `).join("")}
-
-      <h3 style="font-size:1rem; color:var(--burgundy); margin-top:20px;">Complete Rankings</h3>
-      <table class="rank-table">
-        <tr><th>Rank</th><th>Property</th><th>Score</th><th>%</th></tr>
-        ${scoredResults.map(r => `<tr><td>${r.rank}</td><td>${escapeHtml(r.proposal.propertyName)}${r.rank === 1 ? " \u2605" : ""}</td><td>${r.totalWeighted} / ${r.totalMaxWeighted}</td><td>${r.percentScore}%</td></tr>`).join("")}
-      </table>
-
-      <div style="margin-top:24px; padding-top:12px; border-top:2px solid var(--burgundy); font-size:0.75rem; color:var(--charcoal-soft); text-align:center;">
-        CLEAR Events Proposal Evaluation | Report generated ${today}
-      </div>
-    </div>
-  `;
+  // Wire up the editable summary. The textarea is what you edit on screen;
+  // a plain-text copy beside it is what the PDF shows, so no text box
+  // chrome or scrollbars can leak into the printout.
+  const ta = document.getElementById("summaryEdit");
+  const mirror = document.getElementById("summaryPrint");
+  const section = document.getElementById("rpSummary");
+  const sync = () => { mirror.innerHTML = paragraphsHtml(ta.value); section.classList.toggle("rp-empty", !ta.value.trim()); };
+  const grow = () => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; };
+  ta.addEventListener("input", () => { saveSummary(currentRfpId, ta.value); sync(); grow(); });
+  document.getElementById("resetSummaryBtn").addEventListener("click", () => {
+    clearSavedSummary(currentRfpId);
+    ta.value = suggestion;
+    sync(); grow();
+  });
+  sync(); grow();
 }
-document.getElementById("exportHtmlBtn").addEventListener("click", () => {
-  const content = document.getElementById("reportContent").innerHTML;
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Venue Evaluation Report</title>
-    <style>${document.querySelector("style").textContent}</style></head>
-    <body style="padding:40px; max-width:900px; margin:0 auto;">${content}</body></html>`;
+
+function printReport() {
+  if (!scoredResults.length) { alert("Run an evaluation on the Score Proposals tab first, then open the Report tab."); return; }
+  // Browsers use the page title as the default PDF file name.
+  const prevTitle = document.title;
+  document.title = `${reportMeta().eventName} \u2014 Venue Evaluation Report`;
+  const restore = () => { document.title = prevTitle; window.removeEventListener("afterprint", restore); };
+  window.addEventListener("afterprint", restore);
+  window.print();
+}
+function exportReportHtml() {
+  if (!scoredResults.length) { alert("Run an evaluation on the Score Proposals tab first, then open the Report tab."); return; }
+  const meta = reportMeta();
+  const css = [...document.querySelectorAll("style")].map(st => st.textContent).join("\n");
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(meta.eventName)} \u2014 Venue Evaluation Report</title>
+<style>${css}</style>
+<style>body { background: #fff; margin: 0; padding: 24px; } .report-paper { box-shadow: none; margin: 0 auto; }</style></head>
+<body>${buildReportHtml({ editable: false, summary: currentSummaryText() })}</body></html>`;
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = "venue_evaluation_report.html"; a.click();
+  const fileSlug = meta.eventName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "venue";
+  a.href = url; a.download = `${fileSlug}-venue-evaluation.html`; a.click();
   URL.revokeObjectURL(url);
-});
+}
+document.getElementById("printReportBtn").addEventListener("click", printReport);
+document.getElementById("exportHtmlBtn").addEventListener("click", exportReportHtml);
 
 loadManualScores();
 init();
