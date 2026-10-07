@@ -6,7 +6,6 @@
 <title>Events RFP System: Event Planner's Manual | CLEAR</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="https://assets-002.noviams.com/novi-file-uploads/clear/structure/clearlogo.png">
 <style>
 :root { --burgundy:#64092C;--burgundy-dark:#4A0620;--gold:#DDA838;--gold-soft:#F0CB74;--charcoal:#484848;--blue:#084D78;
 --bg:#F7F6F3;--surface:#FFFFFF;--text:#484848;--strong:#2B2B2B;--muted:#6B6660;--head:#64092C;--h3:#084D78;--link:#084D78;
@@ -751,7 +750,7 @@ Thank you,
 <li><strong>F&amp;B guarantee.</strong> If the amount is marked exclusive, add the tax and service charge rates the venue listed before comparing it with other proposals.</li>
 <li><strong>Room and AV match.</strong> Look for shortfalls such as 1/3 rooms or 2/6 microphones, and read the details box for the venue's explanation.</li>
 <li><strong>Cumulative Attrition %.</strong> The scoring tool treats a higher percentage as better, on the basis that it is the share of the room block you can release without penalty. Confirm that matches how you read it.</li>
-<li><strong>Duplicates.</strong> The same property twice means it resubmitted. Use the latest.</li>
+<li><strong>Duplicates.</strong> The same property twice means it resubmitted. Use the latest, and untick Include on the older one when you evaluate (section 8).</li>
 </ul>
 <h3 id="s7-known-gaps-and-what-to-do-instead">Known gaps, and what to do instead</h3>
 <ul>
@@ -767,8 +766,8 @@ Thank you,
 <li>Choose the RFP from the dropdown. Only RFPs with at least one proposal are listed, with the proposal count.</li>
 <li>On the <strong>Weights</strong> tab, review the starting weights and move any slider (1 is low, 10 is high). Changes save automatically in this browser.</li>
 <li>Still on Weights, scroll to <strong>Location &amp; Area Fit: Option Values</strong>. Set 0 to 10 points for each property type and each area characteristic, based on what matters for this event.</li>
-<li>Open the <strong>Score Proposals</strong> tab. Click each proposal to expand it. For Concessions Quality and CVB Promotions / Incentives, read the venue's text shown above each slider and set a score from 1 to 10.</li>
-<li>Click <strong>Run Evaluation &amp; See Rankings</strong>. The ranking table appears, with the top three highlighted. Click it again after any change to weights or scores.</li>
+<li>Open the <strong>Score Proposals</strong> tab. Click each proposal to expand it. For Concessions Quality and CVB Promotions / Incentives, read the venue's text shown above each slider and set a score from 1 to 10. To leave a proposal out, such as a duplicate or a withdrawn one, untick Include on its card.</li>
+<li>Click <strong>Run Evaluation &amp; See Rankings</strong>. The ranking table appears, with the top three highlighted. Click it again after any change to weights or scores. Changing which proposals are included clears the rankings, so run it again.</li>
 <li>Open the <strong>Report</strong> tab. Click <strong>Download PDF</strong> (in the print window, set the destination to Save as PDF and switch off Headers and footers) or <strong>Export as HTML file</strong>.</li>
 </ol>
 <p>The report is a finished two-page document: a title block with the event logo, summary figures, an executive summary you can edit, the complete rankings, and a side-by-side scoring comparison of the top three proposals. The weights and scoring method are not shown. Click the summary text to rewrite it. Your edits appear in the PDF and are saved in this browser for that RFP, and Reset to suggested text brings back the generated wording.</p>
@@ -869,11 +868,11 @@ Thank you,
 <p>The total is the sum of each score times its weight, divided by the most it could be, shown as a percentage. Proposals are ranked by that total.</p>
 <h3 id="s8-limits-to-know-before-you-rely-on-it">Limits to know before you rely on it</h3>
 <ul>
-<li><strong>Your adjustments live in your browser, not on the server.</strong> The starting weights come from the RFP's Section Priority, which is saved with the RFP, so everyone sees the same starting point. Slider changes, Location &amp; Area Fit option values, manual scores and your edited executive summary are saved only in the browser you used. On another computer, or for another person, they start over: weights at the Section Priority starting point, option values and manual scores at 5, and the suggested summary. Clearing browser data erases them. Do the whole evaluation in one browser and export the report when you finish.</li>
+<li><strong>Your adjustments live in your browser, not on the server.</strong> The starting weights come from the RFP's Section Priority, which is saved with the RFP, so everyone sees the same starting point. Slider changes, Location &amp; Area Fit option values, manual scores, which proposals you left out and your edited executive summary are saved only in the browser you used. On another computer, or for another person, they start over: weights at the Section Priority starting point, option values and manual scores at 5, every proposal included, and the suggested summary. Clearing browser data erases them. Do the whole evaluation in one browser and export the report when you finish.</li>
 <li><strong>Rankings are not stored.</strong> If you reload the page, run the evaluation again. Export the report to keep a copy.</li>
 <li><strong>Relative scoring needs at least two proposals.</strong> With one proposal, the numeric criteria all come out neutral.</li>
 <li><strong>Changing Section Priority later does not update saved weights.</strong> If you re-rank sections after you have already evaluated an RFP in a browser, click <strong>Reset this RFP's weights to Section Priority defaults</strong>.</li>
-<li><strong>Resubmissions count separately.</strong> If a venue submitted twice, both proposals are scored. Disregard the older one when you present.</li>
+<li><strong>Resubmissions count separately.</strong> If a venue submitted twice, both proposals are scored unless you untick Include on the older one.</li>
 <li><strong>Test the result.</strong> Move a few weights and run it again. If the top venue changes, say so in your recommendation.</li>
 </ul>
 </section>
@@ -941,7 +940,7 @@ Thank you,
 </tr>
 <tr>
 <td>Warn you about duplicate submissions from one property</td>
-<td>Look for repeated property names.</td>
+<td>Look for repeated property names, then untick Include on the older one when you evaluate.</td>
 </tr>
 <tr>
 <td>Record which venue was chosen</td>
@@ -1440,7 +1439,7 @@ Thank you,
 <li>Date selection and the proposal due date are not enforced on the proposal form.</li>
 <li>RFPs do not close automatically at the proposal due date.</li>
 <li>There is no alert to the planner when a proposal arrives, and no confirmation email to the venue.</li>
-<li>Scoring adjustments (slider changes, Location &amp; Area Fit option values, manual scores) and the edited executive summary are stored per browser, not on the server. Starting weights do come from the RFP's Section Priority.</li>
+<li>Scoring adjustments (slider changes, Location &amp; Area Fit option values, manual scores, left-out proposals) and the edited executive summary are stored per browser, not on the server. Starting weights do come from the RFP's Section Priority.</li>
 <li>Proposals cannot be edited, withdrawn or deleted in the app.</li>
 </ul>
 </section>
