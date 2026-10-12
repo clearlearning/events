@@ -73,6 +73,7 @@
   .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: #EEEAE3; padding: 4px; border-radius: 9px; width: fit-content; }
   .tab-btn { background: transparent; color: var(--charcoal-soft); border-radius: 6px; padding: 8px 16px; }
   .tab-btn.active { background: #fff; color: var(--burgundy); box-shadow: var(--shadow); }
+  .tab-count { display: inline-block; min-width: 18px; margin-left: 7px; padding: 1px 6px; border-radius: 999px; background: var(--burgundy); color: #fff; font-size: 0.72rem; font-weight: 700; line-height: 1.45; text-align: center; vertical-align: 1px; }
   .responses-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   .responses-table th, .responses-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; white-space: nowrap; }
   .responses-table th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
@@ -246,7 +247,7 @@
       </div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="intake">Intake Form</button>
-        <button class="tab-btn" data-tab="notes">Notes</button>
+        <button class="tab-btn" data-tab="notes">Notes<span class="tab-count" id="notesCount" style="display:none;"></span></button>
         <button class="tab-btn" data-tab="history">Version History</button>
         <button class="tab-btn" data-tab="responses" id="responsesTabBtn" style="display:none;">Responses</button>
       </div>
@@ -298,7 +299,7 @@
           <details class="section">
             <summary>Preferred Cities <span class="chev">&#9656;</span></summary>
             <div class="section-body">
-              <div class="section-hint">Up to 5 cities. Rank each — equal numbers or no entry = no preference between them.</div>
+              <div class="section-hint">Up to 5 cities. Pick a state or province for each, or tick International for a city outside the US and Canada. Rank each — equal numbers or no entry = no preference between them.</div>
               <div id="cityRows"></div>
               <button type="button" class="btn-ghost" id="addCityRow">+ Add city</button>
             </div>
@@ -612,25 +613,92 @@ function getPriorityValues() {
 document.getElementById("addPriorityRow").onclick = () => addPriorityRow();
 
 // ---------- Cities (capped at 5) ----------
+// Each city is a City + a State/Province dropdown (US states, DC, US territories, Canadian
+// provinces and territories). "International" swaps the state for a Country dropdown; Australia
+// keeps a state/territory dropdown too. The saved entry always carries `name` (the display
+// text every other page reads, e.g. "Denver, CO"), plus city/state/country/international.
+//
+// EXISTING RFPs ARE SAFE: they were saved with only a `name`. When one is opened the row is
+// pre-filled by reading that name, but the saved entry is left EXACTLY as it was unless someone
+// edits that row. Only a row you actually change gets its name rebuilt.
 const CITY_CAP = 5;
+const US_STATES = [["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"], ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"], ["DE", "Delaware"], ["DC", "District of Columbia"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"], ["KS", "Kansas"], ["KY", "Kentucky"], ["LA", "Louisiana"], ["ME", "Maine"], ["MD", "Maryland"], ["MA", "Massachusetts"], ["MI", "Michigan"], ["MN", "Minnesota"], ["MS", "Mississippi"], ["MO", "Missouri"], ["MT", "Montana"], ["NE", "Nebraska"], ["NV", "Nevada"], ["NH", "New Hampshire"], ["NJ", "New Jersey"], ["NM", "New Mexico"], ["NY", "New York"], ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"], ["OK", "Oklahoma"], ["OR", "Oregon"], ["PA", "Pennsylvania"], ["RI", "Rhode Island"], ["SC", "South Carolina"], ["SD", "South Dakota"], ["TN", "Tennessee"], ["TX", "Texas"], ["UT", "Utah"], ["VT", "Vermont"], ["VA", "Virginia"], ["WA", "Washington"], ["WV", "West Virginia"], ["WI", "Wisconsin"], ["WY", "Wyoming"]];
+const US_TERRITORIES = [["AS", "American Samoa"], ["GU", "Guam"], ["MP", "Northern Mariana Islands"], ["PR", "Puerto Rico"], ["VI", "U.S. Virgin Islands"]];
+const CA_PROVINCES = [["AB", "Alberta"], ["BC", "British Columbia"], ["MB", "Manitoba"], ["NB", "New Brunswick"], ["NL", "Newfoundland and Labrador"], ["NS", "Nova Scotia"], ["NT", "Northwest Territories"], ["NU", "Nunavut"], ["ON", "Ontario"], ["PE", "Prince Edward Island"], ["QC", "Quebec"], ["SK", "Saskatchewan"], ["YT", "Yukon"]];
+const AU_STATES = [["ACT", "Australian Capital Territory"], ["NSW", "New South Wales"], ["NT", "Northern Territory"], ["QLD", "Queensland"], ["SA", "South Australia"], ["TAS", "Tasmania"], ["VIC", "Victoria"], ["WA", "Western Australia"]];
+const COUNTRIES = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Democratic Republic of the)", "Congo (Republic of the)", "Costa Rica", "Côte d'Ivoire", "Croatia", "Cuba", "Curaçao", "Cyprus", "Czechia", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Greenland", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "São Tomé and Príncipe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];   // everywhere except the US and Canada (Mexico and the Caribbean are here)
+const STATE_CODES = new Set([...US_STATES, ...US_TERRITORIES, ...CA_PROVINCES].map(s => s[0]));
+const stateOpts = list => list.map(([code, name]) => `<option value="${code}">${escapeHtml(name)} (${code})</option>`).join("");
+const STATE_OPTIONS = `<option value="">State / province</option><optgroup label="United States">${stateOpts(US_STATES)}</optgroup><optgroup label="U.S. territories">${stateOpts(US_TERRITORIES)}</optgroup><optgroup label="Canada">${stateOpts(CA_PROVINCES)}</optgroup>`;
+const AU_OPTIONS = `<option value="">State / territory</option>${stateOpts(AU_STATES)}`;
+const COUNTRY_OPTIONS = `<option value="">Country</option>` + COUNTRIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+// Reads an older, free-text city such as "Denver, CO" or "Paris, France" so its row can be pre-filled.
+// This only fills in the boxes; it never changes what was saved.
+function parseLegacyCity(raw) {
+  const name = String(raw || "").trim();
+  const parts = name.split(",").map(s => s.trim());
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1];
+    // A spelled-out US state or Canadian province ("Atlanta, Georgia", "Denver, Colorado") is checked before countries,
+    // so "Georgia" is read as the state, not the country.
+    const fullName = [...US_STATES, ...US_TERRITORIES, ...CA_PROVINCES].find(st => st[1].toLowerCase() === last.toLowerCase());
+    if (fullName) return { city: parts.slice(0, -1).join(", "), state: fullName[0], country: "", international: false };
+    const country = COUNTRIES.find(c => c.toLowerCase() === last.toLowerCase());
+    if (country) {
+      const mid = (parts[parts.length - 2] || "").toUpperCase();
+      if (country === "Australia" && parts.length >= 3 && AU_STATES.some(s => s[0] === mid)) return { city: parts.slice(0, -2).join(", "), state: mid, country, international: true };
+      return { city: parts.slice(0, -1).join(", "), state: "", country, international: true };
+    }
+    if (/^[A-Za-z]{2}$/.test(last) && STATE_CODES.has(last.toUpperCase())) return { city: parts.slice(0, -1).join(", "), state: last.toUpperCase(), country: "", international: false };
+  }
+  const m = name.match(/^(.{3,}?)\s+([A-Za-z]{2})$/);          // "Denver CO"
+  if (m && STATE_CODES.has(m[2].toUpperCase())) return { city: m[1].trim(), state: m[2].toUpperCase(), country: "", international: false };
+  return { city: name, state: "", country: "", international: false };
+}
 function makeCityRows(cities) {
   const wrap = document.getElementById("cityRows");
   wrap.innerHTML = "";
   const vals = cities && cities.length ? cities : [{ name: "", rank: 1 }];
   vals.forEach(c => addCityRow(c));
 }
+function syncCityRow(row) {
+  const intl = row.querySelector(".city-intl").checked;
+  row.querySelector(".city-domestic").style.display = intl ? "none" : "";
+  row.querySelector(".city-intl-fields").style.display = intl ? "" : "none";
+  row.querySelector(".city-au").style.display = intl && row.querySelector(".city-country").value === "Australia" ? "" : "none";
+}
 function addCityRow(c) {
   if (document.querySelectorAll("#cityRows .city-row").length >= CITY_CAP) return;
   c = c || { name: "", rank: 1 };
+  const structured = c.city !== undefined || c.international !== undefined;
+  const v = structured ? { city: c.city || "", state: c.state || "", country: c.country || "", international: !!c.international } : parseLegacyCity(c.name);
   const wrap = document.getElementById("cityRows");
   const row = document.createElement("div");
   row.className = "city-row";
-  row.style.cssText = "display:flex;gap:12px;align-items:flex-end;border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#FCFCFB;";
+  row.style.cssText = "display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#FCFCFB;";
+  const lbl = 'style="font-size:0.72rem;margin:0 0 3px;"';
   row.innerHTML = `
-    <div style="flex:2;"><label style="font-size:0.72rem;margin:0 0 3px;">City</label><input type="text" class="city-name-input" value="${c.name||''}" placeholder="e.g. Denver, CO"></div>
-    <div style="flex:1;max-width:120px;"><label style="font-size:0.72rem;margin:0 0 3px;">Preference Rank</label><input type="number" class="city-rank-input" min="1" value="${c.rank||1}"></div>
+    <div style="flex:2;min-width:150px;"><label ${lbl}>City</label><input type="text" class="city-name-input" value="${escapeHtml(v.city)}" placeholder="e.g. Denver"></div>
+    <div style="flex:2;min-width:190px;">
+      <div class="city-domestic"><label ${lbl}>State / Province</label><select class="city-state">${STATE_OPTIONS}</select></div>
+      <div class="city-intl-fields" style="display:none;"><label ${lbl}>Country</label><select class="city-country">${COUNTRY_OPTIONS}</select></div>
+      <div class="city-au" style="display:none;margin-top:6px;"><label ${lbl}>State / Territory</label><select class="city-au-state">${AU_OPTIONS}</select></div>
+    </div>
+    <div style="flex:0 0 auto;padding-bottom:8px;"><label style="font-size:0.8rem;margin:0;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="city-intl" style="width:auto;"> International (outside the US and Canada)</label></div>
+    <div style="flex:1;max-width:120px;"><label ${lbl}>Preference Rank</label><input type="number" class="city-rank-input" min="1" value="${c.rank || 1}"></div>
     <button type="button" class="btn-danger-ghost remove-row" title="Remove">&times;</button>
   `;
+  row.querySelector(".city-intl").checked = v.international;
+  if (v.international) { row.querySelector(".city-country").value = v.country; row.querySelector(".city-au-state").value = v.state; }
+  else row.querySelector(".city-state").value = v.state;
+  syncCityRow(row);
+  row._orig = c.name ? c : null;        // the entry exactly as saved
+  row._touched = false;                 // becomes true only if someone edits this row's city, state, country or international box
+  row.querySelectorAll(".city-name-input, .city-state, .city-country, .city-au-state, .city-intl").forEach(el => {
+    el.addEventListener("input", () => { row._touched = true; });
+    el.addEventListener("change", () => { row._touched = true; syncCityRow(row); });
+  });
   row.querySelector(".remove-row").onclick = () => { row.remove(); updateCityAddBtn(); };
   wrap.appendChild(row);
   updateCityAddBtn();
@@ -641,10 +709,21 @@ function updateCityAddBtn() {
   btn.disabled = count >= CITY_CAP;
   btn.textContent = count >= CITY_CAP ? `Maximum ${CITY_CAP} cities reached` : "+ Add city";
 }
+function cityEntryFromRow(row) {
+  const rank = Number(row.querySelector(".city-rank-input").value) || 1;
+  if (!row._touched && row._orig && row._orig.name) return { ...row._orig, rank };   // untouched: saved exactly as it was
+  const city = row.querySelector(".city-name-input").value.trim();
+  if (!city) return null;
+  if (!row.querySelector(".city-intl").checked) {
+    const state = row.querySelector(".city-state").value;
+    return { name: state ? `${city}, ${state}` : city, city, state, country: "", international: false, rank };
+  }
+  const country = row.querySelector(".city-country").value;
+  const state = country === "Australia" ? row.querySelector(".city-au-state").value : "";
+  return { name: [city, state, country].filter(Boolean).join(", "), city, state, country, international: true, rank };
+}
 function getCityRows() {
-  return [...document.querySelectorAll("#cityRows .city-row")]
-    .map(r => ({ name: r.querySelector(".city-name-input").value, rank: Number(r.querySelector(".city-rank-input").value) || 1 }))
-    .filter(c => c.name.trim());
+  return [...document.querySelectorAll("#cityRows .city-row")].map(cityEntryFromRow).filter(c => c && String(c.name).trim());
 }
 document.getElementById("addCityRow").onclick = () => addCityRow();
 
@@ -1337,6 +1416,7 @@ function startNewRfp() {
     }
   }
   document.getElementById("notesList").innerHTML = "<p class='small-note'>Save the RFP first to start adding notes.</p>";
+  updateNotesBadge();
   document.getElementById("historyList").innerHTML = "<p class='small-note'>Save the RFP first to see version history.</p>";
   document.getElementById("responsesList").innerHTML = "<p class='small-note'>Save the RFP first to collect responses.</p>";
   window._currentProposals = [];
@@ -1468,7 +1548,18 @@ document.getElementById("intakeForm").addEventListener("submit", async (e) => {
 });
 
 // ---------- Notes ----------
+// The Notes tab shows how many notes the RFP has, so a note someone left is never missed.
+// Notes can't be edited or deleted, so this number only ever goes up.
+function updateNotesBadge() {
+  const n = currentRecord && Array.isArray(currentRecord.notes) ? currentRecord.notes.length : 0;
+  const badge = document.getElementById("notesCount");
+  badge.textContent = n;
+  badge.style.display = n > 0 ? "" : "none";
+  badge.title = n === 1 ? "1 note" : n + " notes";
+  badge.parentElement.setAttribute("aria-label", n > 0 ? "Notes, " + (n === 1 ? "1 note" : n + " notes") : "Notes");
+}
 function renderNotes() {
+  updateNotesBadge();
   const list = document.getElementById("notesList");
   if (!currentRecord) { list.innerHTML = ""; return; }
   const notes = currentRecord.notes || [];
