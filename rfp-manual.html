@@ -826,9 +826,9 @@ Thank you,
 <h3 id="s7-the-admin-dashboard">The Admin Dashboard</h3>
 <p>Open <a href="https://events.clearhq.org/admin-dashboard" rel="noopener" target="_blank">events.clearhq.org/admin-dashboard</a> and stay on <strong>Browse Proposals</strong> to see proposals from every RFP in one table.</p>
 <ul>
-<li><strong>Search</strong> by property name, city or event name. The <strong>Event</strong> dropdown narrows the table to one event.</li>
-<li>Click a column heading to sort by it. Click again to reverse the order.</li>
-<li>Click a row to expand it. The expanded view includes the room and AV quantities the venue said it can provide, written as available over needed. For example, Breakout Room (2/3) means two available out of three needed. It also shows the details notes the venue wrote under each table.</li>
+<li><strong>Search</strong> by property name, city or event name. The <strong>Event</strong> dropdown narrows the table to one event. The boxes above the table, Show proposals from RFPs that are, filter by the RFP's status: Draft, Open, Closed and Awarded. Awarded is off by default, so once an RFP is awarded its proposals drop out of the working views. Tick Awarded to bring them back. The number on each box is how many proposals that status holds, and your choice is remembered in this browser. An extra box, RFP deleted, appears only when proposals exist for an RFP that has been deleted.</li>
+<li>Click a column heading to sort by it. Click again to reverse the order. Sorting understands numbers, so $95 comes before $1,200, and blank answers always sort last. Click Columns to add any field as a column, such as Cumulative Attrition % or Commissionable, so you can compare the same answer across every submission. Reset to default columns undoes it.</li>
+<li>Click a row to expand it. The expanded view shows every field in the same order for every proposal, grouped under headings. A field the venue left blank shows a dash, so the same information is always in the same place. It includes the room and AV quantities the venue said it can provide, written as available over needed. For example, Breakout Room (2/3) means two available out of three needed. It also shows the details notes the venue wrote under each table.</li>
 <li><strong>Export CSV</strong> downloads the rows the table currently shows, including the room and AV answers.</li>
 </ul>
 <h3 id="s7-what-to-check-when-you-read-a-proposal">What to check when you read a proposal</h3>
@@ -842,7 +842,7 @@ Thank you,
 </ul>
 <h3 id="s7-known-gaps-and-what-to-do-instead">Known gaps, and what to do instead</h3>
 <ul>
-<li>Proposals cannot be edited or deleted from the screen, including test submissions. Ask the administrator to remove them (Appendix D).</li>
+<li>Proposals cannot be edited, and venues cannot withdraw one. Only the administrator can delete a proposal: expand it, click Delete proposal, and type delete to confirm, the same protection used for deleting an RFP. A note recording who deleted which proposal is added to the RFP's Notes. The planner does not see the Delete button.</li>
 </ul>
 </section>
 <section class="chapter" id="s8">
@@ -851,14 +851,14 @@ Thank you,
 <h3 id="s8-step-by-step">Step by step</h3>
 <ol class="steps">
 <li>After the proposal due date, open <a href="https://events.clearhq.org/admin-dashboard" rel="noopener" target="_blank">events.clearhq.org/admin-dashboard</a> and click <strong>Evaluate an RFP</strong>.</li>
-<li>Choose the RFP from the dropdown. Only RFPs with at least one proposal are listed, with the proposal count.</li>
+<li>Choose the RFP from the dropdown. Only RFPs with at least one proposal are listed, with the proposal count and status. The status boxes at the top of the page decide which RFPs appear, so Awarded RFPs are hidden until you tick Awarded. The Proposals tab opens first and lists every proposal for that RFP. Click a row to read it in full. The Compare tab shows every field for every proposal in one grid, venues across the top, with the differences shaded. Tick Only show rows that differ to see just what separates them, or use Export this grid (CSV).</li>
 <li>On the <strong>Weights</strong> tab, review the starting weights and move any slider (1 is low, 10 is high). Changes save automatically in this browser.</li>
 <li>Still on Weights, scroll to <strong>Location &amp; Area Fit: Option Values</strong>. Set 0 to 10 points for each property type and each area characteristic, based on what matters for this event.</li>
 <li>Open the <strong>Score Proposals</strong> tab. Click each proposal to expand it. For Concessions Quality and CVB Promotions / Incentives, read the venue's text shown above each slider and set a score from 1 to 10. To leave a proposal out, such as a duplicate or a withdrawn one, untick Include on its card.</li>
 <li>Click <strong>Run Evaluation &amp; See Rankings</strong>. The ranking table appears, with the top three highlighted. Click it again after any change to weights or scores. Changing which proposals are included clears the rankings, so run it again.</li>
 <li>Open the <strong>Report</strong> tab. Click <strong>Download PDF</strong> (in the print window, set the destination to Save as PDF and switch off Headers and footers) or <strong>Export as HTML file</strong>.</li>
 </ol>
-<p>The report is a finished two-page document: a title block with the event logo, summary figures, an executive summary you can edit, the complete rankings, and a side-by-side scoring comparison of the top three proposals. The weights and scoring method are not shown. Click the summary text to rewrite it. Your edits appear in the PDF and are saved in this browser for that RFP, and Reset to suggested text brings back the generated wording.</p>
+<p>The report is a finished two-page document: a title block with the event logo, summary figures, an executive summary you can edit, the complete rankings, and a scoring comparison of the top three proposals. Above the report, Venues in the comparison table lets you compare the top 3, 5 or 8 venues, all of them, or a custom set: choose Custom and tick the venues in the rankings. With more than three venues the table turns on its side, with venues down the page and criteria across, and prints on its own landscape page. Table layout lets you force either direction. The weights and scoring method are not shown. Click the summary text to rewrite it. Your edits appear in the PDF and are saved in this browser for that RFP, and Reset to suggested text brings back the generated wording.</p>
 <h3 id="s8-the-12-criteria-and-their-starting-weights">The 12 criteria and their starting weights</h3>
 <p>When an RFP ranks the linked section, the weight is 11 minus the rank, so rank 1 gives 10, rank 2 gives 9, and rank 10 gives 1. When the section is not ranked, or there is no linked section, the default weight applies.</p>
 <div class="table-wrap"><table>
@@ -956,7 +956,7 @@ Thank you,
 <p>The total is the sum of each score times its weight, divided by the most it could be, shown as a percentage. Proposals are ranked by that total.</p>
 <h3 id="s8-limits-to-know-before-you-rely-on-it">Limits to know before you rely on it</h3>
 <ul>
-<li><strong>Your adjustments live in your browser, not on the server.</strong> The starting weights come from the RFP's Section Priority, which is saved with the RFP, so everyone sees the same starting point. Slider changes, Location &amp; Area Fit option values, manual scores, which proposals you left out and your edited executive summary are saved only in the browser you used. On another computer, or for another person, they start over: weights at the Section Priority starting point, option values and manual scores at 5, every proposal included, and the suggested summary. Clearing browser data erases them. Do the whole evaluation in one browser and export the report when you finish.</li>
+<li><strong>Your adjustments live in your browser, not on the server.</strong> The starting weights come from the RFP's Section Priority, which is saved with the RFP, so everyone sees the same starting point. Slider changes, Location &amp; Area Fit option values, manual scores, which proposals you left out, your choice of venues for the comparison table and your edited executive summary are saved only in the browser you used. On another computer, or for another person, they start over: weights at the Section Priority starting point, option values and manual scores at 5, every proposal included, and the suggested summary. Clearing browser data erases them. Do the whole evaluation in one browser and export the report when you finish.</li>
 <li><strong>Rankings are not stored.</strong> If you reload the page, run the evaluation again. Export the report to keep a copy.</li>
 <li><strong>Relative scoring needs at least two proposals.</strong> With one proposal, the numeric criteria all come out neutral.</li>
 <li><strong>Changing Section Priority later does not update saved weights.</strong> If you re-rank sections after you have already evaluated an RFP in a browser, click <strong>Reset this RFP's weights to Section Priority defaults</strong>.</li>
@@ -970,21 +970,21 @@ Thank you,
 <h3 id="s9-closing">Closing</h3>
 <ol class="steps">
 <li>After the proposal due date, set the status to <strong>Closed</strong>. The RFP leaves the public list, and the proposal form stops accepting submissions.</li>
-<li>Responses, Notes and Version History stay available. The Admin Dashboard still lists the proposals and lets you evaluate them.</li>
+<li>Responses, Notes and Version History stay available. The Admin Dashboard still lists the proposals and lets you evaluate them. Closed RFPs are shown by default.</li>
 <li>To take more proposals later, set the status back to <strong>Open</strong>. The link stays the same. To change the RFP itself, set it to <strong>Draft</strong> first.</li>
 </ol>
 <h3 id="s9-awarding">Awarding</h3>
 <ol class="steps">
 <li>When a venue is selected, set the status to <strong>Awarded</strong>.</li>
 <li>Add a Note naming the venue and the date. The system does not record which venue won, and Notes cannot be edited or deleted, so this becomes your permanent record.</li>
-<li>Export the board report, and the proposals CSV if you want it, and file them.</li>
+<li>Export the board report, and the proposals CSV if you want it, and file them. Awarded RFPs drop out of the Admin Dashboard's default views, so export first. To see them again, tick Awarded in the status boxes at the top.</li>
 </ol>
 <h3 id="s9-housekeeping">Housekeeping</h3>
 <ul>
 <li>Closed and Awarded RFPs are hidden from the RFP list until you click those filter buttons.</li>
 <li>To start the next edition of a recurring event, open the old RFP and click <strong>Duplicate as New RFP</strong>. Set the report due date and event logo again.</li>
-<li>Do not delete an RFP that has proposals. Deleting (administrator only) removes the RFP with its notes and version history, and its public link stops working. The proposals stay in the Admin Dashboard, but the Section Priority is gone, so scoring starts from default weights. Use Closed or Awarded instead.</li>
-<li>Test proposals cannot be removed from the screen, even if you delete their test RFP. Ask the administrator (Appendix D).</li>
+<li>Do not delete an RFP that has proposals. Deleting (administrator only) removes the RFP with its notes and version history, and its public link stops working. The proposals stay in the Admin Dashboard, but the Section Priority is gone, so scoring starts from default weights. Use Closed or Awarded instead. In the Admin Dashboard, the proposals of a deleted RFP appear only under the RFP deleted status box.</li>
+<li>Test proposals can be deleted by the administrator in the Admin Dashboard, even after their test RFP is deleted (tick the RFP deleted status box to find them). Ask the administrator (Appendix D).</li>
 </ul>
 </section>
 <section class="chapter" id="s10">
@@ -1130,7 +1130,7 @@ Thank you,
 <tr>
 <td>An RFP is missing from the Evaluate dropdown</td>
 <td>Only RFPs with at least one proposal are listed</td>
-<td>Wait for the first proposal.</td>
+<td>Wait for the first proposal, or tick its status in the boxes at the top of the page.</td>
 </tr>
 <tr>
 <td>Scores look flat or identical</td>
@@ -1146,6 +1146,16 @@ Thank you,
 <td>Room or AV match says No requirement</td>
 <td>The RFP had no meeting space needs, or the proposal predates those questions</td>
 <td>Expected. The criterion scores a neutral 5.5.</td>
+</tr>
+<tr>
+<td>A proposal or an RFP is missing from the Admin Dashboard</td>
+<td>The status boxes at the top hide Awarded RFPs by default, and RFP deleted ones</td>
+<td>Tick Awarded or RFP deleted. The number on each box shows how many proposals it holds.</td>
+</tr>
+<tr>
+<td>There is no Delete proposal button</td>
+<td>Only the administrator can delete proposals</td>
+<td>Ask the administrator.</td>
 </tr>
 </tbody>
 </table></div>
@@ -1521,14 +1531,14 @@ Thank you,
 <li>A failed notification never blocks a save. If emails stop, check the flow's run history.</li>
 </ul>
 <h3 id="sD-removing-test-data">Removing test data</h3>
-<p>Deleting an RFP in the app removes only the RFP record. Its proposals (keys beginning <code>proposal:</code>) and its public link name (<code>slug:</code>) stay until you remove them in the Cloudflare dashboard, under the RFP_DATA namespace.</p>
+<p>Deleting an RFP in the app removes only the RFP record. Its proposals (keys beginning <code>proposal:</code>) and its public link name (<code>slug:</code>) stay. You can delete the proposals in the Admin Dashboard: tick the RFP deleted status box, expand a proposal, click Delete proposal and type delete. The public link name stays until you remove it in the Cloudflare dashboard, under the RFP_DATA namespace.</p>
 <h3 id="sD-known-gaps-worth-fixing">Known gaps worth fixing</h3>
 <ul>
 <li>Date selection and the proposal due date are not enforced on the proposal form.</li>
 <li>RFPs do not close automatically at the proposal due date.</li>
 <li>There is no alert to the planner when a proposal arrives, and no confirmation email to the venue.</li>
-<li>Scoring adjustments (slider changes, Location &amp; Area Fit option values, manual scores, left-out proposals) and the edited executive summary are stored per browser, not on the server. Starting weights do come from the RFP's Section Priority.</li>
-<li>Proposals cannot be edited, withdrawn or deleted in the app.</li>
+<li>Scoring adjustments (slider changes, Location &amp; Area Fit option values, manual scores, left-out proposals, comparison-table choices) and the edited executive summary are stored per browser, not on the server. Starting weights do come from the RFP's Section Priority.</li>
+<li>Proposals cannot be edited or withdrawn in the app. Only the administrator can delete them.</li>
 </ul>
 </section>
 </main>
