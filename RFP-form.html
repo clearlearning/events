@@ -78,6 +78,8 @@
   .responses-table th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
   .table-scroll { overflow-x: auto; }
   .proposal-detail-row td { background: var(--bg); white-space: normal; }
+  .decl-badge { display: inline-block; margin-left: 6px; padding: 1px 9px; border-radius: 999px; background: #FBEBC4; color: #8A5A00; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+  .decline-banner { background: #FFFBF0; border-left: 4px solid var(--gold); border-radius: 6px; padding: 12px 16px; margin-bottom: 12px; font-size: 0.9rem; line-height: 1.55; }
   .proposal-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 0.85rem; }
   .proposal-detail-grid .k { color: var(--charcoal-soft); }
   .tab-panel { display: none; } .tab-panel.active { display: block; }
@@ -1534,7 +1536,7 @@ async function renderResponses() {
         ${proposals.map((p, i) => `
           <tr>
             <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", ")) || "—"}</td>
-            <td>${escapeHtml(p.propertyName)}</td>
+            <td>${escapeHtml(p.propertyName)}${p.declined ? ' <span class="decl-badge">Declined</span>' : ""}${p.declined && p.declineReason ? `<div class="small-note" style="margin-top:4px; max-width:34em; white-space:normal;">${escapeHtml(p.declineReason.length > 180 ? p.declineReason.slice(0, 180) + "…" : p.declineReason)}</div>` : ""}</td>
             <td>${escapeHtml(p.guestRoomRate) || "—"}${p.localGovRate ? ' <span style="font-size:0.7rem; color:var(--charcoal-soft);">(local gov. rate)</span>' : ""}</td>
             <td>${escapeHtml(p.fnbMinimum) || "—"}</td>
             <td>${p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "—"}</td>
@@ -1587,6 +1589,18 @@ function proposalDetailHtml(p) {
   if (p.rateFees && p.rateFees.other) fees.push(p.rateFees.otherText || "Other");
   const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
   const rowLink = (k, v) => v ? `<div><span class="k">${k}:</span> ${linkifyLines(v)}</div>` : "";
+
+  // A venue that declined has no rates or terms: show the full reason and how to reach them, nothing else.
+  if (p.declined) {
+    return `<div class="decline-banner"><strong>This venue declined to submit a proposal.</strong><div style="margin-top:6px;">${escapeHtml(p.declineReason || "No reason given.").replace(/\n/g, "<br>")}</div></div>
+    <div class="proposal-detail-grid">
+      ${row("Address", [p.streetAddress, p.city, p.stateProvince, p.zipCode].filter(Boolean).join(", "))}
+      ${row("Phone", p.phone)}
+      ${rowLink("Website", p.website)}
+      ${row("Contact", [p.contactName, p.contactPhone, p.contactEmail].filter(Boolean).join(" · "))}
+      ${row("Submitted", p.submittedAt ? new Date(p.submittedAt).toLocaleString() : "")}
+    </div>`;
+  }
 
   let fnbBlock = row("F&B guarantee offered", p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "");
   if (p.fnbGuaranteeOffered === "yes") {
@@ -1643,7 +1657,7 @@ function proposalsToCsv(proposals) {
     "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
     "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
     "proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
-    "additionalNotes","termsConfirmed","submittedAt","eventName","groupName"];
+    "additionalNotes","termsConfirmed","submittedAt","eventName","groupName","declined","declineReason"];
   // The room and AV answers are lists of objects, so they're written out
   // as text (e.g. "Breakout Room (2/3); General Session (1/1)") rather than
   // run through the plain-array join below, which would print [object Object].
@@ -1651,7 +1665,7 @@ function proposalsToCsv(proposals) {
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.map(headerFor).join(",")];
   proposals.forEach(p => {
-    const flat = { ...p, localGovRate: p.localGovRate ? "Yes" : "", roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
+    const flat = { ...p, declined: p.declined ? "Yes" : "", localGovRate: p.localGovRate ? "Yes" : "", roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
     lines.push(cols.map(c => escCsv(flat[c])).join(","));
   });
   return lines.join("\r\n");
