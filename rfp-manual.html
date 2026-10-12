@@ -509,7 +509,7 @@ figure { margin:0; }
 <aside class="callout note"><div aria-hidden="true" class="callout-icon">i</div><div class="callout-body"><strong class="callout-label">Note</strong><p>Venues never see the internal report due date, Section Priority, colocation, concessions you held back, the F&amp;B and AV budgets, notes or version history.</p></div></aside>
 <p>If a venue opens the link for an RFP that is not Open, they see: This RFP isn't currently open, or the link is incorrect.</p>
 <h3 id="s5-the-proposal-form">The proposal form</h3>
-<p>Venues reach it from <strong>Submit a Proposal</strong>, or at events.clearhq.org/rfps/short-name/respond. A <strong>View Full RFP</strong> link opens the RFP in a new tab so they can check requirements while they answer. If they try to leave with answers entered, the browser warns them.</p>
+<p>Venues reach it from <strong>Submit a Proposal</strong>, or at events.clearhq.org/rfps/short-name/respond. A <strong>View Full RFP</strong> link opens the RFP in a new tab so they can check requirements while they answer. If they try to leave with answers entered, the browser warns them. Right after the property information, a box titled Unable to submit a proposal? lets a venue tick We will not be sending a proposal for this RFP and say why. When it is ticked, the rest of the form is hidden and no longer required, and the button reads Submit Response.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -596,11 +596,11 @@ figure { margin:0; }
 <li><strong>No edits or withdrawals.</strong> A venue cannot change a submission. If they submit again, you see two proposals from the same property. Treat the latest as current.</li>
 <li><strong>Dates are not enforced.</strong> A proposal can arrive with no dates ticked. Check the Dates proposed line in each response.</li>
 <li><strong>The due date is not enforced.</strong> Venues can submit any time the RFP is Open, even after the proposal due date.</li>
-<li><strong>No alerts.</strong> The venue gets no confirmation email, and you get no email when a proposal arrives. Check the Responses tab or the Admin Dashboard.</li>
+<li><strong>No alerts.</strong> The venue gets no confirmation email, and you get no email when a proposal, or a decline, arrives. Check the Responses tab or the Admin Dashboard.</li>
 </ul>
 <h3 id="s5-after-they-submit">After they submit</h3>
 <p>The venue sees: Thank you! Your proposal has been submitted. The event planner will follow up if your property is selected for further consideration. Proposals will not be reviewed until after the proposal due date, followed by that date.</p>
-<p>They can click <strong>Download PDF of Your Proposal</strong> (a summary of their answers, saved through the browser's print window) or <strong>Submit a Proposal for Another RFP</strong>, which returns them to the list.</p>
+<p>They can click <strong>Download PDF of Your Proposal</strong> (a summary of their answers, saved through the browser's print window) or <strong>Submit a Proposal for Another RFP</strong>, which returns them to the list. A venue that declined sees Your response has been recorded, with a summary of what it wrote, and can download that as a PDF too.</p>
 </section>
 <section class="chapter" id="s6">
 <div class="chapter-head"><span class="badge" aria-hidden="true">6</span><div><div class="kicker">Section 6</div><h2>What to tell venues and colleagues</h2></div></div>
@@ -608,7 +608,7 @@ figure { margin:0; }
 <h3 id="s6-instructions-to-give-venues">Instructions to give venues</h3>
 <ol class="steps">
 <li>Open the RFP at [RFP link] and read it in full. No account is needed.</li>
-<li>Click <strong>Submit a Proposal</strong> and complete the form. Fields marked required must be filled in.</li>
+<li>Click <strong>Submit a Proposal</strong> and complete the form. Fields marked required must be filled in. If your property cannot submit a proposal, complete the property information, tick We will not be sending a proposal for this RFP, and tell us why. You do not need to complete the rest of the form.</li>
 <li>For meeting rooms and AV equipment, enter how many of each you can provide in the Qty Available column.</li>
 <li>Tick the box confirming your pricing and terms stay valid through 30 days after the proposal due date.</li>
 <li>Submit once. A proposal cannot be edited after it is submitted. [Suggested: if you need to correct something, submit again and email clearevents@clearhq.org so we know which one to use.]</li>
@@ -735,6 +735,10 @@ Thank you,
 <td>No, the form cannot be saved partway. Please have your information ready before you begin.</td>
 </tr>
 <tr>
+<td>What if my property is unable to submit a proposal?</td>
+<td>We still appreciate hearing from you. Please complete the property information on the form, tick We will not be sending a proposal for this RFP, and tell us why. Specifics are especially helpful, such as a food and beverage or space minimum, a room rate, or the requirement your property could not meet.</td>
+</tr>
+<tr>
 <td>Are late proposals accepted?</td>
 <td>No, we are unable to accept late proposals. Please submit your proposal by the proposal due date shown on the RFP.</td>
 </tr>
@@ -819,14 +823,14 @@ Thank you,
 <h3 id="s7-the-responses-tab-inside-an-rfp">The Responses tab (inside an RFP)</h3>
 <p>The planner, administrator and NRWC staff (for NRWC RFPs) see this tab. Open an RFP and click <strong>Responses</strong>.</p>
 <ul>
-<li>One row per proposal: City/State, Property, Room Rate, F&amp;B Minimum, F&amp;B Guarantee (Yes or No) and when it was Submitted.</li>
+<li>One row per proposal: City/State, Property, Room Rate, F&amp;B Minimum, F&amp;B Guarantee (Yes or No) and when it was Submitted. A venue that declined has a Declined tag and the start of its reason right in the list. Click the row to read the whole reason and see who to contact. Declines have no rates, so those columns show a dash.</li>
 <li>Click a row to expand every answer the venue gave. Links they entered are clickable.</li>
-<li><strong>Export CSV</strong> downloads that RFP's proposals as a spreadsheet. The room and AV answers are included, written as available over needed.</li>
+<li><strong>Export CSV</strong> downloads that RFP's proposals as a spreadsheet. The room and AV answers are included, written as available over needed. Declines are included too, marked Yes in the declined column with the reason beside it.</li>
 </ul>
 <h3 id="s7-the-admin-dashboard">The Admin Dashboard</h3>
 <p>Open <a href="https://events.clearhq.org/admin-dashboard" rel="noopener" target="_blank">events.clearhq.org/admin-dashboard</a> and stay on <strong>Browse Proposals</strong> to see proposals from every RFP in one table.</p>
 <ul>
-<li><strong>Search</strong> by property name, city or event name. The <strong>Event</strong> dropdown narrows the table to one event. The boxes above the table, Show proposals from RFPs that are, filter by the RFP's status: Draft, Open, Closed and Awarded. Awarded is off by default, so once an RFP is awarded its proposals drop out of the working views. Tick Awarded to bring them back. The number on each box is how many proposals that status holds, and your choice is remembered in this browser. An extra box, RFP deleted, appears only when proposals exist for an RFP that has been deleted.</li>
+<li><strong>Search</strong> by property name, city or event name. The <strong>Event</strong> dropdown narrows the table to one event. The boxes above the table, Show proposals from RFPs that are, filter by the RFP's status: Draft, Open, Closed and Awarded. Awarded is off by default, so once an RFP is awarded its proposals drop out of the working views. Tick Awarded to bring them back. The number on each box is how many proposals that status holds, and your choice is remembered in this browser. An extra box, RFP deleted, appears only when proposals exist for an RFP that has been deleted. When any venue has declined, a Responses dropdown also appears (All responses, Proposals only, Declined only), and declined venues carry a Declined tag.</li>
 <li>Click a column heading to sort by it. Click again to reverse the order. Sorting understands numbers, so $95 comes before $1,200, and blank answers always sort last. Click Columns to add any field as a column, such as Cumulative Attrition % or Commissionable, so you can compare the same answer across every submission. Reset to default columns undoes it.</li>
 <li>Click a row to expand it. The expanded view shows every field in the same order for every proposal, grouped under headings. A field the venue left blank shows a dash, so the same information is always in the same place. It includes the room and AV quantities the venue said it can provide, written as available over needed. For example, Breakout Room (2/3) means two available out of three needed. It also shows the details notes the venue wrote under each table.</li>
 <li><strong>Export CSV</strong> downloads the rows the table currently shows, including the room and AV answers.</li>
@@ -851,7 +855,7 @@ Thank you,
 <h3 id="s8-step-by-step">Step by step</h3>
 <ol class="steps">
 <li>After the proposal due date, open <a href="https://events.clearhq.org/admin-dashboard" rel="noopener" target="_blank">events.clearhq.org/admin-dashboard</a> and click <strong>Evaluate an RFP</strong>.</li>
-<li>Choose the RFP from the dropdown. Only RFPs with at least one proposal are listed, with the proposal count and status. The status boxes at the top of the page decide which RFPs appear, so Awarded RFPs are hidden until you tick Awarded. The Proposals tab opens first and lists every proposal for that RFP. Click a row to read it in full. The Compare tab shows every field for every proposal in one grid, venues across the top, with the differences shaded. Tick Only show rows that differ to see just what separates them, or use Export this grid (CSV).</li>
+<li>Choose the RFP from the dropdown. Only RFPs with at least one proposal are listed, with the proposal count and status. The status boxes at the top of the page decide which RFPs appear, so Awarded RFPs are hidden until you tick Awarded. The Proposals tab opens first and lists every proposal for that RFP. Click a row to read it in full. Venues that declined are listed below in their own section with their reasons, and are never scored, ranked or compared. The Compare tab shows every field for every proposal in one grid, venues across the top, with the differences shaded. Tick Only show rows that differ to see just what separates them, or use Export this grid (CSV).</li>
 <li>On the <strong>Weights</strong> tab, review the starting weights and move any slider (1 is low, 10 is high). Changes save automatically in this browser.</li>
 <li>Still on Weights, scroll to <strong>Location &amp; Area Fit: Option Values</strong>. Set 0 to 10 points for each property type and each area characteristic, based on what matters for this event.</li>
 <li>Open the <strong>Score Proposals</strong> tab. Click each proposal to expand it. For Concessions Quality and CVB Promotions / Incentives, read the venue's text shown above each slider and set a score from 1 to 10. To leave a proposal out, such as a duplicate or a withdrawn one, untick Include on its card.</li>
@@ -1314,6 +1318,10 @@ Thank you,
 <tr>
 <td>Proposal</td>
 <td>One venue's answers to an RFP, submitted through the proposal form</td>
+</tr>
+<tr>
+<td>Decline</td>
+<td>A venue's response saying it will not send a proposal, with its reason. It appears in the dashboards but is never scored</td>
 </tr>
 <tr>
 <td>Draft, Open, Closed, Awarded</td>
