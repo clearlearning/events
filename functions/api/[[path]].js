@@ -328,7 +328,9 @@ export async function onRequest(context) {
 
       // Required-field validation, mirroring what the form enforces
       // client-side — never trust the client alone for this.
-      const requiredFields = [
+      // The property and contact details are needed either way: even a venue
+      // that isn't proposing has to tell us who it is.
+      const propertyFields = [
         ["propertyName", "Property name"],
         ["streetAddress", "Street address"],
         ["city", "City"],
@@ -338,7 +340,51 @@ export async function onRequest(context) {
         ["website", "Website"],
         ["contactName", "Sales contact name"],
         ["contactPhone", "Sales contact phone number"],
-        ["contactEmail", "Sales contact email address"],
+        ["contactEmail", "Sales contact email address"]
+      ];
+
+      // A venue that cannot propose can say so, and why, instead of emailing
+      // the planner. Everything else on the form is optional for a decline, and
+      // anything else in the request is deliberately ignored: a decline never
+      // carries rates or terms that could be mistaken for a proposal.
+      if (body.declined === true) {
+        for (const [key, label] of propertyFields) {
+          if (!body[key] || !String(body[key]).trim()) {
+            return errorResponse(`${label} is required.`, 400);
+          }
+        }
+        const declineReason = String(body.declineReason || "").trim();
+        if (!declineReason) {
+          return errorResponse("Please tell us why your property is unable to submit a proposal.", 400);
+        }
+        const declinedId = generateProposalId();
+        const declinedRecord = {
+          id: declinedId,
+          rfpId,
+          rfpSlug: slug,
+          eventName: rfpRecord.data?.eventName || "",
+          groupName: rfpRecord.data?.groupName || "",
+          acronym: rfpRecord.data?.acronym || "",
+          submittedAt: new Date().toISOString(),
+          declined: true,
+          declineReason: declineReason.slice(0, 5000),
+          propertyName: String(body.propertyName).trim(),
+          streetAddress: body.streetAddress || "",
+          city: body.city || "",
+          stateProvince: body.stateProvince || "",
+          zipCode: body.zipCode || "",
+          phone: body.phone || "",
+          website: body.website || "",
+          contactName: body.contactName || "",
+          contactPhone: body.contactPhone || "",
+          contactEmail: String(body.contactEmail || "").trim()
+        };
+        await env.RFP_DATA.put(`proposal:${rfpId}:${declinedId}`, JSON.stringify(declinedRecord));
+        return jsonResponse(declinedRecord, 201);
+      }
+
+      const requiredFields = [
+        ...propertyFields,
         ["guestRoomRate", "Guest room rate"],
         ["fnbMinimum", "Food & Beverage minimum"],
         ["meetingRoomRentalFee", "Meeting room rental fee"],
