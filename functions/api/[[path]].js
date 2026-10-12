@@ -476,6 +476,43 @@ export async function onRequest(context) {
       return errorResponse("Not authenticated. Access identity header missing.", 401);
     }
 
+    // ---- DELETE /api/proposals/:rfpId/:proposalId ----
+    // Same protection as deleting an RFP: administrators only, enforced
+    // here regardless of what the page shows. A note is left on the RFP
+    // (if it still exists) saying who deleted which proposal and when, so
+    // a deletion is never silent.
+    const proposalDeleteMatch = path.match(/^\/api\/proposals\/([^/]+)\/([^/]+)$/);
+    if (proposalDeleteMatch && method === "DELETE") {
+      if (!identity.isAdmin) {
+        return errorResponse("Only administrators can delete proposals.", 403);
+      }
+      const [, rfpId, proposalId] = proposalDeleteMatch;
+      const key = `proposal:${rfpId}:${proposalId}`;
+      const raw = await env.RFP_DATA.get(key);
+      if (!raw) return errorResponse("Not found", 404);
+      const proposal = JSON.parse(raw);
+      await env.RFP_DATA.delete(key);
+
+      try {
+        const rfpRaw = await env.RFP_DATA.get(`rfp:${rfpId}`);
+        if (rfpRaw) {
+          const rfp = JSON.parse(rfpRaw);
+          const where = [proposal.city, proposal.stateProvince].filter(Boolean).join(", ");
+          rfp.notes = rfp.notes || [];
+          rfp.notes.push({
+            user: identity.name,
+            userEmail: identity.email,
+            timestamp: new Date().toISOString(),
+            comment: `Deleted the proposal from ${proposal.propertyName || "(unnamed property)"}${where ? " (" + where + ")" : ""}, submitted ${(proposal.submittedAt || "").slice(0, 10) || "date unknown"}.`
+          });
+          await env.RFP_DATA.put(`rfp:${rfpId}`, JSON.stringify(rfp));
+        }
+      } catch (e) {
+        console.error("Proposal deleted, but the audit note could not be saved", e);   // never undo the delete over a note
+      }
+      return jsonResponse({ deleted: true });
+    }
+
     // ---- GET /api/proposals[?rfpId=xxx] ----
     // Staff view of submitted proposals — either scoped to one RFP (the
     // "Responses" tab) or across every RFP (the cross-event proposals
