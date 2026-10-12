@@ -27,16 +27,79 @@
   .btn-outline:hover { border-color: var(--burgundy); color: var(--burgundy); }
   #resultsWrap { display: none; }
   table.proposals-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-  table.proposals-table th, table.proposals-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: top; white-space: nowrap; }
+  table.proposals-table th, table.proposals-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
   .table-scroll { overflow-x: auto; }
   table.proposals-table th { color: var(--charcoal-soft); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; cursor: pointer; user-select: none; }
   table.proposals-table th:hover { color: var(--burgundy); }
   .prop-row { cursor: pointer; }
   .prop-row:hover { background: var(--border-soft); }
-  .detail-row td { background: var(--bg); white-space: normal; }
+  .detail-row td, .edetail-row td { background: var(--bg); white-space: normal; }
   .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 0.85rem; }
   .detail-grid .k { color: var(--charcoal-soft); }
   .count-line { font-size: 0.82rem; color: var(--charcoal-soft); margin-bottom: 10px; }
+
+  /* ---- Long answers wrap; they never run off the right side of the page ---- */
+  main { overflow-wrap: break-word; }
+  .detail-grid > div, .source-text, .excl-note, .cmp-table td, .cmp-table th { overflow-wrap: anywhere; min-width: 0; }
+  table.proposals-table td, table.rank-table td { overflow-wrap: break-word; }   /* ordinary words stay whole; only a string too long for its column is broken */
+  .detail-grid > div { min-width: 0; }
+  .cell { max-width: 24em; overflow-wrap: break-word; }   /* caps how wide one long answer can make a column */
+  table.proposals-table th { overflow-wrap: normal; word-break: normal; }   /* headings keep whole words; the table scrolls sideways if there are many columns */
+  .sort-arrow { color: var(--burgundy); margin-left: 4px; }
+
+  /* ---- RFP status filter ---- */
+  .status-bar { display: none; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 18px; }
+  .status-bar-label { font-size: 0.8rem; font-weight: 700; color: var(--charcoal-soft); margin-right: 4px; }
+  .chip-toggle { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 0.82rem; font-weight: 600; color: var(--charcoal-soft); cursor: pointer; }
+  .chip-toggle input { accent-color: var(--burgundy); }
+  .chip-toggle.on { border-color: var(--burgundy); color: var(--burgundy); background: #FBF4F6; }
+  .chip-count { font-weight: 700; opacity: 0.7; }
+
+  /* ---- Column picker (Browse) ---- */
+  .column-picker { display: none; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 18px; margin-bottom: 16px; }
+  .cp-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.85rem; color: var(--charcoal-soft); }
+  .cp-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px 22px; }
+  .cp-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--burgundy); margin-bottom: 4px; }
+  .column-picker label { display: flex; gap: 8px; align-items: flex-start; font-size: 0.84rem; margin: 3px 0; cursor: pointer; }
+  .column-picker input { accent-color: var(--burgundy); margin-top: 3px; }
+
+  /* ---- Full detail: every field, every time ---- */
+  .fd-group { margin-bottom: 16px; }
+  .fd-group h4 { margin: 0 0 8px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--burgundy); border-bottom: 1px solid var(--border-soft); padding-bottom: 4px; }
+  .fd-row.fd-long { grid-column: span 2; }
+  .fd-row .empty { color: #B4AEA6; }
+  .detail-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-soft); }
+  .btn-delete-proposal { background: var(--gold); color: var(--burgundy-dark); border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
+  .btn-delete-proposal:hover { filter: brightness(0.95); }
+  .eval-list-tools { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; font-size: 0.85rem; color: var(--charcoal-soft); flex-wrap: wrap; }
+  .eprop-row { cursor: pointer; } .eprop-row:hover { background: var(--border-soft); }
+
+  /* ---- Delete confirmation (same pattern as deleting an RFP in the staff form) ---- */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(20,10,10,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+  .modal-card { background: #fff; border-radius: var(--radius); padding: 24px; max-width: 440px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+  .modal-card h3 { margin: 0 0 8px; color: var(--burgundy); }
+  .modal-card p { font-size: 0.88rem; color: var(--charcoal-soft); margin: 0 0 6px; }
+  .modal-card input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; margin-top: 12px; font-family: inherit; font-size: 0.9rem; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .btn-outline-modal { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 9px 16px; font-size: 0.88rem; cursor: pointer; }
+  .btn-confirm-delete { background: #B3261E; color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+  .btn-confirm-delete:disabled { background: #E3B4B0; cursor: not-allowed; }
+
+  /* ---- Compare: every field, venues side by side ---- */
+  .cmp-toolbar { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin-bottom: 12px; font-size: 0.85rem; }
+  .cmp-toolbar label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .cmp-toolbar input[type=checkbox] { accent-color: var(--burgundy); }
+  .cmp-scroll { overflow: auto; max-height: 78vh; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); }
+  table.cmp-table { border-collapse: separate; border-spacing: 0; font-size: 0.82rem; min-width: 100%; }
+  .cmp-table th, .cmp-table td { padding: 8px 12px; border-bottom: 1px solid var(--border-soft); border-right: 1px solid var(--border-soft); vertical-align: top; text-align: left; min-width: 170px; max-width: 320px; white-space: pre-wrap; }
+  .cmp-table thead th { position: sticky; top: 0; z-index: 3; background: var(--burgundy); color: #fff; font-size: 0.8rem; }
+  .cmp-table .cmp-label { position: sticky; left: 0; z-index: 2; background: #FAF8F5; font-weight: 600; min-width: 190px; max-width: 220px; }
+  .cmp-table thead .cmp-label { z-index: 4; background: var(--burgundy-dark); color: #fff; }
+  .cmp-table tr.cmp-group th { position: sticky; left: 0; background: var(--border-soft); color: var(--burgundy); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; max-width: none; }
+  .cmp-table td.diff { background: #FFF8E1; }
+  .cmp-table td.short { color: var(--red); font-weight: 600; }
+  .cmp-table .empty { color: #B4AEA6; }
+  .cmp-table .vloc { font-weight: 400; font-size: 0.72rem; opacity: 0.85; }
 
   /* ---- Top-level view tabs (Browse / Evaluate) ---- */
   .view-tabs { display: flex; gap: 6px; background: var(--border-soft); border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; }
@@ -104,6 +167,9 @@
   /* ---------- Report: screen preview, PDF (print) and HTML export ---------- */
   .report-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .report-toolbar .hint { font-size: 0.78rem; color: var(--charcoal-soft); flex: 1 1 280px; line-height: 1.5; }
+  .report-options { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 10px 22px; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--border-soft); font-size: 0.85rem; }
+  .report-options label { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--charcoal-soft); }
+  .report-options select { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.85rem; background: #fff; color: var(--charcoal); }
   .report-paper { background: #fff; max-width: 8.5in; margin: 0 auto 24px; padding: 0.6in 0.7in; border: 1px solid var(--border); box-shadow: var(--shadow); color: var(--charcoal); font-size: 0.9rem; line-height: 1.55; }
   .rp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 3px solid var(--burgundy); }
   .rp-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--burgundy); }
@@ -136,9 +202,16 @@
   tr.rp-first .rp-rank { background: var(--gold); color: var(--burgundy-dark); }
   .rp-bar { display: inline-block; vertical-align: middle; width: 110px; height: 8px; border-radius: 4px; background: var(--border-soft); margin-right: 8px; overflow: hidden; }
   .rp-bar > span { display: block; height: 100%; border-radius: 4px; }
+  .rp-table-scroll { overflow-x: auto; }
+  table.rp-table-wide { font-size: 0.78rem; }
+  table.rp-table-wide th, table.rp-table-wide td { padding: 6px 7px; }
+  table.rp-table-wide thead th { font-size: 0.7rem; vertical-align: bottom; }
+  .rp-pick { text-align: center; }
+  .rp-pick input { accent-color: var(--burgundy); width: 16px; height: 16px; }
   .rp-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--charcoal-soft); }
 
   @page { size: Letter; margin: 0.6in; }
+  @page wide { size: Letter landscape; margin: 0.6in; }
   @media print {
     html, body { background: #fff !important; }
     body > header, .view-tabs, .picker-card, .eval-tabs, .toolbar, .no-print { display: none !important; }
@@ -152,6 +225,17 @@
     .rp-section h2 { break-after: avoid; }
     table.rp-table thead { display: table-header-group; }
     table.rp-table th, table.rp-table td { padding: 5px 8px; }
+    /* With many venues the comparison turns on its side (venues down, criteria across) and gets a landscape page */
+    .rp-wide-page { page: wide; break-before: page; }
+    .rp-table-scroll { overflow: visible; }
+    /* Fit the page exactly: fixed layout, narrow rank/score columns, long words allowed to break, so no criterion runs off the edge */
+    table.rp-table-wide { font-size: 7.2pt; table-layout: fixed; width: 100%; }
+    table.rp-table-wide th, table.rp-table-wide td { padding: 3pt 3pt; overflow-wrap: anywhere; }
+    table.rp-table-wide thead th { font-size: 6.6pt; hyphens: auto; overflow-wrap: break-word; }   /* hyphenate long headings properly instead of cutting them mid-word */
+    table.rp-table-wide th:nth-child(1), table.rp-table-wide td:nth-child(1) { width: 3.5%; }
+    table.rp-table-wide th:nth-child(2), table.rp-table-wide td:nth-child(2) { width: 12%; }
+    table.rp-table-wide th:nth-child(3), table.rp-table-wide td:nth-child(3) { width: 5%; }
+    .rp-pick { display: none !important; }
   }
 </style>
 </head>
@@ -170,26 +254,20 @@
       <button class="view-tab-btn" data-view="evaluate">Evaluate an RFP</button>
     </div>
 
+    <div class="status-bar no-print" id="statusBar"></div>
+
     <div class="view-panel active" id="view-browse">
       <div class="toolbar">
         <input type="search" id="searchBox" placeholder="Search by property name, city, or event...">
         <select id="eventFilter"><option value="">All events</option></select>
+        <button type="button" class="btn-outline" id="columnsBtn">Columns</button>
         <button type="button" class="btn-outline" id="exportBtn">Export CSV</button>
       </div>
+      <div class="column-picker" id="columnPicker"></div>
       <div class="count-line" id="countLine"></div>
       <div class="table-scroll">
       <table class="proposals-table">
-        <thead>
-          <tr>
-            <th data-sort="city">City/State</th>
-            <th data-sort="propertyName">Property</th>
-            <th data-sort="eventName">Event</th>
-            <th data-sort="guestRoomRate">Room Rate</th>
-            <th data-sort="fnbMinimum">F&amp;B Minimum</th>
-            <th data-sort="fnbGuaranteeOffered">F&amp;B Guarantee</th>
-            <th data-sort="submittedAt">Submitted</th>
-          </tr>
-        </thead>
+        <thead><tr id="tableHead"></tr></thead>
         <tbody id="tableBody"></tbody>
       </table>
       </div>
@@ -205,12 +283,36 @@
 
       <div id="evalWorkArea" style="display:none;">
         <div class="eval-tabs no-print">
-          <button class="eval-tab-btn active" data-tab="weights">Weights</button>
+          <button class="eval-tab-btn active" data-tab="proposals">Proposals</button>
+          <button class="eval-tab-btn" data-tab="compare">Compare</button>
+          <button class="eval-tab-btn" data-tab="weights">Weights</button>
           <button class="eval-tab-btn" data-tab="score">Score Proposals</button>
           <button class="eval-tab-btn" data-tab="report">Report</button>
         </div>
 
-        <div class="eval-tab-panel active" id="eval-tab-weights">
+        <div class="eval-tab-panel active" id="eval-tab-proposals">
+          <div class="section">
+            <h2>Proposals for this RFP</h2>
+            <div class="sub">Every proposal submitted for this RFP. Click a row to read it in full: every field, including the ones left blank.</div>
+          </div>
+          <div id="evalProposalsWrap"></div>
+        </div>
+
+        <div class="eval-tab-panel" id="eval-tab-compare">
+          <div class="section">
+            <h2>Compare proposals side by side</h2>
+            <div class="sub">Every field for every proposal, in one grid. Scroll sideways to see more venues; the field names stay in view. Shaded cells are where the proposals differ.</div>
+          </div>
+          <div class="cmp-toolbar no-print">
+            <label><input type="checkbox" id="cmpHighlight" checked> Highlight differences</label>
+            <label><input type="checkbox" id="cmpOnlyDiff"> Only show rows that differ</label>
+            <label><input type="checkbox" id="cmpIncludeExcluded" checked> Include proposals left out of the evaluation</label>
+            <button type="button" class="btn-outline" id="cmpExportBtn">Export this grid (CSV)</button>
+          </div>
+          <div id="compareWrap"></div>
+        </div>
+
+        <div class="eval-tab-panel" id="eval-tab-weights">
           <div class="section">
             <h2>Criteria &amp; Weights</h2>
             <div class="sub" id="weightsSub">Adjust how much each criterion matters for this RFP. Numeric criteria (rate, fees, space) are scored relative to the other proposals submitted for this RFP — not a fixed threshold — so the same rubric works fairly whether rates run $150 or $400. Starting weights come from this RFP's own Section Priority ranking; adjust as needed — changes are saved per RFP.</div>
@@ -246,6 +348,14 @@
             <button type="button" class="btn-primary" id="printReportBtn">Download PDF</button>
             <button type="button" class="btn-outline" id="exportHtmlBtn">Export as HTML file</button>
             <div class="hint">In the print window, set the destination to <strong>Save as PDF</strong>. For the cleanest result, switch off <strong>Headers and footers</strong>.</div>
+            <div class="report-options">
+              <label>Venues in the comparison table <select id="cmpCount"></select></label>
+              <label>Table layout <select id="cmpLayout">
+                <option value="auto">Automatic (venues down the side when there are more than 3)</option>
+                <option value="across">Venues across the top</option>
+                <option value="down">Venues down the side</option>
+              </select></label>
+            </div>
           </div>
           <div id="reportContent"></div>
         </div>
@@ -254,17 +364,173 @@
   </div>
 </main>
 
+<div class="modal-overlay" id="delPropModal">
+  <div class="modal-card">
+    <h3>Delete this proposal?</h3>
+    <p id="delPropWho"></p>
+    <p>This permanently deletes the proposal and cannot be undone.</p>
+    <p>Type <strong>delete</strong> below to confirm.</p>
+    <input type="text" id="delPropInput" autocomplete="off" placeholder="Type delete to confirm">
+    <div class="modal-actions">
+      <button type="button" class="btn-outline-modal" id="delPropCancel">Cancel</button>
+      <button type="button" class="btn-confirm-delete" id="delPropConfirm" disabled>Delete</button>
+    </div>
+  </div>
+</div>
+
 <script>
 function escapeHtml(str) { return String(str == null ? "" : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmtDate(iso) { if (!iso) return ""; return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
 
+// ================================================================
+//  SHARED STATE: who is signed in, each RFP's status, the proposals
+// ================================================================
 let allProposals = [];
 let sortKey = "submittedAt";
 let sortDir = -1;
+let identity = { isAdmin: false };
+let rfpById = {};
+let statusKnown = false;     // false when the RFP list couldn't be loaded: then nothing is filtered out
+
+// ---------- Which RFPs to show (by RFP status) ----------
+// Awarded RFPs are hidden by default, so once an RFP is awarded its proposals
+// drop out of the working views. Tick "Awarded" to bring them back.
+const STATUS_LABELS = { draft: "Draft", open: "Open", closed: "Closed", awarded: "Awarded", deleted: "RFP deleted" };
+const STATUS_ORDER = ["draft", "open", "closed", "awarded", "deleted"];
+const STATUS_DEFAULT = { draft: true, open: true, closed: true, awarded: false, deleted: false };
+const STATUS_KEY = "clear_admin_status_filter_v1";
+let statusOn = { ...STATUS_DEFAULT };
+function loadStatusFilter() {
+  try { const s = JSON.parse(localStorage.getItem(STATUS_KEY) || "null"); if (s && typeof s === "object") statusOn = { ...STATUS_DEFAULT, ...s }; } catch (e) {}
+}
+function saveStatusFilter() { try { localStorage.setItem(STATUS_KEY, JSON.stringify(statusOn)); } catch (e) {} }
+function statusOf(p) {
+  if (!statusKnown) return "unknown";
+  const r = rfpById[p.rfpId];
+  if (!r) return "deleted";                       // the RFP itself no longer exists
+  return STATUS_ORDER.includes(r.status) ? r.status : "unknown";
+}
+function visibleProposals() {
+  return allProposals.filter(p => { const s = statusOf(p); return s === "unknown" ? true : !!statusOn[s]; });
+}
+function renderStatusBar() {
+  const bar = document.getElementById("statusBar");
+  if (!statusKnown) { bar.style.display = "none"; return; }
+  const counts = {}; allProposals.forEach(p => { const s = statusOf(p); counts[s] = (counts[s] || 0) + 1; });
+  const shown = STATUS_ORDER.filter(s => s !== "deleted" || counts.deleted);
+  bar.style.display = "flex";
+  bar.innerHTML = `<span class="status-bar-label">Show proposals from RFPs that are:</span>` + shown.map(s =>
+    `<label class="chip-toggle ${statusOn[s] ? "on" : ""}"><input type="checkbox" data-status="${s}" ${statusOn[s] ? "checked" : ""}> ${STATUS_LABELS[s]} <span class="chip-count">${counts[s] || 0}</span></label>`).join("");
+  bar.querySelectorAll("input[data-status]").forEach(cb => cb.addEventListener("change", () => {
+    statusOn[cb.dataset.status] = cb.checked; saveStatusFilter(); onFilterChanged();
+  }));
+}
+function onFilterChanged() { renderStatusBar(); populateEventFilter(); render(); populateRfpSelect(); }
+
+// ================================================================
+//  EVERY PROPOSAL FIELD, defined once. The Browse columns, the full
+//  detail view, the Compare grid and the field picker all read this
+//  list, so a field is always labelled and ordered the same way, and a
+//  field a venue left blank still has a place (shown as a dash).
+// ================================================================
+const FIELD_GROUPS = ["Property & contact", "Dates", "Guest room rate", "Financial terms", "F&B guarantee", "Concessions", "Meeting space", "Exhibits", "Property type & area", "Links & other", "Submission"];
+const yn = v => v === "yes" ? "Yes" : v === "no" ? "No" : "";
+const dollars = v => { v = String(v == null ? "" : v).trim(); return !v ? "" : /^\s*\$/.test(v) ? v : "$" + v; };
+const FIELDS = [
+  { key: "location", label: "City / State", col: "City/State", group: "Property & contact", kind: "text", get: p => [p.city, p.stateProvince].filter(Boolean).join(", ") },
+  { key: "propertyName", label: "Property", col: "Property", group: "Property & contact", kind: "text", get: p => p.propertyName },
+  { key: "address", label: "Address", group: "Property & contact", kind: "text", get: p => [p.streetAddress, p.city, p.stateProvince, p.zipCode].filter(Boolean).join(", ") },
+  { key: "phone", label: "Phone", group: "Property & contact", kind: "text", get: p => p.phone },
+  { key: "website", label: "Website", group: "Property & contact", kind: "link", get: p => p.website },
+  { key: "contactName", label: "Contact name", group: "Property & contact", kind: "text", get: p => p.contactName },
+  { key: "contactPhone", label: "Contact phone", group: "Property & contact", kind: "text", get: p => p.contactPhone },
+  { key: "contactEmail", label: "Contact email", group: "Property & contact", kind: "text", get: p => p.contactEmail },
+
+  { key: "datesProposed", label: "Dates proposed", group: "Dates", kind: "text", get: p => (p.proposedDateIndexes || []).map(idx => {
+      // Look up by array position, not by rank: ranks can tie, positions can't.
+      const d = (p.rfpDatesSnapshot || [])[idx]; return d ? `${fmtDate(d.start)}\u2013${fmtDate(d.end)}` : ""; }).filter(Boolean).join(", ") },
+
+  { key: "guestRoomRate", label: "Guest room rate", col: "Room Rate", group: "Guest room rate", kind: "money", get: p => p.guestRoomRate },
+  { key: "rateType", label: "Rate type", group: "Guest room rate", kind: "text", get: p => p.localGovRate ? "Local government rate" : "" },
+  { key: "rateFees", label: "Rate fees included", group: "Guest room rate", kind: "text", get: p => {
+      const f = ["taxes", "resortFee", "destinationFee"].filter(k => p.rateFees && p.rateFees[k]).map(k => ({ taxes: "Taxes", resortFee: "Resort fee", destinationFee: "Destination fee" }[k]));
+      if (p.rateFees && p.rateFees.other) f.push(p.rateFees.otherText || "Other"); return f.join(", "); } },
+  { key: "commissionable", label: "Commissionable", group: "Guest room rate", kind: "yesno", get: p => yn(p.commissionable) },
+  { key: "commissionPercent", label: "Commission %", group: "Guest room rate", kind: "percent", get: p => p.commissionPercent },
+
+  { key: "fnbMinimum", label: "F&B minimum", col: "F&B Minimum", group: "Financial terms", kind: "money", get: p => p.fnbMinimum },
+  { key: "meetingRoomRentalFee", label: "Meeting room rental fee", group: "Financial terms", kind: "money", get: p => p.meetingRoomRentalFee },
+  { key: "cumulativeAttritionPercent", label: "Cumulative attrition %", group: "Financial terms", kind: "percent", get: p => p.cumulativeAttritionPercent },
+
+  { key: "fnbGuaranteeOffered", label: "F&B guarantee offered", col: "F&B Guarantee", group: "F&B guarantee", kind: "yesno", get: p => yn(p.fnbGuaranteeOffered) },
+  { key: "fnbGuaranteeAttendeeCount", label: "Guarantee: attendee count", group: "F&B guarantee", kind: "number", get: p => p.fnbGuaranteeAttendeeCount },
+  { key: "fnbGuaranteeDays", label: "Guarantee: number of days", group: "F&B guarantee", kind: "number", get: p => p.fnbGuaranteeDays },
+  { key: "fnbGuaranteeAmount", label: "Guarantee: total amount", group: "F&B guarantee", kind: "money", get: p => dollars(p.fnbGuaranteeAmount) },
+  { key: "fnbGuaranteeInclusive", label: "Guarantee amount is", group: "F&B guarantee", kind: "text", get: p => p.fnbGuaranteeInclusive === "inclusive" ? "Inclusive of taxes and service charges" : p.fnbGuaranteeInclusive === "exclusive" ? "Exclusive of taxes and service charges" : "" },
+  { key: "fnbGuaranteeTaxRate", label: "Guarantee: tax rate(s)", group: "F&B guarantee", kind: "text", get: p => p.fnbGuaranteeTaxRate },
+  { key: "fnbGuaranteeServiceChargeRate", label: "Guarantee: service charge rate(s)", group: "F&B guarantee", kind: "text", get: p => p.fnbGuaranteeServiceChargeRate },
+  { key: "fnbGuaranteeOtherFees", label: "Guarantee: other mandatory fees", group: "F&B guarantee", kind: "long", get: p => p.fnbGuaranteeOtherFees },
+
+  { key: "concessions", label: "Concessions", group: "Concessions", kind: "long", get: p => p.concessions },
+
+  // The two "match" summaries are for reading one proposal; the Compare grid breaks them into one row per room / AV item instead.
+  { key: "roomMatch", label: "Room match (available/needed)", group: "Meeting space", kind: "text", noCompare: true, get: p => roomMatchText(p) },
+  { key: "roomMatchNotes", label: "Room match notes", group: "Meeting space", kind: "long", get: p => p.roomMatchNotes },
+  { key: "avMatch", label: "AV match (available/needed)", group: "Meeting space", kind: "text", noCompare: true, get: p => avMatchText(p) },
+  { key: "avMatchNotes", label: "AV match notes", group: "Meeting space", kind: "long", get: p => p.avMatchNotes },
+  { key: "meetingSpaceOneFloor", label: "Meeting space all on one floor", group: "Meeting space", kind: "yesno", get: p => yn(p.meetingSpaceOneFloor) },
+  { key: "meetingSpaceFloorsExplain", label: "Floors explanation", group: "Meeting space", kind: "long", get: p => p.meetingSpaceFloorsExplain },
+
+  { key: "exhibitsLocation", label: "Exhibits location", group: "Exhibits", kind: "text", get: p => [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" \u2014 ") },
+
+  { key: "propertyType", label: "Property type", group: "Property type & area", kind: "text", get: p => p.propertyType === "Other" ? p.propertyTypeOtherText : p.propertyType },
+  { key: "areaCharacteristics", label: "Area characteristics", group: "Property type & area", kind: "text", get: p => (p.areaCharacteristics || []).map(c => c === "Other" ? (p.areaCharacteristicsOtherText || "Other") : c).join(", ") },
+  { key: "walkabilityDescription", label: "Walkability", group: "Property type & area", kind: "long", get: p => p.walkabilityDescription },
+
+  { key: "proposalDocumentLink", label: "Proposal document", group: "Links & other", kind: "link", get: p => p.proposalDocumentLink },
+  { key: "floorPlanFnbAvLinks", label: "Floor plan / F&B / AV links", group: "Links & other", kind: "link", get: p => p.floorPlanFnbAvLinks },
+  { key: "cvbPromotions", label: "CVB promotions", group: "Links & other", kind: "long", get: p => p.cvbPromotions },
+  { key: "siteInspectionSupport", label: "Site inspection support", group: "Links & other", kind: "long", get: p => p.siteInspectionSupport },
+  { key: "additionalNotes", label: "Additional notes", group: "Links & other", kind: "long", get: p => p.additionalNotes },
+  { key: "termsConfirmed", label: "Terms confirmed (30-day validity)", group: "Links & other", kind: "yesno", get: p => p.termsConfirmed ? "Yes" : "No" },
+
+  { key: "submittedAt", label: "Submitted", col: "Submitted", group: "Submission", kind: "date", get: p => p.submittedAt ? fmtDate(String(p.submittedAt).slice(0, 10)) : "" },
+  { key: "eventName", label: "Event", col: "Event", group: "Submission", kind: "text", noCompare: true, get: p => p.eventName },
+  { key: "groupName", label: "Group", group: "Submission", kind: "text", noCompare: true, get: p => p.groupName },
+  { key: "rfpStatus", label: "RFP status", group: "Submission", kind: "text", noCompare: true, get: p => { const s = statusOf(p); return STATUS_LABELS[s] || ""; } }
+];
+const FIELD_BY_KEY = Object.fromEntries(FIELDS.map(f => [f.key, f]));
+function fieldText(p, f) { const v = f.get(p); return v == null ? "" : String(v).trim(); }
+function fieldSortValue(p, f) {
+  if (f.key === "submittedAt") return new Date(p.submittedAt || 0).getTime();
+  const t = fieldText(p, f);
+  if (f.kind === "money" || f.kind === "number" || f.kind === "percent") { const n = parseFirstNumber(t); return n == null ? null : n; }
+  if (f.kind === "yesno") return t === "Yes" ? 1 : t === "No" ? 0 : null;
+  return t ? t.toLowerCase() : null;
+}
+
+// ================================================================
+//  BROWSE PROPOSALS
+// ================================================================
+const DEFAULT_COLUMNS = ["location", "propertyName", "eventName", "guestRoomRate", "fnbMinimum", "fnbGuaranteeOffered", "submittedAt"];
+const COL_KEY = "clear_admin_columns_v1";
+let columns = DEFAULT_COLUMNS.slice();
+function loadColumns() {
+  try {
+    const c = JSON.parse(localStorage.getItem(COL_KEY) || "null");
+    if (Array.isArray(c)) { const ok = c.filter(k => FIELD_BY_KEY[k]); if (ok.length) columns = ok.includes("propertyName") ? ok : ["propertyName", ...ok]; }
+  } catch (e) {}
+}
+function saveColumns() { try { localStorage.setItem(COL_KEY, JSON.stringify(columns)); } catch (e) {} }
 
 async function init() {
+  loadStatusFilter(); loadColumns();
   try {
-    const res = await fetch("/api/proposals", { credentials: "include" });
+    const [res, whoRes, rfpRes] = await Promise.all([
+      fetch("/api/proposals", { credentials: "include" }),
+      fetch("/api/whoami", { credentials: "include" }).catch(() => null),
+      fetch("/api/rfps", { credentials: "include" }).catch(() => null)
+    ]);
     if (res.status === 403 || res.status === 401) {
       document.getElementById("loadingState").style.display = "none";
       document.getElementById("deniedState").style.display = "block";
@@ -272,10 +538,16 @@ async function init() {
     }
     if (!res.ok) throw new Error("failed");
     allProposals = await res.json();
+    if (whoRes && whoRes.ok) { try { identity = await whoRes.json(); } catch (e) {} }
+    if (rfpRes && rfpRes.ok) {
+      try { const list = await rfpRes.json(); rfpById = Object.fromEntries(list.map(r => [r.id, r])); statusKnown = true; } catch (e) {}
+    }
     document.getElementById("loadingState").style.display = "none";
     if (!allProposals.length) { document.getElementById("emptyState").style.display = "block"; return; }
+    renderStatusBar();
     populateEventFilter();
     populateRfpSelect();
+    renderColumnPicker();
     document.getElementById("resultsWrap").style.display = "block";
     render();
   } catch (e) {
@@ -286,27 +558,28 @@ async function init() {
 }
 
 function populateEventFilter() {
-  const events = [...new Set(allProposals.map(p => p.eventName).filter(Boolean))].sort();
-  const sel = document.getElementById("eventFilter");
-  events.forEach(ev => {
-    const opt = document.createElement("option");
-    opt.value = ev; opt.textContent = ev;
-    sel.appendChild(opt);
-  });
+  const sel = document.getElementById("eventFilter"); const prev = sel.value;
+  const events = [...new Set(visibleProposals().map(p => p.eventName).filter(Boolean))].sort();
+  sel.innerHTML = `<option value="">All events</option>` + events.map(ev => `<option value="${escapeHtml(ev)}">${escapeHtml(ev)}</option>`).join("");
+  sel.value = events.includes(prev) ? prev : "";
 }
 
 function filteredSorted() {
   const q = document.getElementById("searchBox").value.trim().toLowerCase();
   const eventFilter = document.getElementById("eventFilter").value;
-  let rows = allProposals.filter(p => {
+  const rows = visibleProposals().filter(p => {
     if (eventFilter && p.eventName !== eventFilter) return false;
     if (!q) return true;
     const haystack = [p.propertyName, p.city, p.stateProvince, p.eventName, p.groupName].join(" ").toLowerCase();
     return haystack.includes(q);
   });
+  const f = FIELD_BY_KEY[sortKey] || FIELD_BY_KEY.submittedAt;
   rows.sort((a, b) => {
-    let av = a[sortKey] || "", bv = b[sortKey] || "";
-    if (sortKey === "submittedAt") { av = new Date(av).getTime(); bv = new Date(bv).getTime(); }
+    const av = fieldSortValue(a, f), bv = fieldSortValue(b, f);
+    const ae = av === null || av === "", be = bv === null || bv === "";
+    if (ae && be) return 0;
+    if (ae) return 1;                               // blanks sort last in either direction
+    if (be) return -1;
     if (av < bv) return -1 * sortDir;
     if (av > bv) return 1 * sortDir;
     return 0;
@@ -314,21 +587,31 @@ function filteredSorted() {
   return rows;
 }
 
+function cellHtml(p, f) {
+  const t = fieldText(p, f);
+  if (f.key === "eventName") return `<div class="cell">${escapeHtml(p.eventName)}<div style="color:var(--charcoal-soft); font-size:0.75rem;">${escapeHtml(p.groupName)}</div></div>`;
+  if (f.kind === "link") return `<div class="cell">${t ? linkifyLines(t) : "\u2014"}</div>`;
+  let h = escapeHtml(t).replace(/\n/g, "<br>") || "\u2014";
+  if (f.key === "guestRoomRate" && p.localGovRate) h += ' <span style="font-size:0.7rem; color:var(--charcoal-soft);">(local gov. rate)</span>';
+  return `<div class="cell">${h}</div>`;
+}
+function renderHead() {
+  document.getElementById("tableHead").innerHTML = columns.map(k => {
+    const f = FIELD_BY_KEY[k];
+    const arrow = sortKey === k ? `<span class="sort-arrow">${sortDir === 1 ? "\u25B2" : "\u25BC"}</span>` : "";
+    return `<th data-sort="${k}">${escapeHtml(f.col || f.label)}${arrow}</th>`;
+  }).join("");
+}
 function render() {
   const rows = filteredSorted();
-  document.getElementById("countLine").textContent = `${rows.length} proposal${rows.length === 1 ? "" : "s"}`;
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = rows.map((p, i) => `
-    <tr class="prop-row" onclick="toggleDetail(${i})">
-      <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", ")) || "—"}</td>
-      <td>${escapeHtml(p.propertyName)}</td>
-      <td>${escapeHtml(p.eventName)}<div style="color:var(--charcoal-soft); font-size:0.75rem;">${escapeHtml(p.groupName)}</div></td>
-      <td>${escapeHtml(p.guestRoomRate) || "—"}${p.localGovRate ? ' <span style="font-size:0.7rem; color:var(--charcoal-soft);">(local gov. rate)</span>' : ""}</td>
-      <td>${escapeHtml(p.fnbMinimum) || "—"}</td>
-      <td>${p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "—"}</td>
-      <td>${fmtDate(p.submittedAt.slice(0,10))}</td>
-    </tr>
-    <tr class="detail-row" id="detail${i}" style="display:none;"><td colspan="7">${detailHtml(p)}</td></tr>
+  const hidden = allProposals.length - visibleProposals().length;
+  document.getElementById("countLine").textContent = `${rows.length} proposal${rows.length === 1 ? "" : "s"}` +
+    (hidden > 0 ? ` (${hidden} more hidden by the RFP status filter above)` : "");
+  renderHead();
+  const cols = columns.map(k => FIELD_BY_KEY[k]);
+  document.getElementById("tableBody").innerHTML = rows.map((p, i) => `
+    <tr class="prop-row" onclick="toggleDetail(${i})">${cols.map(f => `<td>${cellHtml(p, f)}</td>`).join("")}</tr>
+    <tr class="detail-row" id="detail${i}" style="display:none;"><td colspan="${cols.length}">${fullDetailHtml(p)}</td></tr>
   `).join("");
   window._sortedProposals = rows;
 }
@@ -349,76 +632,115 @@ function linkifyLines(text) {
   }).filter(Boolean).join("<br>");
 }
 
-function detailHtml(p) {
-  const fees = ["taxes","resortFee","destinationFee"].filter(k => p.rateFees && p.rateFees[k]).map(k => ({taxes:"Taxes",resortFee:"Resort Fee",destinationFee:"Destination Fee"}[k]));
-  if (p.rateFees && p.rateFees.other) fees.push(p.rateFees.otherText || "Other");
-  // Look up by array position, not by rank — ranks can tie, positions can't.
-  const dateLabels = (p.proposedDateIndexes || []).map(idx => {
-    const d = (p.rfpDatesSnapshot || [])[idx];
-    return d ? `${fmtDate(d.start)}–${fmtDate(d.end)}` : "";
-  }).filter(Boolean).join(", ") || "—";
-  const row = (k, v) => v ? `<div><span class="k">${k}:</span> ${escapeHtml(v)}</div>` : "";
-  const rowLink = (k, v) => v ? `<div><span class="k">${k}:</span> ${linkifyLines(v)}</div>` : "";
-
-  let fnbBlock = row("F&B guarantee offered", p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "");
-  if (p.fnbGuaranteeOffered === "yes") {
-    fnbBlock += row("Attendees / Days", `${p.fnbGuaranteeAttendeeCount || "?"} attendees over ${p.fnbGuaranteeDays || "?"} days`);
-    fnbBlock += row("Total proposed amount", p.fnbGuaranteeAmount ? `$${p.fnbGuaranteeAmount}` : "");
-    fnbBlock += row("Amount is", p.fnbGuaranteeInclusive === "inclusive" ? "Inclusive of taxes and service charges" : p.fnbGuaranteeInclusive === "exclusive" ? "Exclusive of taxes and service charges" : "");
-    if (p.fnbGuaranteeInclusive === "exclusive") {
-      fnbBlock += row("Tax rate(s)", p.fnbGuaranteeTaxRate);
-      fnbBlock += row("Service charge rate(s)", p.fnbGuaranteeServiceChargeRate);
-      fnbBlock += row("Other mandatory F&B fees", p.fnbGuaranteeOtherFees);
-    }
-  }
-  const areaChars = (p.areaCharacteristics || []).map(c => c === "Other" ? (p.areaCharacteristicsOtherText || "Other") : c).join(", ");
-
-  return `<div class="detail-grid">
-    ${row("Address", [p.streetAddress, p.city, p.stateProvince, p.zipCode].filter(Boolean).join(", "))}
-    ${row("Phone", p.phone)}
-    ${rowLink("Website", p.website)}
-    ${row("Contact", [p.contactName, p.contactPhone, p.contactEmail].filter(Boolean).join(" · "))}
-    ${row("Dates proposed", dateLabels)}
-    ${row("Rate type", p.localGovRate ? "Local government rate" : "")}
-    ${row("Commissionable", p.commissionable === "yes" ? "Yes" + (p.commissionPercent ? ` (${escapeHtml(p.commissionPercent)})` : "") : p.commissionable === "no" ? "No" : "")}
-    ${row("Rate fees included", fees.join(", "))}
-    ${row("Meeting Room Rental Fee", p.meetingRoomRentalFee)}
-    ${row("Cumulative Attrition %", p.cumulativeAttritionPercent)}
-    ${fnbBlock}
-    ${row("Concessions", p.concessions)}
-    ${row("Room match", (p.roomMatchProvided || []).map(r => `${r.roomLabel || r.floorSet} (${r.providedQty}/${r.neededQty})`).join(", "))}
-    ${row("Room match notes", p.roomMatchNotes)}
-    ${row("AV match", (p.avMatchProvided || []).map(a => `${a.label} (${a.providedQty}/${a.neededQty})`).join(", "))}
-    ${row("AV match notes", p.avMatchNotes)}
-    ${row("Meeting space one floor", p.meetingSpaceOneFloor)}
-    ${row("Floors explanation", p.meetingSpaceFloorsExplain)}
-    ${row("Exhibits location", [p.exhibitsLocation, p.exhibitsLocationOther].filter(Boolean).join(" — "))}
-    ${row("Property type", p.propertyType === "Other" ? p.propertyTypeOtherText : p.propertyType)}
-    ${row("Area characteristics", areaChars)}
-    ${row("Walkability", p.walkabilityDescription)}
-    ${rowLink("Proposal document", p.proposalDocumentLink)}
-    ${rowLink("Floor plan/F&B/AV links", p.floorPlanFnbAvLinks)}
-    ${row("CVB promotions", p.cvbPromotions)}
-    ${row("Site inspection support", p.siteInspectionSupport)}
-    ${row("Additional notes", p.additionalNotes)}
-    ${row("Terms confirmed (30-day validity)", p.termsConfirmed ? "Yes" : "No")}
-  </div>`;
+// ---------- Full detail: every field, grouped, blanks shown as a dash ----------
+function fieldRowHtml(p, f) {
+  const t = fieldText(p, f);
+  const val = t ? (f.kind === "link" ? linkifyLines(t) : escapeHtml(t).replace(/\n/g, "<br>")) : `<span class="empty">\u2014</span>`;
+  return `<div class="fd-row ${f.kind === "long" ? "fd-long" : ""}"><span class="k">${escapeHtml(f.label)}:</span> ${val}</div>`;
 }
-
+function fullDetailHtml(p) {
+  const groups = FIELD_GROUPS.map(g => `<div class="fd-group"><h4>${escapeHtml(g)}</h4><div class="detail-grid">${FIELDS.filter(f => f.group === g).map(f => fieldRowHtml(p, f)).join("")}</div></div>`).join("");
+  const actions = identity.isAdmin
+    ? `<div class="detail-actions no-print"><button type="button" class="btn-delete-proposal" data-rfp="${escapeHtml(p.rfpId)}" data-id="${escapeHtml(p.id)}">Delete proposal</button></div>` : "";
+  return groups + actions;
+}
 function toggleDetail(i) {
   const row = document.getElementById("detail" + i);
   row.style.display = row.style.display === "none" ? "table-row" : "none";
 }
 
+// ---------- Column picker ----------
+function renderColumnPicker() {
+  const box = document.getElementById("columnPicker");
+  box.innerHTML = `<div class="cp-head"><span>Tick any field to show it as a column, then click a column heading to sort by it. Click a row to read the whole proposal.</span><button type="button" class="btn-outline" id="cpReset">Reset to default columns</button></div>` +
+    `<div class="cp-groups">${FIELD_GROUPS.map(g => `<div><div class="cp-title">${escapeHtml(g)}</div>${FIELDS.filter(f => f.group === g).map(f =>
+      `<label><input type="checkbox" data-col="${f.key}" ${columns.includes(f.key) ? "checked" : ""} ${f.key === "propertyName" ? "disabled" : ""}> ${escapeHtml(f.label)}</label>`).join("")}</div>`).join("")}</div>`;
+  box.querySelectorAll("input[data-col]").forEach(cb => cb.addEventListener("change", () => {
+    const k = cb.dataset.col;
+    if (cb.checked) { if (!columns.includes(k)) columns.push(k); } else columns = columns.filter(x => x !== k);
+    saveColumns(); render();
+  }));
+  document.getElementById("cpReset").addEventListener("click", () => { columns = DEFAULT_COLUMNS.slice(); saveColumns(); renderColumnPicker(); render(); });
+}
+document.getElementById("columnsBtn").addEventListener("click", () => {
+  const box = document.getElementById("columnPicker"); box.style.display = box.style.display === "block" ? "none" : "block";
+});
+
 document.getElementById("searchBox").addEventListener("input", render);
 document.getElementById("eventFilter").addEventListener("change", render);
-document.querySelectorAll("th[data-sort]").forEach(th => {
-  th.addEventListener("click", () => {
-    const key = th.dataset.sort;
-    if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
-    render();
-  });
+document.getElementById("tableHead").addEventListener("click", e => {
+  const th = e.target.closest("th[data-sort]"); if (!th) return;
+  const key = th.dataset.sort;
+  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+  render();
 });
+
+// ---------- Deleting a proposal ----------
+// Same protection as deleting an RFP in the staff form: the button only shows
+// for administrators, you must type "delete" to confirm, and the server
+// independently refuses anyone who isn't an administrator.
+let pendingDelete = null;
+document.addEventListener("click", e => {
+  const b = e.target.closest(".btn-delete-proposal"); if (!b) return;
+  const p = allProposals.find(x => x.id === b.dataset.id && x.rfpId === b.dataset.rfp); if (!p) return;
+  pendingDelete = p;
+  const where = [p.city, p.stateProvince].filter(Boolean).join(", ");
+  document.getElementById("delPropWho").textContent = `${p.propertyName || "(unnamed property)"}${where ? " (" + where + ")" : ""}, submitted for ${p.eventName || "this RFP"}.`;
+  document.getElementById("delPropInput").value = "";
+  document.getElementById("delPropConfirm").disabled = true;
+  document.getElementById("delPropModal").style.display = "flex";
+  document.getElementById("delPropInput").focus();
+});
+document.getElementById("delPropCancel").addEventListener("click", () => { pendingDelete = null; document.getElementById("delPropModal").style.display = "none"; });
+document.getElementById("delPropInput").addEventListener("input", e => {
+  document.getElementById("delPropConfirm").disabled = e.target.value.trim().toLowerCase() !== "delete";
+});
+document.getElementById("delPropConfirm").addEventListener("click", async () => {
+  if (!pendingDelete) return;
+  const p = pendingDelete, btn = document.getElementById("delPropConfirm");
+  btn.disabled = true; btn.textContent = "Deleting\u2026";
+  try {
+    const res = await fetch(`/api/proposals/${encodeURIComponent(p.rfpId)}/${encodeURIComponent(p.id)}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok && res.status !== 404) throw new Error(res.status === 403 ? "Only administrators can delete proposals." : "The server could not delete it.");
+    document.getElementById("delPropModal").style.display = "none";
+    pendingDelete = null;
+    removeProposalLocally(p);
+  } catch (err) {
+    alert("Couldn't delete this proposal. " + (err.message || ""));
+  } finally {
+    btn.disabled = false; btn.textContent = "Delete";
+  }
+});
+function removeProposalLocally(p) {
+  allProposals = allProposals.filter(x => !(x.id === p.id && x.rfpId === p.rfpId));
+  delete manualScores[p.id]; saveManualScores();
+  delete excludedProposals[p.id]; saveExcluded();
+  openCards.delete(p.id);
+  refreshAfterChange(p.rfpId);
+}
+function refreshAfterChange(rfpId) {
+  renderStatusBar(); populateEventFilter(); render();
+  if (!allProposals.length) {
+    document.getElementById("resultsWrap").style.display = "none";
+    document.getElementById("emptyState").style.display = "block";
+    document.getElementById("emptyState").textContent = "No proposals have been submitted yet.";
+    return;
+  }
+  populateRfpSelect();
+  if (currentRfpId && currentRfpId === rfpId) {
+    rfpProposals = allProposals.filter(x => x.rfpId === currentRfpId);
+    const hadResults = scoredResults.length > 0;
+    scoredResults = [];                 // rankings were built with the deleted proposal in them
+    document.getElementById("rankingsWrap").style.display = "none";
+    document.getElementById("staleNote").style.display = hadResults ? "block" : "none";
+    if (!rfpProposals.length) {
+      document.getElementById("rfpSelect").value = ""; currentRfpId = null;
+      document.getElementById("evalWorkArea").style.display = "none";
+    } else {
+      renderEvalProposals(); renderCompare(); renderProposalCards();
+    }
+  }
+}
 
 // What a venue said it can provide against what the RFP asked for, written
 // "Room name (available/needed)", e.g. "Breakout Room (2/3)".
@@ -551,17 +873,26 @@ function locationFitPoints(p) {
   return ((ptPoints ?? 5) + charPoints) / 2;
 }
 
+// ---------- RFP picker (follows the RFP-status filter) ----------
 function populateRfpSelect() {
+  const sel = document.getElementById("rfpSelect");
+  const keep = currentRfpId;
   const byRfp = new Map();
-  allProposals.forEach(p => {
+  visibleProposals().forEach(p => {
     if (!byRfp.has(p.rfpId)) byRfp.set(p.rfpId, { groupName: p.groupName, eventName: p.eventName, count: 0 });
     byRfp.get(p.rfpId).count++;
   });
-  const sel = document.getElementById("rfpSelect");
-  sel.innerHTML = `<option value="">— Select an RFP —</option>` +
-    [...byRfp.entries()].map(([id, info]) =>
-      `<option value="${id}">${escapeHtml(info.groupName)} — ${escapeHtml(info.eventName)} (${info.count} proposal${info.count === 1 ? "" : "s"})</option>`
-    ).join("");
+  // The RFP you're working on stays in the list even if a filter would hide it, so ticking a status box never pulls the rug out from under you.
+  if (keep && !byRfp.has(keep)) {
+    const mine = allProposals.filter(p => p.rfpId === keep);
+    if (mine.length) byRfp.set(keep, { groupName: mine[0].groupName, eventName: mine[0].eventName, count: mine.length });
+  }
+  sel.innerHTML = `<option value="">\u2014 Select an RFP \u2014</option>` +
+    [...byRfp.entries()].map(([id, info]) => {
+      const st = statusKnown ? STATUS_LABELS[statusOf({ rfpId: id })] : "";
+      return `<option value="${escapeHtml(id)}">${escapeHtml(info.groupName)} \u2014 ${escapeHtml(info.eventName)} (${info.count} proposal${info.count === 1 ? "" : "s"})${st ? " \u00B7 " + st : ""}</option>`;
+    }).join("");
+  sel.value = keep && byRfp.has(keep) ? keep : "";
 }
 document.getElementById("rfpSelect").addEventListener("change", async (e) => {
   currentRfpId = e.target.value;
@@ -586,6 +917,8 @@ document.getElementById("rfpSelect").addEventListener("change", async (e) => {
   document.getElementById("staleNote").style.display = "none";
   scoredResults = [];   // never carry one RFP's rankings into another RFP's report
   openCards = new Set();
+  renderEvalProposals();
+  renderCompare();
   renderProposalCards();
 });
 
@@ -594,8 +927,170 @@ document.querySelectorAll(".eval-tab-btn").forEach(btn => {
     document.querySelectorAll(".eval-tab-btn").forEach(b => b.classList.toggle("active", b === btn));
     document.querySelectorAll(".eval-tab-panel").forEach(p => p.classList.toggle("active", p.id === "eval-tab-" + btn.dataset.tab));
     if (btn.dataset.tab === "report") renderReport();
+    if (btn.dataset.tab === "compare") renderCompare();
+    if (btn.dataset.tab === "proposals") renderEvalProposals();
   });
 });
+
+
+// ================================================================
+//  EVALUATE: the Proposals tab (read every proposal for this RFP)
+// ================================================================
+function evalRowsSorted() {
+  return rfpProposals.slice().sort((a, b) => String(a.propertyName).localeCompare(String(b.propertyName), undefined, { sensitivity: "base" }));
+}
+function renderEvalProposals() {
+  const box = document.getElementById("evalProposalsWrap");
+  const rows = evalRowsSorted();
+  if (!rows.length) { box.innerHTML = `<div class="section">No proposals have been submitted for this RFP yet.</div>`; return; }
+  const cols = ["location", "propertyName", "guestRoomRate", "fnbMinimum", "fnbGuaranteeOffered", "submittedAt"].map(k => FIELD_BY_KEY[k]);
+  box.innerHTML = `
+    <div class="eval-list-tools no-print">
+      <span>${rows.length} proposal${rows.length === 1 ? "" : "s"}</span>
+      <button type="button" class="btn-outline" id="evalExpandAll">Expand all</button>
+      <button type="button" class="btn-outline" id="evalCollapseAll">Collapse all</button>
+    </div>
+    <div class="table-scroll"><table class="proposals-table">
+      <thead><tr>${cols.map(f => `<th style="cursor:default;">${escapeHtml(f.col || f.label)}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map((p, i) => `
+        <tr class="eprop-row" onclick="toggleEvalDetail(${i})">${cols.map(f => `<td>${cellHtml(p, f)}${f.key === "propertyName" && isExcluded(p.id) ? ' <span class="excl-badge">Left out of evaluation</span>' : ""}</td>`).join("")}</tr>
+        <tr class="edetail-row" id="edetail${i}" style="display:none;"><td colspan="${cols.length}">${fullDetailHtml(p)}</td></tr>`).join("")}
+      </tbody>
+    </table></div>`;
+  const setAll = show => box.querySelectorAll(".edetail-row").forEach(r => { r.style.display = show ? "table-row" : "none"; });
+  document.getElementById("evalExpandAll").addEventListener("click", () => setAll(true));
+  document.getElementById("evalCollapseAll").addEventListener("click", () => setAll(false));
+}
+function toggleEvalDetail(i) {
+  const row = document.getElementById("edetail" + i);
+  row.style.display = row.style.display === "none" ? "table-row" : "none";
+}
+
+// ================================================================
+//  EVALUATE: the Compare tab (every field, every venue, one grid)
+// ================================================================
+const cmpOpts = { highlight: true, onlyDiff: false, includeExcluded: true };
+function compareColumns() {
+  return rfpProposals.filter(p => cmpOpts.includeExcluded || !isExcluded(p.id))
+    .sort((a, b) => String(a.propertyName).localeCompare(String(b.propertyName), undefined, { sensitivity: "base" }));
+}
+const roomKey = r => [r.roomLabel, r.floorSet, r.maxSeats].join("|");
+function buildCompareRows(cols) {
+  const rows = [];
+  const provided = (list, matchFn) => { const m = (list || []).find(matchFn); return m || null; };
+  const short = m => !!m && Number(m.providedQty) < Number(m.neededQty);
+  FIELD_GROUPS.forEach(g => {
+    const staticRows = FIELDS.filter(f => f.group === g && !f.noCompare && f.key !== "propertyName")
+      .map(f => ({ group: g, label: f.label, kind: f.kind, values: cols.map(p => fieldText(p, f)), short: cols.map(() => false) }));
+    let dynamic = [];
+    if (g === "Meeting space") {
+      // One row per room setup and per AV item the RFP asked for, so each can be compared across venues.
+      const rooms = new Map(); cols.forEach(p => (p.roomMatchProvided || []).forEach(r => { if (!rooms.has(roomKey(r))) rooms.set(roomKey(r), r); }));
+      rooms.forEach((r, k) => {
+        const ms = cols.map(p => provided(p.roomMatchProvided, x => roomKey(x) === k));
+        dynamic.push({ group: g, kind: "text",
+          label: `Room: ${r.roomLabel || r.floorSet || "Room"}${r.roomLabel && r.floorSet ? ", " + r.floorSet : ""}${r.maxSeats ? ", up to " + r.maxSeats + " seats" : ""} (${r.neededQty} needed)`,
+          values: ms.map(m => m ? `${m.providedQty} of ${m.neededQty}` : ""), short: ms.map(short) });
+      });
+      const avs = new Map(); cols.forEach(p => (p.avMatchProvided || []).forEach(a => { if (!avs.has(a.label)) avs.set(a.label, a); }));
+      avs.forEach((a, k) => {
+        const ms = cols.map(p => provided(p.avMatchProvided, x => x.label === k));
+        dynamic.push({ group: g, kind: "text", label: `AV: ${a.label} (${a.neededQty} needed)`, values: ms.map(m => m ? `${m.providedQty} of ${m.neededQty}` : ""), short: ms.map(short) });
+      });
+    }
+    rows.push(...dynamic, ...staticRows);
+  });
+  rows.forEach(r => { r.diff = new Set(r.values.map(v => v.trim().toLowerCase())).size > 1; });
+  return rows;
+}
+function renderCompare() {
+  const box = document.getElementById("compareWrap");
+  const cols = compareColumns();
+  if (!cols.length) { box.innerHTML = `<div class="section">No proposals to compare.</div>`; return; }
+  const rows = buildCompareRows(cols);
+  const shown = cmpOpts.onlyDiff ? rows.filter(r => r.diff) : rows;
+  let body = "", last = null;
+  shown.forEach(r => {
+    if (r.group !== last) { body += `<tr class="cmp-group"><th colspan="${cols.length + 1}">${escapeHtml(r.group)}</th></tr>`; last = r.group; }
+    body += `<tr><th class="cmp-label" scope="row">${escapeHtml(r.label)}</th>${r.values.map((v, i) =>
+      `<td class="${cmpOpts.highlight && r.diff ? "diff" : ""} ${r.short[i] ? "short" : ""}">${v ? (r.kind === "link" ? linkifyLines(v) : escapeHtml(v)) : `<span class="empty">\u2014</span>`}</td>`).join("")}</tr>`;
+  });
+  box.innerHTML = `<div class="count-line">${cols.length} proposal${cols.length === 1 ? "" : "s"} \u00B7 ${shown.length} of ${rows.length} fields shown</div>
+    <div class="cmp-scroll"><table class="cmp-table">
+      <thead><tr><th class="cmp-label">Field</th>${cols.map(p => `<th>${escapeHtml(p.propertyName)}${proposalLocation(p) ? `<div class="vloc">${escapeHtml(proposalLocation(p))}</div>` : ""}${isExcluded(p.id) ? `<div class="vloc">(left out of the evaluation)</div>` : ""}</th>`).join("")}</tr></thead>
+      <tbody>${body}</tbody>
+    </table></div>`;
+}
+function compareToCsv() {
+  const cols = compareColumns(), rows = buildCompareRows(cols);
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  return [["Group", "Field", ...cols.map(p => p.propertyName)].map(q).join(","), ...rows.map(r => [r.group, r.label, ...r.values].map(q).join(","))].join("\r\n");
+}
+document.getElementById("cmpHighlight").addEventListener("change", e => { cmpOpts.highlight = e.target.checked; renderCompare(); });
+document.getElementById("cmpOnlyDiff").addEventListener("change", e => { cmpOpts.onlyDiff = e.target.checked; renderCompare(); });
+document.getElementById("cmpIncludeExcluded").addEventListener("change", e => { cmpOpts.includeExcluded = e.target.checked; renderCompare(); });
+document.getElementById("cmpExportBtn").addEventListener("click", () => {
+  if (!rfpProposals.length) return;
+  const blob = new Blob(["\uFEFF" + compareToCsv()], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${(currentRfpLabel || "rfp").replace(/[^\w]+/g, "-").toLowerCase()}-proposal-comparison.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+// ================================================================
+//  REPORT: how many venues are compared, and which way the table runs
+// ================================================================
+// Up to 3 venues fit comfortably with the venues as columns. With more, the
+// table turns on its side (venues down the side, criteria across the top) and
+// gets its own landscape page when printed. Both choices are saved per RFP.
+const CMP_KEY = "clear_evaluate_compare_v1";
+function getCompareState() {
+  let all = {}; try { all = JSON.parse(localStorage.getItem(CMP_KEY) || "{}"); } catch (e) {}
+  const st = (currentRfpId && all[currentRfpId]) || {};
+  return { mode: st.mode || "top3", layout: st.layout || "auto", custom: Array.isArray(st.custom) ? st.custom : [] };
+}
+function saveCompareState(st) {
+  let all = {}; try { all = JSON.parse(localStorage.getItem(CMP_KEY) || "{}"); } catch (e) {}
+  all[currentRfpId] = st;
+  try { localStorage.setItem(CMP_KEY, JSON.stringify(all)); } catch (e) {}
+}
+function comparisonVenues(st) {
+  if (st.mode === "custom") return scoredResults.filter(r => st.custom.includes(r.proposal.id));
+  const n = st.mode === "all" ? scoredResults.length : parseInt(String(st.mode).replace("top", ""), 10) || 3;
+  return scoredResults.slice(0, n);
+}
+function resolveLayout(st, n) { return st.layout === "auto" ? (n > 3 ? "down" : "across") : st.layout; }
+function wireReportOptions() {
+  const wrap = document.querySelector(".report-options");
+  wrap.style.display = scoredResults.length ? "flex" : "none";
+  if (!scoredResults.length) return;
+  const st = getCompareState(), n = scoredResults.length;
+  const opts = [];
+  if (n > 3) opts.push(["top3", "Top 3"]);
+  [5, 8].forEach(k => { if (n > k) opts.push([`top${k}`, `Top ${k}`]); });
+  opts.push(["all", `All ${n}`], ["custom", "Custom (tick venues in the rankings below)"]);
+  const sel = document.getElementById("cmpCount");
+  sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+  let cur = st.mode;
+  if (/^top\d+$/.test(cur) && parseInt(cur.slice(3), 10) >= n) cur = "all";
+  sel.value = opts.some(o => o[0] === cur) ? cur : "all";
+  sel.onchange = () => {
+    const s = getCompareState();
+    if (sel.value === "custom") { s.mode = "custom"; s.custom = comparisonVenues(getCompareState()).map(r => r.proposal.id); }
+    else s.mode = sel.value;
+    saveCompareState(s); renderReport();
+  };
+  const lay = document.getElementById("cmpLayout");
+  lay.value = st.layout;
+  lay.onchange = () => { const s = getCompareState(); s.layout = lay.value; saveCompareState(s); renderReport(); };
+  document.querySelectorAll(".cmp-pick").forEach(cb => cb.addEventListener("change", () => {
+    const s = getCompareState(); s.mode = "custom";
+    s.custom = [...document.querySelectorAll(".cmp-pick")].filter(x => x.checked).map(x => x.dataset.id);
+    saveCompareState(s); renderReport();
+  }));
+}
 
 // ---------- Weights (per RFP, persisted per-browser) ----------
 // First time an RFP is evaluated, starting weights come from that RFP's
@@ -953,7 +1448,9 @@ function suggestedSummary() {
 function buildReportHtml({ editable, summary }) {
   const meta = reportMeta();
   const results = scoredResults;
-  const top = results.slice(0, 3);
+  const cmpState = getCompareState();
+  const top = comparisonVenues(cmpState);
+  const layout = resolveLayout(cmpState, top.length);
   const best = results[0];
 
   const summarySection = editable ? `
@@ -970,6 +1467,36 @@ function buildReportHtml({ editable, summary }) {
       <h2>Executive Summary</h2>
       <div class="rp-summary-static">${paragraphsHtml(summary)}</div>
     </section>` : "");
+
+  const noteHtml = cmpState.mode === "custom"
+    ? `<div class="rp-note">${top.length} selected proposal${top.length === 1 ? " is" : "s are"} compared${layout === "across" ? " side by side" : ""}.</div>`
+    : (results.length > top.length ? `<div class="rp-note">The ${top.length} highest-scoring proposals are compared${layout === "across" ? " side by side" : ""}.</div>` : "");
+  const acrossSection = `<section class="rp-section rp-keep">
+      <h2>Scoring Comparison</h2>
+      ${noteHtml}
+      <table class="rp-table">
+        <thead><tr><th>Criterion</th>${top.map(r => `<th><div class="rp-vname">#${r.rank} ${escapeHtml(r.proposal.propertyName)}</div>${proposalLocation(r.proposal) ? `<div class="rp-vloc">${escapeHtml(proposalLocation(r.proposal))}</div>` : ""}</th>`).join("")}</tr></thead>
+        <tbody>
+          <tr class="rp-total"><th>Overall score</th>${top.map(r => `<td>${r.percentScore}%</td>`).join("")}</tr>
+          ${CRITERIA.map(c => `<tr><th>${escapeHtml(c.name)}</th>${top.map(r => `<td>${escapeHtml(reportValue(c, r))}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+    </section>`;
+  const wideSection = `
+    <section class="rp-section">
+      <h2>Scoring Comparison</h2>
+      ${noteHtml}
+      <div class="rp-table-scroll"><table class="rp-table rp-table-wide">
+        <thead><tr><th>Rank</th><th>Property</th><th>Score</th>${CRITERIA.map(c => `<th>${escapeHtml(c.name)}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${top.map(r => `<tr class="${r.rank === 1 ? "rp-first" : ""}"><td><span class="rp-rank">${r.rank}</span></td><td><div class="rp-vname">${escapeHtml(r.proposal.propertyName)}</div>${proposalLocation(r.proposal) ? `<div class="rp-vloc">${escapeHtml(proposalLocation(r.proposal))}</div>` : ""}</td><td><strong>${r.percentScore}%</strong></td>${CRITERIA.map(c => `<td>${escapeHtml(reportValue(c, r))}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table></div>
+    </section>`;
+  const comparisonHtml = !top.length
+    ? `<section class="rp-section"><h2>Scoring Comparison</h2><div class="rp-note">No proposals are selected for the comparison.</div></section>`
+    : layout === "down" ? wideSection : acrossSection;
+  const footerHtml = `<div class="rp-footer"><span>CLEAR Events \u00B7 Venue proposal evaluation</span><span>Prepared ${escapeHtml(meta.today)}</span></div>`;
 
   return `
   <article class="report-paper" id="reportPaper">
@@ -994,31 +1521,20 @@ function buildReportHtml({ editable, summary }) {
     <section class="rp-section">
       <h2>Complete Rankings</h2>
       <table class="rp-table">
-        <thead><tr><th style="width:56px;">Rank</th><th>Property</th><th>Location</th><th>Score</th></tr></thead>
+        <thead><tr><th style="width:56px;">Rank</th><th>Property</th><th>Location</th><th>Score</th>${editable ? `<th class="rp-pick no-print">In comparison</th>` : ""}</tr></thead>
         <tbody>
           ${results.map(r => `<tr class="${r.rank === 1 ? "rp-first" : ""}">
             <td><span class="rp-rank">${r.rank}</span></td>
             <td class="rp-vname">${escapeHtml(r.proposal.propertyName)}</td>
             <td>${escapeHtml(proposalLocation(r.proposal)) || "\u2014"}</td>
             <td><span class="rp-bar"><span style="width:${r.percentScore}%; background:${scoreColor(r.percentScore)};"></span></span><strong>${r.percentScore}%</strong></td>
+            ${editable ? `<td class="rp-pick no-print"><input type="checkbox" class="cmp-pick" data-id="${escapeHtml(r.proposal.id)}" ${top.some(x => x.proposal.id === r.proposal.id) ? "checked" : ""} aria-label="Include ${escapeHtml(r.proposal.propertyName)} in the comparison table"></td>` : ""}
           </tr>`).join("")}
         </tbody>
       </table>
     </section>
 
-    <section class="rp-section rp-keep">
-      <h2>Scoring Comparison</h2>
-      ${results.length > top.length ? `<div class="rp-note">The ${top.length} highest-scoring proposals are compared side by side.</div>` : ""}
-      <table class="rp-table">
-        <thead><tr><th>Criterion</th>${top.map(r => `<th><div class="rp-vname">#${r.rank} ${escapeHtml(r.proposal.propertyName)}</div>${proposalLocation(r.proposal) ? `<div class="rp-vloc">${escapeHtml(proposalLocation(r.proposal))}</div>` : ""}</th>`).join("")}</tr></thead>
-        <tbody>
-          <tr class="rp-total"><th>Overall score</th>${top.map(r => `<td>${r.percentScore}%</td>`).join("")}</tr>
-          ${CRITERIA.map(c => `<tr><th>${escapeHtml(c.name)}</th>${top.map(r => `<td>${escapeHtml(reportValue(c, r))}</td>`).join("")}</tr>`).join("")}
-        </tbody>
-      </table>
-    </section>
-
-    <div class="rp-footer"><span>CLEAR Events \u00B7 Venue proposal evaluation</span><span>Prepared ${escapeHtml(meta.today)}</span></div>
+    ${layout === "down" && top.length ? `<div class="rp-wide-page">${comparisonHtml}${footerHtml}</div>` : comparisonHtml + footerHtml}
   </article>`;
 }
 
@@ -1032,6 +1548,7 @@ function renderReport() {
   const box = document.getElementById("reportContent");
   if (!scoredResults.length) {
     box.innerHTML = `<div class="section">Run an evaluation on the "Score Proposals" tab first.</div>`;
+    wireReportOptions();
     return;
   }
   const suggestion = suggestedSummary();
@@ -1053,6 +1570,7 @@ function renderReport() {
     sync(); grow();
   });
   sync(); grow();
+  wireReportOptions();
 }
 
 function printReport() {
