@@ -55,6 +55,12 @@
   .chip-toggle.on { border-color: var(--burgundy); color: var(--burgundy); background: #FBF4F6; }
   .chip-count { font-weight: 700; opacity: 0.7; }
 
+  /* ---- Venues that declined to propose ---- */
+  .decl-badge { display: inline-block; margin-left: 8px; padding: 1px 9px; border-radius: 999px; background: #FBEBC4; color: #8A5A00; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+  .decline-banner { background: #FFFBF0; border-left: 4px solid var(--gold); border-radius: 6px; padding: 12px 16px; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.55; }
+  .decline-banner .decline-reason { margin-top: 6px; white-space: normal; }
+  .decl-reason-cell { max-width: 42em; }
+
   /* ---- Column picker (Browse) ---- */
   .column-picker { display: none; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 18px; margin-bottom: 16px; }
   .cp-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.85rem; color: var(--charcoal-soft); }
@@ -260,6 +266,7 @@
       <div class="toolbar">
         <input type="search" id="searchBox" placeholder="Search by property name, city, or event...">
         <select id="eventFilter"><option value="">All events</option></select>
+        <select id="responseFilter" style="display:none;"><option value="">All responses</option><option value="proposal">Proposals only</option><option value="declined">Declined only</option></select>
         <button type="button" class="btn-outline" id="columnsBtn">Columns</button>
         <button type="button" class="btn-outline" id="exportBtn">Export CSV</button>
       </div>
@@ -495,6 +502,8 @@ const FIELDS = [
   { key: "termsConfirmed", label: "Terms confirmed (30-day validity)", group: "Links & other", kind: "yesno", get: p => p.termsConfirmed ? "Yes" : "No" },
 
   { key: "submittedAt", label: "Submitted", col: "Submitted", group: "Submission", kind: "date", get: p => p.submittedAt ? fmtDate(String(p.submittedAt).slice(0, 10)) : "" },
+  { key: "response", label: "Response type", col: "Response", group: "Submission", kind: "text", noCompare: true, get: p => p.declined ? "Declined to propose" : "Proposal" },
+  { key: "declineReason", label: "Reason for declining", group: "Submission", kind: "long", noCompare: true, get: p => p.declineReason },
   { key: "eventName", label: "Event", col: "Event", group: "Submission", kind: "text", noCompare: true, get: p => p.eventName },
   { key: "groupName", label: "Group", group: "Submission", kind: "text", noCompare: true, get: p => p.groupName },
   { key: "rfpStatus", label: "RFP status", group: "Submission", kind: "text", noCompare: true, get: p => { const s = statusOf(p); return STATUS_LABELS[s] || ""; } }
@@ -569,6 +578,9 @@ function filteredSorted() {
   const eventFilter = document.getElementById("eventFilter").value;
   const rows = visibleProposals().filter(p => {
     if (eventFilter && p.eventName !== eventFilter) return false;
+    const kind = document.getElementById("responseFilter").value;
+    if (kind === "proposal" && p.declined) return false;
+    if (kind === "declined" && !p.declined) return false;
     if (!q) return true;
     const haystack = [p.propertyName, p.city, p.stateProvince, p.eventName, p.groupName].join(" ").toLowerCase();
     return haystack.includes(q);
@@ -592,6 +604,7 @@ function cellHtml(p, f) {
   if (f.key === "eventName") return `<div class="cell">${escapeHtml(p.eventName)}<div style="color:var(--charcoal-soft); font-size:0.75rem;">${escapeHtml(p.groupName)}</div></div>`;
   if (f.kind === "link") return `<div class="cell">${t ? linkifyLines(t) : "\u2014"}</div>`;
   let h = escapeHtml(t).replace(/\n/g, "<br>") || "\u2014";
+  if (f.key === "propertyName" && p.declined) h += '<span class="decl-badge">Declined</span>';
   if (f.key === "guestRoomRate" && p.localGovRate) h += ' <span style="font-size:0.7rem; color:var(--charcoal-soft);">(local gov. rate)</span>';
   return `<div class="cell">${h}</div>`;
 }
@@ -605,7 +618,13 @@ function renderHead() {
 function render() {
   const rows = filteredSorted();
   const hidden = allProposals.length - visibleProposals().length;
-  document.getElementById("countLine").textContent = `${rows.length} proposal${rows.length === 1 ? "" : "s"}` +
+  const declinedN = rows.filter(p => p.declined).length;
+  // The response filter only appears once someone has declined, so the page looks exactly as before until then.
+  const rf = document.getElementById("responseFilter");
+  rf.style.display = visibleProposals().some(p => p.declined) || rf.value ? "" : "none";
+  document.getElementById("countLine").textContent = (declinedN
+      ? `${rows.length} response${rows.length === 1 ? "" : "s"} (${rows.length - declinedN} proposal${rows.length - declinedN === 1 ? "" : "s"}, ${declinedN} declined)`
+      : `${rows.length} proposal${rows.length === 1 ? "" : "s"}`) +
     (hidden > 0 ? ` (${hidden} more hidden by the RFP status filter above)` : "");
   renderHead();
   const cols = columns.map(k => FIELD_BY_KEY[k]);
@@ -639,7 +658,10 @@ function fieldRowHtml(p, f) {
   return `<div class="fd-row ${f.kind === "long" ? "fd-long" : ""}"><span class="k">${escapeHtml(f.label)}:</span> ${val}</div>`;
 }
 function fullDetailHtml(p) {
-  const groups = FIELD_GROUPS.map(g => `<div class="fd-group"><h4>${escapeHtml(g)}</h4><div class="detail-grid">${FIELDS.filter(f => f.group === g).map(f => fieldRowHtml(p, f)).join("")}</div></div>`).join("");
+  // A venue that declined has no rates, rooms or terms, so only the groups that can apply are shown, with their reason up front.
+  const groupList = p.declined ? ["Property & contact", "Submission"] : FIELD_GROUPS;
+  const banner = p.declined ? `<div class="decline-banner"><strong>This venue declined to submit a proposal.</strong><div class="decline-reason">${escapeHtml(p.declineReason || "No reason given.").replace(/\n/g, "<br>")}</div></div>` : "";
+  const groups = banner + groupList.map(g => `<div class="fd-group"><h4>${escapeHtml(g)}</h4><div class="detail-grid">${FIELDS.filter(f => f.group === g && !(p.declined && f.key === "declineReason")).map(f => fieldRowHtml(p, f)).join("")}</div></div>`).join("");
   const actions = identity.isAdmin
     ? `<div class="detail-actions no-print"><button type="button" class="btn-delete-proposal" data-rfp="${escapeHtml(p.rfpId)}" data-id="${escapeHtml(p.id)}">Delete proposal</button></div>` : "";
   return groups + actions;
@@ -668,6 +690,7 @@ document.getElementById("columnsBtn").addEventListener("click", () => {
 
 document.getElementById("searchBox").addEventListener("input", render);
 document.getElementById("eventFilter").addEventListener("change", render);
+document.getElementById("responseFilter").addEventListener("change", render);
 document.getElementById("tableHead").addEventListener("click", e => {
   const th = e.target.closest("th[data-sort]"); if (!th) return;
   const key = th.dataset.sort;
@@ -716,9 +739,9 @@ function removeProposalLocally(p) {
   delete manualScores[p.id]; saveManualScores();
   delete excludedProposals[p.id]; saveExcluded();
   openCards.delete(p.id);
-  refreshAfterChange(p.rfpId);
+  refreshAfterChange(p.rfpId, !!p.declined);
 }
-function refreshAfterChange(rfpId) {
+function refreshAfterChange(rfpId, wasDecline) {
   renderStatusBar(); populateEventFilter(); render();
   if (!allProposals.length) {
     document.getElementById("resultsWrap").style.display = "none";
@@ -728,12 +751,15 @@ function refreshAfterChange(rfpId) {
   }
   populateRfpSelect();
   if (currentRfpId && currentRfpId === rfpId) {
-    rfpProposals = allProposals.filter(x => x.rfpId === currentRfpId);
-    const hadResults = scoredResults.length > 0;
-    scoredResults = [];                 // rankings were built with the deleted proposal in them
-    document.getElementById("rankingsWrap").style.display = "none";
-    document.getElementById("staleNote").style.display = hadResults ? "block" : "none";
-    if (!rfpProposals.length) {
+    rfpProposals = allProposals.filter(x => x.rfpId === currentRfpId && !x.declined);
+    rfpDeclined = allProposals.filter(x => x.rfpId === currentRfpId && x.declined);
+    if (!wasDecline) {                  // a decline was never scored, so removing one leaves the rankings valid
+      const hadResults = scoredResults.length > 0;
+      scoredResults = [];               // rankings were built with the deleted proposal in them
+      document.getElementById("rankingsWrap").style.display = "none";
+      document.getElementById("staleNote").style.display = hadResults ? "block" : "none";
+    }
+    if (!rfpProposals.length && !rfpDeclined.length) {
       document.getElementById("rfpSelect").value = ""; currentRfpId = null;
       document.getElementById("evalWorkArea").style.display = "none";
     } else {
@@ -760,7 +786,7 @@ function proposalsToCsv(proposals) {
     "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
     "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
     "proposalDocumentLink","floorPlanFnbAvLinks","cvbPromotions","siteInspectionSupport",
-    "additionalNotes","termsConfirmed","submittedAt","eventName","groupName"];
+    "additionalNotes","termsConfirmed","submittedAt","eventName","groupName","declined","declineReason"];
   // The room and AV answers are lists of objects, so they're written out
   // as text (e.g. "Breakout Room (2/3); General Session (1/1)") rather than
   // run through the plain-array join below, which would print [object Object].
@@ -768,7 +794,7 @@ function proposalsToCsv(proposals) {
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.map(headerFor).join(",")];
   proposals.forEach(p => {
-    const flat = { ...p, localGovRate: p.localGovRate ? "Yes" : "", roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
+    const flat = { ...p, declined: p.declined ? "Yes" : "", localGovRate: p.localGovRate ? "Yes" : "", roomMatchProvided: roomMatchText(p, "; "), avMatchProvided: avMatchText(p, "; ") };
     lines.push(cols.map(c => escCsv(flat[c])).join(","));
   });
   return lines.join("\r\n");
@@ -804,7 +830,8 @@ document.querySelectorAll(".view-tab-btn").forEach(btn => {
 let currentRfpId = null;
 let currentRfpLabel = "";
 let currentRfpRecord = null; // full /api/rfps/:id record, for sectionPriorities
-let rfpProposals = [];
+let rfpProposals = [];   // real proposals only: these are what gets scored, ranked and compared
+let rfpDeclined = [];    // venues that told us they will not be proposing
 let weights = {};
 let optionPoints = { propertyType: {}, areaCharacteristics: {} };
 let manualScores = {};
@@ -879,26 +906,27 @@ function populateRfpSelect() {
   const keep = currentRfpId;
   const byRfp = new Map();
   visibleProposals().forEach(p => {
-    if (!byRfp.has(p.rfpId)) byRfp.set(p.rfpId, { groupName: p.groupName, eventName: p.eventName, count: 0 });
-    byRfp.get(p.rfpId).count++;
+    if (!byRfp.has(p.rfpId)) byRfp.set(p.rfpId, { groupName: p.groupName, eventName: p.eventName, count: 0, declined: 0 });
+    if (p.declined) byRfp.get(p.rfpId).declined++; else byRfp.get(p.rfpId).count++;
   });
   // The RFP you're working on stays in the list even if a filter would hide it, so ticking a status box never pulls the rug out from under you.
   if (keep && !byRfp.has(keep)) {
     const mine = allProposals.filter(p => p.rfpId === keep);
-    if (mine.length) byRfp.set(keep, { groupName: mine[0].groupName, eventName: mine[0].eventName, count: mine.length });
+    if (mine.length) byRfp.set(keep, { groupName: mine[0].groupName, eventName: mine[0].eventName, count: mine.filter(p => !p.declined).length, declined: mine.filter(p => p.declined).length });
   }
   sel.innerHTML = `<option value="">\u2014 Select an RFP \u2014</option>` +
     [...byRfp.entries()].map(([id, info]) => {
       const st = statusKnown ? STATUS_LABELS[statusOf({ rfpId: id })] : "";
-      return `<option value="${escapeHtml(id)}">${escapeHtml(info.groupName)} \u2014 ${escapeHtml(info.eventName)} (${info.count} proposal${info.count === 1 ? "" : "s"})${st ? " \u00B7 " + st : ""}</option>`;
+      return `<option value="${escapeHtml(id)}">${escapeHtml(info.groupName)} \u2014 ${escapeHtml(info.eventName)} (${info.count} proposal${info.count === 1 ? "" : "s"}${info.declined ? `, ${info.declined} declined` : ""})${st ? " \u00B7 " + st : ""}</option>`;
     }).join("");
   sel.value = keep && byRfp.has(keep) ? keep : "";
 }
 document.getElementById("rfpSelect").addEventListener("change", async (e) => {
   currentRfpId = e.target.value;
   if (!currentRfpId) { document.getElementById("evalWorkArea").style.display = "none"; return; }
-  rfpProposals = allProposals.filter(p => p.rfpId === currentRfpId);
-  const first = rfpProposals[0];
+  rfpProposals = allProposals.filter(p => p.rfpId === currentRfpId && !p.declined);
+  rfpDeclined = allProposals.filter(p => p.rfpId === currentRfpId && p.declined);
+  const first = allProposals.find(p => p.rfpId === currentRfpId);
   currentRfpLabel = first ? `${first.groupName} — ${first.eventName}` : "";
 
   // Need the RFP's own Section Priorities to derive default weights —
@@ -942,21 +970,40 @@ function evalRowsSorted() {
 function renderEvalProposals() {
   const box = document.getElementById("evalProposalsWrap");
   const rows = evalRowsSorted();
-  if (!rows.length) { box.innerHTML = `<div class="section">No proposals have been submitted for this RFP yet.</div>`; return; }
+  if (!rows.length && !rfpDeclined.length) { box.innerHTML = `<div class="section">No proposals have been submitted for this RFP yet.</div>`; return; }
   const cols = ["location", "propertyName", "guestRoomRate", "fnbMinimum", "fnbGuaranteeOffered", "submittedAt"].map(k => FIELD_BY_KEY[k]);
-  box.innerHTML = `
-    <div class="eval-list-tools no-print">
-      <span>${rows.length} proposal${rows.length === 1 ? "" : "s"}</span>
-      <button type="button" class="btn-outline" id="evalExpandAll">Expand all</button>
-      <button type="button" class="btn-outline" id="evalCollapseAll">Collapse all</button>
-    </div>
+  const proposalsHtml = rows.length ? `
     <div class="table-scroll"><table class="proposals-table">
       <thead><tr>${cols.map(f => `<th style="cursor:default;">${escapeHtml(f.col || f.label)}</th>`).join("")}</tr></thead>
       <tbody>${rows.map((p, i) => `
         <tr class="eprop-row" onclick="toggleEvalDetail(${i})">${cols.map(f => `<td>${cellHtml(p, f)}${f.key === "propertyName" && isExcluded(p.id) ? ' <span class="excl-badge">Left out of evaluation</span>' : ""}</td>`).join("")}</tr>
         <tr class="edetail-row" id="edetail${i}" style="display:none;"><td colspan="${cols.length}">${fullDetailHtml(p)}</td></tr>`).join("")}
       </tbody>
-    </table></div>`;
+    </table></div>` : `<div class="section">No proposals have been submitted for this RFP yet.</div>`;
+  const declined = rfpDeclined.slice().sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const declinedHtml = declined.length ? `
+    <div class="section" style="margin-top:22px;">
+      <h2>Venues that declined to propose (${declined.length})</h2>
+      <div class="sub">These venues told us why they are not sending a proposal. They are not scored, ranked or compared. Click a row for their contact details.</div>
+    </div>
+    <div class="table-scroll"><table class="proposals-table">
+      <thead><tr><th style="cursor:default;">Property</th><th style="cursor:default;">City/State</th><th style="cursor:default;">Reason</th><th style="cursor:default;">Submitted</th></tr></thead>
+      <tbody>${declined.map((p, i) => `
+        <tr class="eprop-row" onclick="toggleEvalDetail('d${i}')">
+          <td><div class="cell">${escapeHtml(p.propertyName)}<span class="decl-badge">Declined</span></div></td>
+          <td><div class="cell">${escapeHtml(fieldText(p, FIELD_BY_KEY.location)) || "\u2014"}</div></td>
+          <td class="decl-reason-cell"><div class="cell decl-reason-cell">${escapeHtml(p.declineReason || "").replace(/\n/g, "<br>")}</div></td>
+          <td><div class="cell">${escapeHtml(fieldText(p, FIELD_BY_KEY.submittedAt))}</div></td>
+        </tr>
+        <tr class="edetail-row" id="edetaild${i}" style="display:none;"><td colspan="4">${fullDetailHtml(p)}</td></tr>`).join("")}
+      </tbody>
+    </table></div>` : "";
+  box.innerHTML = `
+    <div class="eval-list-tools no-print">
+      <span>${rows.length} proposal${rows.length === 1 ? "" : "s"}${declined.length ? `, ${declined.length} declined` : ""}</span>
+      <button type="button" class="btn-outline" id="evalExpandAll">Expand all</button>
+      <button type="button" class="btn-outline" id="evalCollapseAll">Collapse all</button>
+    </div>${proposalsHtml}${declinedHtml}`;
   const setAll = show => box.querySelectorAll(".edetail-row").forEach(r => { r.style.display = show ? "table-row" : "none"; });
   document.getElementById("evalExpandAll").addEventListener("click", () => setAll(true));
   document.getElementById("evalCollapseAll").addEventListener("click", () => setAll(false));
