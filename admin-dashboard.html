@@ -440,7 +440,7 @@ function onFilterChanged() { renderStatusBar(); populateEventFilter(); render();
 //  list, so a field is always labelled and ordered the same way, and a
 //  field a venue left blank still has a place (shown as a dash).
 // ================================================================
-const FIELD_GROUPS = ["Property & contact", "Dates", "Guest room rate", "Financial terms", "F&B guarantee", "Concessions", "Meeting space", "Exhibits", "Property type & area", "Links & other", "Submission"];
+const FIELD_GROUPS = ["Property & contact", "Dates", "Guest room rate", "Financial terms", "Committed F&B Package", "Concessions", "Meeting space", "Exhibits", "Property type & area", "Links & other", "Submission"];
 const yn = v => v === "yes" ? "Yes" : v === "no" ? "No" : "";
 const dollars = v => { v = String(v == null ? "" : v).trim(); return !v ? "" : /^\s*\$/.test(v) ? v : "$" + v; };
 const FIELDS = [
@@ -469,14 +469,15 @@ const FIELDS = [
   { key: "meetingRoomRentalFee", label: "Meeting room rental fee", group: "Financial terms", kind: "money", get: p => p.meetingRoomRentalFee },
   { key: "cumulativeAttritionPercent", label: "Cumulative attrition %", group: "Financial terms", kind: "percent", get: p => p.cumulativeAttritionPercent },
 
-  { key: "fnbGuaranteeOffered", label: "F&B guarantee offered", col: "F&B Guarantee", group: "F&B guarantee", kind: "yesno", get: p => yn(p.fnbGuaranteeOffered) },
-  { key: "fnbGuaranteeAttendeeCount", label: "Guarantee: attendee count", group: "F&B guarantee", kind: "number", get: p => p.fnbGuaranteeAttendeeCount },
-  { key: "fnbGuaranteeDays", label: "Guarantee: number of days", group: "F&B guarantee", kind: "number", get: p => p.fnbGuaranteeDays },
-  { key: "fnbGuaranteeAmount", label: "Guarantee: total amount", group: "F&B guarantee", kind: "money", get: p => dollars(p.fnbGuaranteeAmount) },
-  { key: "fnbGuaranteeInclusive", label: "Guarantee amount is", group: "F&B guarantee", kind: "text", get: p => p.fnbGuaranteeInclusive === "inclusive" ? "Inclusive of taxes and service charges" : p.fnbGuaranteeInclusive === "exclusive" ? "Exclusive of taxes and service charges" : "" },
-  { key: "fnbGuaranteeTaxRate", label: "Guarantee: tax rate(s)", group: "F&B guarantee", kind: "text", get: p => p.fnbGuaranteeTaxRate },
-  { key: "fnbGuaranteeServiceChargeRate", label: "Guarantee: service charge rate(s)", group: "F&B guarantee", kind: "text", get: p => p.fnbGuaranteeServiceChargeRate },
-  { key: "fnbGuaranteeOtherFees", label: "Guarantee: other mandatory fees", group: "F&B guarantee", kind: "long", get: p => p.fnbGuaranteeOtherFees },
+  { key: "fnbGuaranteeOffered", label: "Committed F&B Package offered", col: "F&B Package", group: "Committed F&B Package", kind: "yesno", get: p => yn(p.fnbGuaranteeOffered) },
+  { key: "fnbGuaranteeAttendeeCount", label: "Package: attendee count", group: "Committed F&B Package", kind: "number", get: p => p.fnbGuaranteeAttendeeCount },
+  { key: "fnbGuaranteeDays", label: "Package: number of days", group: "Committed F&B Package", kind: "number", get: p => p.fnbGuaranteeDays },
+  { key: "fnbGuaranteeAmount", label: "Package: total amount", group: "Committed F&B Package", kind: "money", get: p => dollars(p.fnbGuaranteeAmount) },
+  { key: "fnbGuaranteeInclusive", label: "Package amount is", group: "Committed F&B Package", kind: "text", get: p => p.fnbGuaranteeInclusive === "inclusive" ? "Inclusive of taxes and service charges" : p.fnbGuaranteeInclusive === "exclusive" ? "Exclusive of taxes and service charges" : "" },
+  { key: "fnbGuaranteeTaxRate", label: "Package: tax rate(s)", group: "Committed F&B Package", kind: "text", get: p => p.fnbGuaranteeTaxRate },
+  { key: "fnbGuaranteeServiceChargeRate", label: "Package: service charge rate(s)", group: "Committed F&B Package", kind: "text", get: p => p.fnbGuaranteeServiceChargeRate },
+  { key: "fnbGuaranteeOtherFees", label: "Package: other mandatory fees", group: "Committed F&B Package", kind: "long", get: p => p.fnbGuaranteeOtherFees },
+  { key: "fnbGuaranteeOveragePerPerson", label: "Package: per-person overage estimate", group: "Committed F&B Package", kind: "money", get: p => dollars(p.fnbGuaranteeOveragePerPerson) },
 
   { key: "concessions", label: "Concessions", group: "Concessions", kind: "long", get: p => p.concessions },
 
@@ -781,7 +782,7 @@ function proposalsToCsv(proposals) {
     "contactName","contactPhone","contactEmail","guestRoomRate","localGovRate","commissionable","commissionPercent",
     "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
     "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
-    "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
+    "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees","fnbGuaranteeOveragePerPerson",
     "concessions","roomMatchProvided","roomMatchNotes","avMatchProvided","avMatchNotes",
     "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
     "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
@@ -790,7 +791,7 @@ function proposalsToCsv(proposals) {
   // The room and AV answers are lists of objects, so they're written out
   // as text (e.g. "Breakout Room (2/3); General Session (1/1)") rather than
   // run through the plain-array join below, which would print [object Object].
-  const headerFor = c => ({ roomMatchProvided: "roomMatch (available/needed)", avMatchProvided: "avMatch (available/needed)" }[c] || c);
+  const headerFor = c => ({ roomMatchProvided: "roomMatch (available/needed)", avMatchProvided: "avMatch (available/needed)", fnbGuaranteeOffered: "committedFnbPackageOffered", fnbGuaranteeAttendeeCount: "committedFnbPackageAttendeeCount", fnbGuaranteeDays: "committedFnbPackageDays", fnbGuaranteeAmount: "committedFnbPackageAmount", fnbGuaranteeInclusive: "committedFnbPackageInclusive", fnbGuaranteeTaxRate: "committedFnbPackageTaxRate", fnbGuaranteeServiceChargeRate: "committedFnbPackageServiceChargeRate", fnbGuaranteeOtherFees: "committedFnbPackageOtherFees", fnbGuaranteeOveragePerPerson: "committedFnbPackageOveragePerPerson" }[c] || c);
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.map(headerFor).join(",")];
   proposals.forEach(p => {
@@ -859,7 +860,7 @@ const CRITERIA = [
     getValue: p => p.meetingSpaceOneFloor === "yes" },
   { id: "fnbMinimum", name: "F&B Minimum", mode: "numeric", lowerIsBetter: true, defaultWeight: 7, prioritySection: "fnb",
     getValue: p => parseFirstNumber(p.fnbMinimum) },
-  { id: "fnbGuarantee", name: "F&B Guarantee Offered", mode: "boolean", defaultWeight: 6, prioritySection: "fnb",
+  { id: "fnbGuarantee", name: "Committed F&B Package Offered", mode: "boolean", defaultWeight: 6, prioritySection: "fnb",
     getValue: p => p.fnbGuaranteeOffered === "yes" },
   { id: "commissionable", name: "Commissionable Rate", mode: "boolean", defaultWeight: 4, prioritySection: null,
     getValue: p => p.commissionable === "yes" },
