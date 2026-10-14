@@ -1623,7 +1623,7 @@ async function renderResponses() {
     panel.innerHTML = `
       <div class="table-scroll">
       <table class="responses-table">
-        <tr><th>City/State</th><th>Property</th><th>Room Rate</th><th>F&amp;B Minimum</th><th>F&amp;B Guarantee</th><th>Submitted</th><th></th></tr>
+        <tr><th>City/State</th><th>Property</th><th>Room Rate</th><th>F&amp;B Minimum</th><th>F&amp;B Package</th><th>Submitted</th><th></th></tr>
         ${proposals.map((p, i) => `
           <tr>
             <td>${escapeHtml([p.city, p.stateProvince].filter(Boolean).join(", ")) || "—"}</td>
@@ -1693,7 +1693,7 @@ function proposalDetailHtml(p) {
     </div>`;
   }
 
-  let fnbBlock = row("F&B guarantee offered", p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "");
+  let fnbBlock = row("Committed F&B Package offered", p.fnbGuaranteeOffered === "yes" ? "Yes" : p.fnbGuaranteeOffered === "no" ? "No" : "");
   if (p.fnbGuaranteeOffered === "yes") {
     fnbBlock += row("Attendees / Days", `${p.fnbGuaranteeAttendeeCount || "?"} attendees over ${p.fnbGuaranteeDays || "?"} days`);
     fnbBlock += row("Total proposed amount", p.fnbGuaranteeAmount ? `$${p.fnbGuaranteeAmount}` : "");
@@ -1703,6 +1703,7 @@ function proposalDetailHtml(p) {
       fnbBlock += row("Service charge rate(s)", p.fnbGuaranteeServiceChargeRate);
       fnbBlock += row("Other mandatory F&B fees", p.fnbGuaranteeOtherFees);
     }
+    fnbBlock += row("Estimated per-person overage fee", p.fnbGuaranteeOveragePerPerson ? `$${String(p.fnbGuaranteeOveragePerPerson).replace(/^\$/, "")} per person` : "");
   }
 
   const areaChars = (p.areaCharacteristics || []).map(c => c === "Other" ? (p.areaCharacteristicsOtherText || "Other") : c).join(", ");
@@ -1743,7 +1744,7 @@ function proposalsToCsv(proposals) {
     "contactName","contactPhone","contactEmail","guestRoomRate","localGovRate","commissionable","commissionPercent",
     "fnbMinimum","meetingRoomRentalFee","cumulativeAttritionPercent",
     "fnbGuaranteeOffered","fnbGuaranteeAttendeeCount","fnbGuaranteeDays","fnbGuaranteeAmount",
-    "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees",
+    "fnbGuaranteeInclusive","fnbGuaranteeTaxRate","fnbGuaranteeServiceChargeRate","fnbGuaranteeOtherFees","fnbGuaranteeOveragePerPerson",
     "concessions","roomMatchProvided","roomMatchNotes","avMatchProvided","avMatchNotes",
     "meetingSpaceOneFloor","meetingSpaceFloorsExplain","exhibitsLocation","exhibitsLocationOther",
     "propertyType","propertyTypeOtherText","areaCharacteristics","areaCharacteristicsOtherText","walkabilityDescription",
@@ -1752,7 +1753,7 @@ function proposalsToCsv(proposals) {
   // The room and AV answers are lists of objects, so they're written out
   // as text (e.g. "Breakout Room (2/3); General Session (1/1)") rather than
   // run through the plain-array join below, which would print [object Object].
-  const headerFor = c => ({ roomMatchProvided: "roomMatch (available/needed)", avMatchProvided: "avMatch (available/needed)" }[c] || c);
+  const headerFor = c => ({ roomMatchProvided: "roomMatch (available/needed)", avMatchProvided: "avMatch (available/needed)", fnbGuaranteeOffered: "committedFnbPackageOffered", fnbGuaranteeAttendeeCount: "committedFnbPackageAttendeeCount", fnbGuaranteeDays: "committedFnbPackageDays", fnbGuaranteeAmount: "committedFnbPackageAmount", fnbGuaranteeInclusive: "committedFnbPackageInclusive", fnbGuaranteeTaxRate: "committedFnbPackageTaxRate", fnbGuaranteeServiceChargeRate: "committedFnbPackageServiceChargeRate", fnbGuaranteeOtherFees: "committedFnbPackageOtherFees", fnbGuaranteeOveragePerPerson: "committedFnbPackageOveragePerPerson" }[c] || c);
   const escCsv = v => `"${String(Array.isArray(v) ? v.join("; ") : (v == null ? "" : v)).replace(/"/g, '""')}"`;
   const lines = [cols.map(headerFor).join(",")];
   proposals.forEach(p => {
