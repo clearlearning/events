@@ -390,7 +390,7 @@ export async function onRequest(context) {
         ["meetingRoomRentalFee", "Meeting room rental fee"],
 
         ["cumulativeAttritionPercent", "Cumulative attrition %"],
-        ["fnbGuaranteeOffered", "Whether an F&B guarantee is offered"],
+        ["fnbGuaranteeOffered", "Whether a Committed F&B Package is offered"],
         ["propertyType", "Property type"]
       ];
       for (const [key, label] of requiredFields) {
@@ -400,14 +400,14 @@ export async function onRequest(context) {
       }
       if (body.fnbGuaranteeOffered === "yes") {
         const fnbRequired = [
-          ["fnbGuaranteeAttendeeCount", "F&B guarantee attendee count"],
-          ["fnbGuaranteeDays", "F&B guarantee number of days"],
-          ["fnbGuaranteeAmount", "F&B guarantee total proposed amount"],
+          ["fnbGuaranteeAttendeeCount", "Committed F&B Package attendee count"],
+          ["fnbGuaranteeDays", "Committed F&B Package number of days"],
+          ["fnbGuaranteeAmount", "Committed F&B Package total proposed amount"],
           ["fnbGuaranteeInclusive", "Whether the F&B amount is inclusive or exclusive"]
         ];
         for (const [key, label] of fnbRequired) {
           if (!body[key] || !String(body[key]).trim()) {
-            return errorResponse(`${label} is required when offering an F&B guarantee.`, 400);
+            return errorResponse(`${label} is required when offering a Committed F&B Package.`, 400);
           }
         }
         if (body.fnbGuaranteeInclusive === "exclusive") {
@@ -467,7 +467,7 @@ export async function onRequest(context) {
         meetingRoomRentalFee: body.meetingRoomRentalFee || "",
         cumulativeAttritionPercent: body.cumulativeAttritionPercent || "",
 
-        // F&B guarantee: yes/no, then — only if yes — the madlib terms.
+        // Committed F&B Package (stored as fnbGuarantee*): yes/no, then — only if yes — the madlib terms.
         fnbGuaranteeOffered: body.fnbGuaranteeOffered || "",
         fnbGuaranteeAttendeeCount: body.fnbGuaranteeAttendeeCount || "",
         fnbGuaranteeDays: body.fnbGuaranteeDays || "",
@@ -476,6 +476,8 @@ export async function onRequest(context) {
         fnbGuaranteeTaxRate: body.fnbGuaranteeTaxRate || "",
         fnbGuaranteeServiceChargeRate: body.fnbGuaranteeServiceChargeRate || "",
         fnbGuaranteeOtherFees: body.fnbGuaranteeOtherFees || "",
+        // Optional estimate of the per-person overage fee. Only kept when the venue said Yes; older proposals simply don't have it.
+        fnbGuaranteeOveragePerPerson: body.fnbGuaranteeOffered === "yes" ? String(body.fnbGuaranteeOveragePerPerson || "").trim().slice(0, 100) : "",
 
         concessions: body.concessions || "",
 
